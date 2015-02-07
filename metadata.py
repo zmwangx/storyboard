@@ -13,7 +13,7 @@ class Video:
     def __init__(self, video, ffprobe_bin='ffprobe'):
         self.path = os.path.abspath(video)
         if not os.path.exists(self.path):
-            raise OSError, "'" + video + "' does not exist"
+            raise OSError("'" + video + "' does not exist")
         self.filename = os.path.basename(self.path)
 
         self._call_ffprobe(ffprobe_bin)
@@ -53,8 +53,9 @@ class Video:
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ffprobe_out, ffprobe_err = proc.communicate()
         if proc.returncode != 0:
-            raise OSError, "ffprobe failed on '" + video + "'\n" +\
-                ffprobe_err.strip()
+            msg = "ffprobe failed on '%s'\n%s" %(self.path, ffprobe_err)
+            msg = msg.strip()
+            raise OSError(msg)
         self._ffprobe = json.loads(ffprobe_out)
 
     def _extract_title(self):
