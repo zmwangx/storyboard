@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import division
 
+import fractions
 import hashlib
 import json
 import os
@@ -21,6 +22,10 @@ class Video:
         self._extract_size()
         self._extract_duration()
         self.sha1sum = None
+        self.dimension = None
+        self.dimension_text = None
+        self.dar = None
+        self.dar_text = None
         self._extract_streams()
 
     def compute_sha1sum(self):
@@ -30,17 +35,29 @@ class Video:
 
     def pretty_print_metadata(self, include_sha1sum=False):
         s = ""
+        # title
         if self.title:
-            s += "Title:      %s\n" % self.title
-        s += "Filename:   %s\n" % self.filename
-        s += "Size:       %d (%s)\n" % (self.size, self.size_human)
-        s += "Duration:   %s\n" % self.duration_human
+            s += "Title:          %s\n" % self.title
+        # filename
+        s += "Filename:       %s\n" % self.filename
+        # size
+        s += "Size:           %d (%s)\n" % (self.size, self.size_human)
+        # sha1sum
         if include_sha1sum:
             self.compute_sha1sum()
-            s += "SHA-1:      %s\n" % self.sha1sum
+            s += "SHA-1 digest:   %s\n" % self.sha1sum
+        # duration
+        s += "Duration:       %s\n" % self.duration_human
+        # dimension
+        if self.dimension_text:
+            s += "Dimension:      %s\n" % self.dimension_text
+        # aspect ratio
+        if self.dar_text:
+            s += "Aspect ratio:   %s\n" % self.dar_text
+        # streams
         s += "Streams:\n"
         for stream in self.streams:
-            s += "    #%d:     %s\n" % (stream.index, stream.info_string)
+            s += "    #%d: %s\n" % (stream.index, stream.info_string)
         return s.strip()
 
     def _call_ffprobe(self, ffprobe_bin):
@@ -121,11 +138,36 @@ class Video:
             s.height = stream['height']
             s.dimension = (s.width, s.height)
             s.dimension_text = "%dx%d" % (s.width, s.height)
+            if self.dimension is None:
+                # set video dimension to dimension of the first video stream
+                self.dimension = s.dimension
+                self.dimension_text = s.dimension_text
+
+            # display aspect ratio (DAR)
+            if 'display_aspect_ratio' in stream and \
+               stream['display_aspect_ratio'][:2]  != '0:' and \
+               stream['display_aspect_ratio'][-2:] != ':0':
+                s.dar = eval(stream['display_aspect_ratio'].replace(':', '/'))
+                s.dar_text = stream['display_aspect_ratio']
+            else:
+                gcd = fractions.gcd(s.width, s.height)
+                reduced_width = s.width // gcd
+                reduced_height = s.height // gcd
+                s.dar = reduced_width / reduced_height
+                s.dar_text = "%d:%d" % (reduced_width, reduced_height)
+            if self.dar is None:
+                # set video DAR to DAR of the first video stream
+                self.dar = s.dar
+                self.dar_text = s.dar_text
 
             # frame rate
-            if 'r_frame_rate' in stream:
+            if 'r_frame_rate' in stream and \
+               stream['r_frame_rate'][:2] !=  '0/' and \
+               stream['r_frame_rate'][-2:] != '/0':
                 s.frame_rate = eval(stream['r_frame_rate'])
-            elif 'avg_frame_rate' in stream:
+            elif 'avg_frame_rate' in stream and \
+                 stream['avg_frame_rate'][:2]  != '0/' and \
+                 stream['avg_frame_rate'][-2:] != '/0':
                 s.frame_rate = eval(stream['avg_frame_rate'])
             else:
                 s.frame_rate = None
@@ -148,7 +190,8 @@ class Video:
                 s.bit_rate_text = None
 
             # assemble info string
-            s.info_string = "Video: %s, %s" % (s.codec, s.dimension_text)
+            s.info_string = "Video, %s, %s (DAR %s)" % \
+                            (s.codec, s.dimension_text, s.dar_text)
             if s.frame_rate_text:
                 s.info_string += ", " + s.frame_rate_text
             if s.bit_rate_text:
@@ -180,7 +223,7 @@ class Video:
                 s.bit_rate_text = None
 
             # assemble info string
-            s.info_string = "Audio: %s" % s.codec
+            s.info_string = "Audio, %s" % s.codec
             if s.bit_rate_text:
                 s.info_string += ", " + s.bit_rate_text
             # end of audio stream processing
