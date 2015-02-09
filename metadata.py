@@ -184,7 +184,7 @@ class Video:
             # bit rate
             if 'bit_rate' in stream:
                 s.bit_rate = float(stream['bit_rate'])
-                s.bit_rate_text = '%d kb/s' % round(s.bit_rate / 1000)
+                s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
             else:
                 s.bit_rate = None
                 s.bit_rate_text = None
@@ -217,7 +217,7 @@ class Video:
             # bit rate
             if 'bit_rate' in stream:
                 s.bit_rate = float(stream['bit_rate'])
-                s.bit_rate_text = '%d kb/s' % round(s.bit_rate / 1000)
+                s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
             else:
                 s.bit_rate = None
                 s.bit_rate_text = None

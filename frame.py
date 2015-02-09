@@ -9,19 +9,32 @@ import sys
 
 from PIL import Image
 
+class Frame:
+    def __init__(self, timestamp, image):
+        assert type(timestamp) is int or type(timestamp) is float,\
+            "timestamp is not an int or float"
+        assert isinstance(image, Image.Image),\
+            "image is not a PIL.Image.Image instance"
+        self.timestamp = timestamp
+        self.image = image
+
 def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
     """Seek to a specified timestamp in the given video file and return the
-    corresponding frame as a PIL image.
+    corresponding frame.
 
     Positional arguments:
     video      -- path to the video file
-    timestamp  -- a real number in seconds specifying the timestamp to seek to
+    timestamp  -- an int or float in seconds specifying the timestamp to seek to
 
     Keyword arguments:
     ffmpeg_bin -- name or path of the FFmpeg binary, e.g., \"ffmpeg.exe\" on
                   Windows (default \"ffmpeg\")
     codec      -- codec of FFmpeg output image, which will be opened by
                   PIL.Image.open (default \"rawvideo\")
+
+    Return value:
+    A Frame object with the timestamp and the frame image as a PIL.Image.Image
+    instance.
     """
     command = [ ffmpeg_bin,
                 '-ss', str(timestamp),
@@ -51,4 +64,4 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
     except IOError as err:
         sys.exit("error: failed to open ffmpeg output with PIL.Image.open")
 
-    return frame_image
+    return Frame(timestamp, frame_image)
