@@ -240,7 +240,7 @@ class Video:
             self.streams.append(self._process_stream(stream))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Print video metadata.")
+    parser = argparse.ArgumentParser(description="Print video metadata.")
     parser.add_argument('videos', nargs='+', metavar='VIDEO',
                         help="path to the video(s)")
     parser.add_argument('--include-sha1sum', '-s', action='store_true',
