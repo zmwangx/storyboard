@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import division
 
+import argparse
 import fractions
 import hashlib
 import json
@@ -73,7 +74,7 @@ class Video:
             msg = "ffprobe failed on '%s'\n%s" %(self.path, ffprobe_err)
             msg = msg.strip()
             raise OSError(msg)
-        self._ffprobe = json.loads(ffprobe_out)
+        self._ffprobe = json.loads(ffprobe_out.decode('utf-8'))
 
     def _extract_title(self):
         format = self._ffprobe['format']
@@ -102,7 +103,7 @@ class Video:
         self.duration_human = "%02d:%02d:%05.2f" % (hh, mm, ss)
 
     def _extract_sha1sum(self):
-	with open(self.path, 'rb') as f:
+        with open(self.path, 'rb') as f:
             self.sha1sum = hashlib.sha1(f.read()).hexdigest()
 
     def _process_stream(self, stream):
@@ -237,3 +238,18 @@ class Video:
         self.streams = []
         for stream in self._ffprobe['streams']:
             self.streams.append(self._process_stream(stream))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Print video metadata.")
+    parser.add_argument('videos', nargs='+', metavar='VIDEO',
+                        help="path to the video(s)")
+    parser.add_argument('--include-sha1sum', '-s', action='store_true',
+                        help="print SHA-1 digest of video(s); slow")
+    parser.add_argument('--ffprobe-binary', '-f', default='ffprobe',
+                        help="""the name/path of the ffprobe binary; default is
+                        'ffprobe'""")
+    args = parser.parse_args()
+    for video in args.videos:
+        v = Video(video, args.ffprobe_binary)
+        print(v.pretty_print_metadata(include_sha1sum=args.include_sha1sum))
+        print('')
