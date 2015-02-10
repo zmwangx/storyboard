@@ -38,23 +38,23 @@ class Video:
         s = ""
         # title
         if self.title:
-            s += "Title:          %s\n" % self.title
+            s += "Title:                  %s\n" % self.title
         # filename
-        s += "Filename:       %s\n" % self.filename
+        s += "Filename:               %s\n" % self.filename
         # size
-        s += "Size:           %d (%s)\n" % (self.size, self.size_human)
+        s += "File size:              %d (%s)\n" % (self.size, self.size_human)
         # sha1sum
         if include_sha1sum:
             self.compute_sha1sum()
-            s += "SHA-1 digest:   %s\n" % self.sha1sum
+            s += "SHA-1 digest:           %s\n" % self.sha1sum
         # duration
-        s += "Duration:       %s\n" % self.duration_human
+        s += "Duration:               %s\n" % self.duration_human
         # dimension
         if self.dimension_text:
-            s += "Dimension:      %s\n" % self.dimension_text
+            s += "Pixel dimensions:       %s\n" % self.dimension_text
         # aspect ratio
         if self.dar_text:
-            s += "Aspect ratio:   %s\n" % self.dar_text
+            s += "Display aspect ratio:   %s\n" % self.dar_text
         # streams
         s += "Streams:\n"
         for stream in self.streams:
