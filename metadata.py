@@ -22,6 +22,7 @@ class Video:
         self._extract_title()
         self._extract_size()
         self._extract_duration()
+        self._extract_scan_type(ffprobe_bin)
         self.sha1sum = None
         self.dimension = None
         self.dimension_text = None
@@ -55,6 +56,9 @@ class Video:
         # aspect ratio
         if self.dar_text:
             s += "Display aspect ratio:   %s\n" % self.dar_text
+        # scanning type
+        if self.scan_type:
+            s += "Scan type:              %s\n" % self.scan_type
         # streams
         s += "Streams:\n"
         for stream in self.streams:
@@ -105,6 +109,35 @@ class Video:
     def _extract_sha1sum(self):
         with open(self.path, 'rb') as f:
             self.sha1sum = hashlib.sha1(f.read()).hexdigest()
+
+    def _extract_scan_type(self, ffprobe_bin):
+        # experimental feature
+        #
+        # Scan the first megabyte of the video and use FFprobe to determine if
+        # there are interlaced frames; if so, decide that the video is
+        # interlaced.
+        #
+        # This is of course a dirty hack and an oversimplification. For intance,
+        # there's no distinction between fully interlaced video and telecined
+        # video. (In fact I know little about telecine, so I don't have to plan
+        # to distinguish it.)
+
+        # read first megabyte of the video
+        with open(self.path, 'rb') as f:
+            head = f.read(1000000)
+        # pass the first megabyte to ffprobe
+        ffprobe_args = [ffprobe_bin,
+                        '-select_streams', 'v',
+                        '-show_frames',
+                        '-']
+        proc = subprocess.Popen(ffprobe_args,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ffprobe_out, ffprobe_err = proc.communicate(input=head)
+        if b'interlaced_frame=1' in ffprobe_out:
+            self.scan_type = 'Interlaced scan'
+        else:
+            self.scan_type = 'Progressive scan'
 
     def _process_stream(self, stream):
         """Convert an FFprobe stream object to our own stream object."""
