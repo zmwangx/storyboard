@@ -28,6 +28,8 @@ class Video:
         self.dimension_text = None
         self.dar = None
         self.dar_text = None
+        self.frame_rate = None
+        self.frame_rate_text = None
         self._extract_streams()
 
     def compute_sha1sum(self):
@@ -59,6 +61,9 @@ class Video:
         # scanning type
         if self.scan_type:
             s += "Scan type:              %s\n" % self.scan_type
+        # frame rate
+        if self.frame_rate:
+            s += "Frame rate:             %s\n" % self.frame_rate_text
         # streams
         s += "Streams:\n"
         for stream in self.streams:
@@ -214,6 +219,11 @@ class Video:
                     s.frame_rate_text = "%.2f fps" % fps
             else:
                 s.frame_rate_text = None
+
+            if self.frame_rate is None:
+                # set video frame rate to that of the first video stream
+                self.frame_rate = s.frame_rate
+                self.frame_rate_text = s.frame_rate_text
 
             # bit rate
             if 'bit_rate' in stream:
