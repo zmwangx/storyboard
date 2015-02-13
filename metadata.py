@@ -156,11 +156,17 @@ class Video:
 
         s = Stream()
         s.index = stream['index']
-        if stream['codec_type'] == "video":
+
+        if not 'codec_type' in stream:
+            s.type = 'unknown'
+            s.info_string = "Data"
+        elif stream['codec_type'] == "video":
             s.type = "video"
 
             # codec
-            if stream['codec_name'] == "h264":
+            if not 'codec_name' in stream:
+                s.codec = "unknown codec"
+            elif stream['codec_name'] == "h264":
                 s.codec = "H.264 (%s Profile level %.1f)" %\
                         (stream['profile'], stream['level'] / 10.0)
             elif stream['codec_name'] == "mpeg2video":
@@ -245,7 +251,9 @@ class Video:
             s.type = "audio"
 
             # codec
-            if stream['codec_name'] == "aac":
+            if not 'codec_name' in stream:
+                s.codec = "unknown codec"
+            elif stream['codec_name'] == "aac":
                 if stream['profile'] == "LC":
                     profile = "Low Complexity"
                 else:
@@ -266,11 +274,47 @@ class Video:
                 s.bit_rate = None
                 s.bit_rate_text = None
 
+            # language
+            if 'tags' in stream:
+                if 'language' in stream['tags']:
+                    s.language_code = stream['tags']['language']
+                elif 'LANGUAGE' in stream['tags']:
+                    s.language_code = stream['tags']['LANGUAGE']
+
             # assemble info string
-            s.info_string = "Audio, %s" % s.codec
+            if hasattr(s, 'language_code'):
+                s.info_string = "Audio (%s), %s" % (s.language_code, s.codec)
+            else:
+                s.info_string = "Audio, %s" % s.codec
             if s.bit_rate_text:
                 s.info_string += ", " + s.bit_rate_text
             # end of audio stream processing
+        elif stream['codec_type'] == "subtitle":
+            if not 'codec_name' in stream:
+                if 'codec_tag_string' in stream and \
+                   stream['codec_tag_string'] == 'c608':
+                    s.codec = 'EIA-608'
+                else:
+                    s.codec = "unknown codec"
+            elif stream['codec_name'] == "srt":
+                s.codec = "SubRip"
+            elif stream['codec_name'] == "ass":
+                s.codec = "ASS"
+            else:
+                s.codec = stream['codec_name'].upper()
+
+            # language
+            if 'tags' in stream:
+                if 'language' in stream['tags']:
+                    s.language_code = stream['tags']['language']
+                elif 'LANGUAGE' in stream['tags']:
+                    s.language_code = stream['tags']['LANGUAGE']
+
+            # assemble info string
+            if hasattr(s, 'language_code'):
+                s.info_string = "Subtitle (%s), %s" % (s.language_code, s.codec)
+            else:
+                s.info_string = "Subtitle, %s" % s.codec
         else:
             s.type = stream['codec_type']
             s.info_string = 'Data'
