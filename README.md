@@ -14,7 +14,6 @@ etc.
 
 ## Example storyboards
 
-Generated from [5a37830](https://github.com/zmwangx/storyboard/commit/5a37830) with default settings (except that `include_sha1sum` was set to `True`):
+Generated from [0370f9f](https://github.com/zmwangx/storyboard/commit/0370f9f) with default settings (except that `include_sha1sum` was set to `True`):
 
-![](http://i.imgur.com/6dndrY9.png)
-![](http://i.imgur.com/jiJTF6w.png)
+![](http://i.imgur.com/8cma36g.jpg)
