@@ -38,6 +38,13 @@ def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
         y += line_height
     return (width, height)
 
+def _seconds_to_hhmmss(seconds):
+    t = round(seconds)
+    hh = t // 3600
+    mm = (t // 60) % 60
+    ss = t % 60
+    return "%02d:%02d:%02d" % (hh, mm, ss)
+
 class StoryBoard:
     def __init__(self, video, num_thumbnails=16,
                  ffmpeg_bin='ffmpeg', codec='png',
@@ -70,7 +77,8 @@ class StoryBoard:
                    text_color='black',
                    include_sha1sum=True,
                    tiling=(4, 4), tile_width=480, tile_aspect_ratio=None,
-                   tile_spacing=(4, 3)):
+                   tile_spacing=(4, 3),
+                   draw_timestamp=True):
         """Create storyboard.
 
         Keyword arguments:
@@ -94,7 +102,7 @@ class StoryBoard:
                         string recognized by ImageColor; default is 'black'
 
         Metadata options:
-        include_sha1sum -- boolen, whether or not to include SHA-1 checksum as
+        include_sha1sum -- boolean, whether or not to include SHA-1 checksum as
                            a printed metadata field; keep in mind that SHA-1
                            calculation is slow for large videos
 
@@ -116,18 +124,24 @@ class StoryBoard:
                              4 * 2 = 8 pixel horizontal spacing between two
                              adjacent tiles; same goes for vertical spacing;
 
+        Timestamp options:
+        draw_timestamp  -- boolean, whether or not to draw timestamps on the
+                           thumbnails (lower-right corner); default is True
+
         Return value:
         Storyboard as a PIL.Image.Image image.
         """
         # TO DO: check argument types and n * m = num_thumbnails
         if font is None:
-            font = ImageFont.truetype('SourceCodePro-Regular.otf', size=16)
+            font = ImageFont.truetype(os.path.dirname(os.path.realpath(__file__)) + '/SourceCodePro-Regular.otf', size=16)
         if tile_aspect_ratio is None:
             tile_aspect_ratio = self.video.dar
 
         # draw storyboard, meta sheet, and banner
         storyboard = self._draw_storyboard(tiling, tile_width,
-                                           tile_aspect_ratio, tile_spacing)
+                                           tile_aspect_ratio, tile_spacing,
+                                           draw_timestamp,
+                                           font, font_size)
         total_width = storyboard.size[0]
         meta_sheet = self._draw_meta_sheet(total_width, tile_spacing, font,
                                            font_size, text_spacing, text_color,
@@ -162,7 +176,9 @@ class StoryBoard:
         return assembled
 
     def _draw_storyboard(self, tiling, tile_width, tile_aspect_ratio,
-                         tile_spacing):
+                         tile_spacing,
+                         draw_timestamp,
+                         font, font_size):
         horz_tiles   = tiling[0]
         vert_tiles   = tiling[1]
         tile_height  = int(tile_width / tile_aspect_ratio)
@@ -172,6 +188,8 @@ class StoryBoard:
         total_width  = horz_tiles * (tile_width  + 2 * horz_spacing)
         total_height = vert_tiles * (tile_height + 2 * vert_spacing)
         storyboard   = Image.new('RGBA', (total_width, total_height), 'white')
+        if draw_timestamp:
+            draw = ImageDraw.Draw(storyboard)
         for i in range(0, horz_tiles):
             for j in range(0, vert_tiles):
                 index = j * vert_tiles + i
@@ -180,6 +198,20 @@ class StoryBoard:
                              tile_height * j + vert_spacing * (2 * j + 1))
                 storyboard.paste(frame.image.resize(tile_size, Image.LANCZOS),
                                  upperleft)
+                # timestamp
+                if draw_timestamp:
+                    lowerright = (upperleft[0] + tile_width,
+                                  upperleft[1] + tile_height)
+                    ts = _seconds_to_hhmmss(frame.timestamp)
+                    ts_size = draw.textsize(ts, font)
+                    ts_upperleft = (lowerright[0] - ts_size[0] - 5,
+                                    lowerright[1] - ts_size[1] - 5)
+                    (x, y) = ts_upperleft
+                    for x_offset in range(-1, 2):
+                        for y_offset in range(-1, 2):
+                            draw.text((x + x_offset, y + y_offset),
+                                      ts, fill='black', font=font)
+                    draw.text((x, y), ts, fill='white', font=font)
         return storyboard
 
     def _draw_meta_sheet(self, total_width, tile_spacing,
