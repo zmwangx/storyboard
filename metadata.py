@@ -167,12 +167,21 @@ class Video:
             if not 'codec_name' in stream:
                 s.codec = "unknown codec"
             elif stream['codec_name'] == "h264":
-                s.codec = "H.264 (%s Profile level %.1f)" %\
-                        (stream['profile'], stream['level'] / 10.0)
+                if 'profile' in stream and 'level' in stream:
+                    s.codec = "H.264 (%s Profile level %.1f)" %\
+                              (stream['profile'], stream['level'] / 10.0)
+                else:
+                    s.codec = "H.264"
             elif stream['codec_name'] == "mpeg2video":
-                s.codec = "MPEG-2 video (%s Profile)" % stream['profile']
+                if 'profile' in stream:
+                    s.codec = "MPEG-2 video (%s Profile)" % stream['profile']
+                else:
+                    s.codec = "MPEG-2 video"
             elif stream['codec_name'] == "mpeg4":
-                s.codec = "MPEG-4 Part 2 (%s)" % stream['profile']
+                if 'profile' in stream:
+                    s.codec = "MPEG-4 Part 2 (%s)" % stream['profile']
+                else:
+                    s.codec = "MPEG-4 Part 2"
             elif stream['codec_name'] == "mjpeg":
                 s.codec = "MJPEG"
             else:
@@ -254,11 +263,14 @@ class Video:
             if not 'codec_name' in stream:
                 s.codec = "unknown codec"
             elif stream['codec_name'] == "aac":
-                if stream['profile'] == "LC":
-                    profile = "Low Complexity"
+                if 'profile' in stream:
+                    if stream['profile'] == "LC":
+                        profile = "Low Complexity"
+                    else:
+                        profile = stream['profile']
+                    s.codec = "AAC (%s)" % profile
                 else:
-                    profile = stream['profile']
-                s.codec = "AAC (%s)" % profile
+                    s.codec = "AAC"
             elif stream['codec_name'] == "ac3":
                 s.codec = "Dolby AC-3"
             elif stream['codec_name'] == "mp3":
