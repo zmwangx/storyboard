@@ -118,8 +118,18 @@ class Video:
         self.duration_human = "%02d:%02d:%05.2f" % (hh, mm, ss)
 
     def _extract_sha1sum(self):
-        with open(self.path, 'rb') as f:
-            self.sha1sum = hashlib.sha1(f.read()).hexdigest()
+        try:
+            with open(self.path, 'rb') as f:
+                self.sha1sum = hashlib.sha1(f.read()).hexdigest()
+        except OSError:
+            # OS X + Py3K read bug for files larger than 2 GiB
+            # see http://git.io/pDnA
+            # workaround: read in chunks of 1 GiB
+            with open(self.path, 'rb') as f:
+                buf = b''
+                for chunk in iter(lambda: f.read(2**30), b''):
+                    buf += chunk
+                self.sha1sum = hashlib.sha1(buf).hexdigest()
 
     def _extract_scan_type(self, ffprobe_bin):
         # experimental feature
