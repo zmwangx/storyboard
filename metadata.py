@@ -17,6 +17,9 @@ class Video:
         if not os.path.exists(self.path):
             raise OSError("'" + video + "' does not exist")
         self.filename = os.path.basename(self.path)
+        if hasattr(self.filename, 'decode'):
+            # python2 str
+            self.filename = self.filename.decode('utf-8')
 
         self._call_ffprobe(ffprobe_bin)
         self._extract_title()
@@ -91,6 +94,9 @@ class Video:
             self.title = format['tags']['title']
         else:
             self.title = None
+        if hasattr(self.title, 'decode'):
+            # python2 str
+            self.title = self.title.decode('utf-8')
 
     def _extract_size(self):
         self.size = int(self._ffprobe['format']['size'])
