@@ -5,8 +5,21 @@ import argparse
 import fractions
 import hashlib
 import json
+import math
 import os
 import subprocess
+
+def _round_up(number, ndigits=0):
+    """Round a nonnegative number UPWARD to a given precision in decimal digits.
+
+    Keyword arguments:
+    number -- nonnegative floating point number
+    ndigits -- number of decimal digits to round to, default is 0
+
+    Returns: float
+    """
+    multiplier = 10 ** ndigits
+    return math.ceil(number * multiplier) / multiplier
 
 class Stream:
     pass
@@ -100,14 +113,21 @@ class Video:
 
     def _extract_size(self):
         self.size = int(self._ffprobe['format']['size'])
-        tmp = self.size
-        for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
-            if tmp < 1024.0:
-                self.size_human = "%.1f%sB" % (tmp, unit)
+        size = self.size
+        multiplier = 1024.0
+        if size < multiplier:
+            self.size_human = "%dB" % size
+            return
+        for unit in ['Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+            size /= multiplier
+            if size < multiplier:
+                if size < 10:
+                    self.size_human = "%.2f%sB" % (_round_up(size, 2), unit)
+                else:
+                    self.size_human = "%.1f%sB" % (_round_up(size, 1), unit)
                 break
-            tmp /= 1024.0
         else:
-            self.size_human = "%.1f%sB" % (tmp, 'Yi')
+            self.size_human = "%.1f%sB" % (_round_up(size, 1), unit)
 
     def _extract_duration(self):
         self.duration = float(self._ffprobe['format']['duration'])
