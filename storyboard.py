@@ -2,6 +2,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import os
 import sys
 
 from PIL import Image, ImageDraw, ImageFont
@@ -240,3 +241,15 @@ class StoryBoard:
         horz_spacing = (total_width - text_width) // 2
         draw.text((horz_spacing, 3), text, fill=text_color, font=font)
         return banner
+
+def main():
+    """CLI interface."""
+    for video in sys.argv[1:]:
+        sb = StoryBoard(video)
+        import tempfile
+        path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-', dir='/tmp')[1]
+        print(path)
+        sb.storyboard(include_sha1sum=True, print_progress=True).save(path, quality=90)
+
+if __name__ == "__main__":
+    main()

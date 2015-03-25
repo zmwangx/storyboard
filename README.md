@@ -7,7 +7,7 @@ This is a piece of work in progress. Currently the module is working, but
 * Fonts still need some tweaking (currently the default is Source Code Pro Regular at 16px, which is somewhat thin);
 * There are unfinished details, e.g., printing of progress information;
 * Metadata parsing of streams can be improved — this aspect is highly limited by the range of codecs familiar to me and the fact that I'm parsing the output of `ffprobe` for metadata;
-* There's no CLI now (just need to write some `argparse` code);
+* The CLI is very rudimentary now (just need to write some `argparse` code);
 * The code is not packaged;
 
 etc.
