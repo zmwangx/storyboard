@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Extract video frames."""
+
 from __future__ import print_function
 
 import io
@@ -9,7 +11,8 @@ import sys
 
 from PIL import Image
 
-class Frame:
+class Frame(object):
+    """Video frame object containing a timestamp and an image."""
     def __init__(self, timestamp, image):
         assert type(timestamp) is int or type(timestamp) is float,\
             "timestamp is not an int or float"
@@ -36,24 +39,26 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
     A Frame object with the timestamp and the frame image as a PIL.Image.Image
     instance.
     """
-    command = [ ffmpeg_bin,
-                '-ss', str(timestamp),
-                '-i', video,
-                '-f', 'image2',
-                '-vcodec', codec,
-                '-vframes', '1',
-                '-' ]
+    command = [ffmpeg_bin,
+               '-ss', str(timestamp),
+               '-i', video,
+               '-f', 'image2',
+               '-vcodec', codec,
+               '-vframes', '1',
+               '-']
 
     if not os.path.exists(video):
         raise IOError("video file '" + video + "' does not exist")
 
+    # pylint: disable=unused-variable
+    # the exception object err might be useful in the future
     try:
         frame_bytes = subprocess.check_output(command,
                                               stderr=open(os.devnull, "w"))
     except subprocess.CalledProcessError as err:
-        print("error: ffmpeg failed to extract frame at time " + str(time) +
-              " from video '" + video, sys.stderr + "'")
-        raise
+        msg = "error: failed to extract frame at time %.2f from video '%s'\n" %\
+              (timestamp, video)
+        sys.stderr.write(msg)
 
     if not frame_bytes:
         msg = "ffmpeg generated no output (timestamp might be out of range)"

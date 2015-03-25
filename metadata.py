@@ -54,9 +54,8 @@ def _evaluate_ratio(ratio_str):
 class Stream(object):
     """Container for stream metadata."""
 
-    # pylint: disable=too-many-instance-attributes,too-few-public-methods
-    # a stream can have any number of attributes; and it's just a container with
-    # public attributes, hence no need for public methods
+    # pylint: disable=too-many-instance-attributes
+    # a stream can have any number of attributes
 
     def __init__(self):
         # general stream attributes
@@ -269,9 +268,7 @@ class Video(object):
         proc = subprocess.Popen(ffprobe_args,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # pylint: disable=unused-variable
-        # ffprobe_err may or may not be used in the future
-        ffprobe_out, ffprobe_err = proc.communicate(input=head)
+        ffprobe_out, _ = proc.communicate(input=head)
         if b'interlaced_frame=1' in ffprobe_out:
             self.scan_type = 'Interlaced scan'
         else:

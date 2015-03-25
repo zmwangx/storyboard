@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+"""Generate storyboards of videos (with metadata printed)."""
+
 from __future__ import division
 from __future__ import print_function
 
@@ -7,8 +10,14 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-import frame
+import frame as Frame
 import metadata
+
+_SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+
+# pylint: disable=too-many-locals,invalid-name
+# In this file we use a lot of short local variable names to save space.
+# These short variable names are carefully documented when not obvious.
 
 def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
     """Draw a block of text.
@@ -31,8 +40,8 @@ def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
     width = 0
     height = 0
     for line in text.splitlines():
-        (w, h) = draw.textsize(line, font=font)
-        draw.text((x,y), line, fill=color, font=font)
+        (w, _) = draw.textsize(line, font=font)
+        draw.text((x, y), line, fill=color, font=font)
         if w > width:
             width = w
         height += line_height
@@ -40,13 +49,20 @@ def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
     return (width, height)
 
 def _seconds_to_hhmmss(seconds):
+    """Number of seconds to HH:MM:SS format."""
     t = round(seconds)
     hh = t // 3600
     mm = (t // 60) % 60
     ss = t % 60
     return "%02d:%02d:%02d" % (hh, mm, ss)
 
-class StoryBoard:
+class StoryBoard(object):
+    """Class for storing video thumbnails and metadata, and creating storyboard
+    on request.
+    """
+    # pylint: disable=bad-whitespace
+    # Here we use a lot of extra space for alignment purposes.
+
     def __init__(self, video, num_thumbnails=16,
                  ffmpeg_bin='ffmpeg', codec='png',
                  print_progress=False):
@@ -58,7 +74,7 @@ class StoryBoard:
         # video, where N is the number of thumbnails
         interval = duration / num_thumbnails
         timestamps = [ interval/2 ]
-        for i in range(1, num_thumbnails):
+        for _ in range(1, num_thumbnails):
             timestamps.append(timestamps[-1] + interval)
 
         # generate frames accordingly
@@ -69,7 +85,7 @@ class StoryBoard:
                 print("generating thumbnail %d/%d..." %
                       (counter, num_thumbnails),
                       file=sys.stderr)
-            self.frames.append(frame.extract_frame(video, timestamp,
+            self.frames.append(Frame.extract_frame(video, timestamp,
                                                    ffmpeg_bin, codec))
 
     def storyboard(self,
@@ -134,7 +150,8 @@ class StoryBoard:
         """
         # TO DO: check argument types and n * m = num_thumbnails
         if font is None:
-            font = ImageFont.truetype(os.path.dirname(os.path.realpath(__file__)) + '/SourceCodePro-Regular.otf', size=16)
+            font_file = _SCRIPT_PATH + '/SourceCodePro-Regular.otf'
+            font = ImageFont.truetype(font_file, size=16)
         if tile_aspect_ratio is None:
             tile_aspect_ratio = self.video.dar
 
@@ -142,7 +159,7 @@ class StoryBoard:
         storyboard = self._draw_storyboard(tiling, tile_width,
                                            tile_aspect_ratio, tile_spacing,
                                            draw_timestamp,
-                                           font, font_size)
+                                           font)
         total_width = storyboard.size[0]
         meta_sheet = self._draw_meta_sheet(total_width, tile_spacing, font,
                                            font_size, text_spacing, text_color,
@@ -179,7 +196,8 @@ class StoryBoard:
     def _draw_storyboard(self, tiling, tile_width, tile_aspect_ratio,
                          tile_spacing,
                          draw_timestamp,
-                         font, font_size):
+                         font):
+        """Draw the storyboard (thumbnails only)."""
         horz_tiles   = tiling[0]
         vert_tiles   = tiling[1]
         tile_height  = int(tile_width / tile_aspect_ratio)
@@ -218,6 +236,7 @@ class StoryBoard:
     def _draw_meta_sheet(self, total_width, tile_spacing,
                          font, font_size, text_spacing, text_color,
                          include_sha1sum):
+        """Draw the metadata sheet."""
         horz_spacing = tile_spacing[0]
         vert_spacing = tile_spacing[1]
         text         = self.video.pretty_print_metadata(include_sha1sum)
@@ -232,6 +251,9 @@ class StoryBoard:
         return meta_sheet
 
     def _draw_banner(self, total_width, font, font_size, text_color):
+        """Draw the promotion banner."""
+        # pylint: disable=no-self-use
+        # This function is an integral part of the class.
         text         = "Fork me on GitHub: " +\
                        "https://github.com/zmwangx/storyboard"
         total_height = font_size + 3 * 2 # hard code vertical spacing in banner
