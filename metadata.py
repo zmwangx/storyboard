@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
+
+"""Extract video metadata and generate string for pretty-print."""
+
 from __future__ import division
+from __future__ import print_function
 
 import argparse
 import fractions
@@ -7,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import subprocess
 
 def _round_up(number, ndigits=0):
@@ -21,10 +26,63 @@ def _round_up(number, ndigits=0):
     multiplier = 10 ** ndigits
     return math.ceil(number * multiplier) / multiplier
 
-class Stream:
-    pass
+_NUM_COLON_DEN = re.compile(r'^([1-9][0-9]*):([1-9][0-9]*)$')
+_NUM_SLASH_DEN = re.compile(r'^([1-9][0-9]*)/([1-9][0-9]*)$')
+def _evaluate_ratio(ratio_str):
+    """Evaluate ratio in the form num:den or num/den.
 
-class Video:
+    Note that numerator and denominator should both be positive integers.
+
+    Keyword arguments:
+    ratio_str: the ratio as a string (either 'num:den' or 'num/den' where num
+               and den are positive integers
+
+    Returns: the ratio as a float (or None if malformed)
+    """
+    match = _NUM_COLON_DEN.match(ratio_str)
+    if match:
+        numerator = int(match.group(1))
+        denominator = int(match.group(2))
+        return numerator / denominator
+    match = _NUM_SLASH_DEN.match(ratio_str)
+    if match:
+        numerator = int(match.group(1))
+        denominator = int(match.group(2))
+        return numerator / denominator
+    return None
+
+class Stream(object):
+    """Container for stream metadata."""
+
+    # pylint: disable=too-many-instance-attributes,too-few-public-methods
+    # a stream can have any number of attributes; and it's just a container with
+    # public attributes, hence no need for public methods
+
+    def __init__(self):
+        # general stream attributes
+        self.index = None
+        self.type = None
+        self.codec = None
+        self.info_string = None
+        self.bit_rate = None
+        self.bit_rate_text = None
+        self.language_code = None
+        # video stream specific attributes
+        self.height = None
+        self.width = None
+        self.dimension = None
+        self.dimension_text = None
+        self.frame_rate = None
+        self.frame_rate_text = None
+        self.dar = None # display aspect ratio
+        self.dar_text = None
+
+class Video(object):
+    """Container for video and streams metadata."""
+
+    # pylint: disable=too-many-instance-attributes
+    # again, a video can have any number of metadata attributes
+
     def __init__(self, video, ffprobe_bin='ffprobe'):
         self.path = os.path.abspath(video)
         if not os.path.exists(self.path):
@@ -49,11 +107,25 @@ class Video:
         self._extract_streams()
 
     def compute_sha1sum(self):
+        """Compute SHA-1 hex digest of the video file."""
         if not self.sha1sum:
             self._extract_sha1sum()
         return self.sha1sum
 
     def pretty_print_metadata(self, include_sha1sum=False):
+        """Pretty print video metadata.
+
+        Keyword arguments:
+        includ_sha1sum: boolean, whether to include SHA-1 hexdigest of the video
+                        file -- defaults to false; keep in mind that computing
+                        SHA-1 is an expansive operation, and is only done upon
+                        request
+
+        Returns: a string that can be printed directly
+        """
+        # pylint: disable=invalid-name
+        # s is fully recognizable as the variable name of the string, and in
+        # fact, it is the only variable here
         s = ""
         # title
         if self.title:
@@ -87,6 +159,10 @@ class Video:
         return s.strip()
 
     def _call_ffprobe(self, ffprobe_bin):
+        """Call ffprobe and store json output in self._ffprobe.
+
+        ffprobe is called with -show_format and -show_streams options.
+        """
         ffprobe_args = [ffprobe_bin,
                         '-loglevel', 'fatal',
                         '-print_format', 'json',
@@ -102,9 +178,11 @@ class Video:
         self._ffprobe = json.loads(ffprobe_out.decode('utf-8'))
 
     def _extract_title(self):
-        format = self._ffprobe['format']
-        if 'tags' in format and 'title' in format['tags']:
-            self.title = format['tags']['title']
+        """Extract title of the video (if any) and store in self.title."""
+        video_container_metadata = self._ffprobe['format']
+        if 'tags' in video_container_metadata and \
+           'title' in video_container_metadata['tags']:
+            self.title = video_container_metadata['tags']['title']
         else:
             self.title = None
         if hasattr(self.title, 'decode'):
@@ -112,13 +190,18 @@ class Video:
             self.title = self.title.decode('utf-8')
 
     def _extract_size(self):
+        """Extract size of the video file.
+
+        Store the numeric value (in bytes) in self.size, and the human readable
+        string in self.size_human.
+        """
         self.size = int(self._ffprobe['format']['size'])
         size = self.size
         multiplier = 1024.0
         if size < multiplier:
             self.size_human = "%dB" % size
             return
-        for unit in ['Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        for unit in ['Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
             size /= multiplier
             if size < multiplier:
                 if size < 10:
@@ -130,28 +213,40 @@ class Video:
             self.size_human = "%.1f%sB" % (_round_up(size, 1), unit)
 
     def _extract_duration(self):
+        """Extract duration of the video.
+
+        Store the numeric value (in seconds) in self.duration, and the human
+        readable string in self.duration_human.
+        """
         self.duration = float(self._ffprobe['format']['duration'])
+        # pylint: disable=invalid-name
+        # t is a computation register
         t = self.duration
-        hh = int(t) // 3600
-        mm = (int(t) // 60) % 60
-        ss = t - (int(t) // 60) * 60
+        hh = int(t) // 3600 # hours
+        mm = (int(t) // 60) % 60 # minutes
+        ss = t - (int(t) // 60) * 60 # seconds
         self.duration_human = "%02d:%02d:%05.2f" % (hh, mm, ss)
 
     def _extract_sha1sum(self):
+        """Extract SHA-1 hexdigest of the video file."""
         try:
-            with open(self.path, 'rb') as f:
-                self.sha1sum = hashlib.sha1(f.read()).hexdigest()
+            with open(self.path, 'rb') as video:
+                self.sha1sum = hashlib.sha1(video.read()).hexdigest()
         except OSError:
             # OS X + Py3K read bug for files larger than 2 GiB
             # see http://git.io/pDnA
             # workaround: read in chunks of 1 GiB
-            with open(self.path, 'rb') as f:
+            with open(self.path, 'rb') as video:
                 buf = b''
-                for chunk in iter(lambda: f.read(2**30), b''):
+                for chunk in iter(lambda: video.read(2**30), b''):
                     buf += chunk
                 self.sha1sum = hashlib.sha1(buf).hexdigest()
 
     def _extract_scan_type(self, ffprobe_bin):
+        """Determine the scan type of the video.
+
+        Progressive or interlaced scan. Saved in self.scan_type.
+        """
         # experimental feature
         #
         # Scan the first megabyte of the video and use FFprobe to determine if
@@ -164,8 +259,8 @@ class Video:
         # to distinguish it.)
 
         # read first megabyte of the video
-        with open(self.path, 'rb') as f:
-            head = f.read(1000000)
+        with open(self.path, 'rb') as video:
+            head = video.read(1000000)
         # pass the first megabyte to ffprobe
         ffprobe_args = [ffprobe_bin,
                         '-select_streams', 'v',
@@ -174,6 +269,8 @@ class Video:
         proc = subprocess.Popen(ffprobe_args,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # pylint: disable=unused-variable
+        # ffprobe_err may or may not be used in the future
         ffprobe_out, ffprobe_err = proc.communicate(input=head)
         if b'interlaced_frame=1' in ffprobe_out:
             self.scan_type = 'Interlaced scan'
@@ -187,9 +284,10 @@ class Video:
         # growing list of codecs I frequently encounter. I do not intend to be
         # exhaustive, but everyone is welcome to contribute code for their
         # favorite codecs.
-        #
-        # TO DO: subtitle streams
 
+        # pylint: disable=invalid-name
+        # the variable s (the Stream object for the stream current being
+        # processed) is used so many times, it makes sense to save some space
         s = Stream()
         s.index = stream['index']
 
@@ -234,11 +332,10 @@ class Video:
                 self.dimension_text = s.dimension_text
 
             # display aspect ratio (DAR)
-            if 'display_aspect_ratio' in stream and \
-               stream['display_aspect_ratio'][:2]  != '0:' and \
-               stream['display_aspect_ratio'][-2:] != ':0':
-                s.dar = eval(stream['display_aspect_ratio'].replace(':', '/'))
-                s.dar_text = stream['display_aspect_ratio']
+            if 'display_aspect_ratio' in stream:
+                s.dar = _evaluate_ratio(stream['display_aspect_ratio'])
+                if s.dar is not None:
+                    s.dar_text = stream['display_aspect_ratio']
             else:
                 gcd = fractions.gcd(s.width, s.height)
                 reduced_width = s.width // gcd
@@ -251,14 +348,10 @@ class Video:
                 self.dar_text = s.dar_text
 
             # frame rate
-            if 'r_frame_rate' in stream and \
-               stream['r_frame_rate'][:2] !=  '0/' and \
-               stream['r_frame_rate'][-2:] != '/0':
-                s.frame_rate = eval(stream['r_frame_rate'])
-            elif 'avg_frame_rate' in stream and \
-                 stream['avg_frame_rate'][:2]  != '0/' and \
-                 stream['avg_frame_rate'][-2:] != '/0':
-                s.frame_rate = eval(stream['avg_frame_rate'])
+            if 'r_frame_rate' in stream:
+                s.frame_rate = _evaluate_ratio(stream['r_frame_rate'])
+            elif 'avg_frame_rate' in stream:
+                s.frame_rate = _evaluate_ratio(stream['avg_frame_rate'])
             else:
                 s.frame_rate = None
 
@@ -330,7 +423,7 @@ class Video:
                     s.language_code = stream['tags']['LANGUAGE']
 
             # assemble info string
-            if hasattr(s, 'language_code'):
+            if s.language_code:
                 s.info_string = "Audio (%s), %s" % (s.language_code, s.codec)
             else:
                 s.info_string = "Audio, %s" % s.codec
@@ -359,7 +452,7 @@ class Video:
                     s.language_code = stream['tags']['LANGUAGE']
 
             # assemble info string
-            if hasattr(s, 'language_code'):
+            if s.language_code:
                 s.info_string = "Subtitle (%s), %s" % (s.language_code, s.codec)
             else:
                 s.info_string = "Subtitle, %s" % s.codec
@@ -370,11 +463,16 @@ class Video:
         return s
 
     def _extract_streams(self):
+        """Extract metadata of streams.
+
+        Save to self.streams, which is a list of Stream objects.
+        """
         self.streams = []
         for stream in self._ffprobe['streams']:
             self.streams.append(self._process_stream(stream))
 
-if __name__ == "__main__":
+def main():
+    """CLI interface."""
     parser = argparse.ArgumentParser(description="Print video metadata.")
     parser.add_argument('videos', nargs='+', metavar='VIDEO',
                         help="path to the video(s)")
@@ -385,6 +483,10 @@ if __name__ == "__main__":
                         'ffprobe'""")
     args = parser.parse_args()
     for video in args.videos:
+        # pylint: disable=invalid-name
         v = Video(video, args.ffprobe_binary)
         print(v.pretty_print_metadata(include_sha1sum=args.include_sha1sum))
         print('')
+
+if __name__ == "__main__":
+    main()
