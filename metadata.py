@@ -277,6 +277,219 @@ class Video(object):
         else:
             self.scan_type = 'Progressive scan'
 
+    def _process_video_stream(self, stream):
+        # pylint: disable=too-many-branches,too-many-statements
+        """Process video stream.
+
+        Keyword arguments:
+        stream: a JSON stream object returned by ffprobe (stream['codec_type']
+                must be "video")
+
+        Returns: a Stream object containing stream metadata.
+        """
+        if stream['codec_type'] != "video":
+            raise ValueError("passed stream is not a video stream")
+
+        # pylint: disable=invalid-name
+        s = Stream()
+        s.type = "video"
+
+        # codec
+        if 'codec_name' not in stream:
+            s.codec = "unknown codec"
+        elif stream['codec_name'] == "h264":
+            if 'profile' in stream and 'level' in stream:
+                s.codec = "H.264 (%s Profile level %.1f)" %\
+                          (stream['profile'], stream['level'] / 10.0)
+            else:
+                s.codec = "H.264"
+        elif stream['codec_name'] == "mpeg2video":
+            if 'profile' in stream:
+                s.codec = "MPEG-2 video (%s Profile)" % stream['profile']
+            else:
+                s.codec = "MPEG-2 video"
+        elif stream['codec_name'] == "mpeg4":
+            if 'profile' in stream:
+                s.codec = "MPEG-4 Part 2 (%s)" % stream['profile']
+            else:
+                s.codec = "MPEG-4 Part 2"
+        elif stream['codec_name'] == "mjpeg":
+            s.codec = "MJPEG"
+        else:
+            s.codec = stream['codec_name'].upper()
+
+        # dimension
+        s.width = stream['width']
+        s.height = stream['height']
+        s.dimension = (s.width, s.height)
+        s.dimension_text = "%dx%d" % (s.width, s.height)
+        if self.dimension is None:
+            # set video dimension to dimension of the first video stream
+            self.dimension = s.dimension
+            self.dimension_text = s.dimension_text
+
+        # display aspect ratio (DAR)
+        if 'display_aspect_ratio' in stream:
+            s.dar = _evaluate_ratio(stream['display_aspect_ratio'])
+            if s.dar is not None:
+                s.dar_text = stream['display_aspect_ratio']
+        else:
+            gcd = fractions.gcd(s.width, s.height)
+            reduced_width = s.width // gcd
+            reduced_height = s.height // gcd
+            s.dar = reduced_width / reduced_height
+            s.dar_text = "%d:%d" % (reduced_width, reduced_height)
+        if self.dar is None:
+            # set video DAR to DAR of the first video stream
+            self.dar = s.dar
+            self.dar_text = s.dar_text
+
+        # frame rate
+        if 'r_frame_rate' in stream:
+            s.frame_rate = _evaluate_ratio(stream['r_frame_rate'])
+        elif 'avg_frame_rate' in stream:
+            s.frame_rate = _evaluate_ratio(stream['avg_frame_rate'])
+        else:
+            s.frame_rate = None
+
+        if s.frame_rate is not None:
+            fps = s.frame_rate
+            if abs(fps - int(fps)) < 0.0001: # integer
+                s.frame_rate_text = '%d fps' % int(fps)
+            else:
+                s.frame_rate_text = "%.2f fps" % fps
+        else:
+            s.frame_rate_text = None
+
+        if self.frame_rate is None:
+            # set video frame rate to that of the first video stream
+            self.frame_rate = s.frame_rate
+            self.frame_rate_text = s.frame_rate_text
+
+        # bit rate
+        if 'bit_rate' in stream:
+            s.bit_rate = float(stream['bit_rate'])
+            s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
+        else:
+            s.bit_rate = None
+            s.bit_rate_text = None
+
+        # assemble info string
+        s.info_string = "Video, %s, %s (DAR %s)" % \
+                        (s.codec, s.dimension_text, s.dar_text)
+        if s.frame_rate_text:
+            s.info_string += ", " + s.frame_rate_text
+        if s.bit_rate_text:
+            s.info_string += ", " + s.bit_rate_text
+
+        return s
+
+    def _process_audio_stream(self, stream):
+        # pylint: disable=no-self-use,too-many-branches,too-many-statements
+        """Process audio stream.
+
+        Keyword arguments:
+        stream: a JSON stream object returned by ffprobe (stream['codec_type']
+                must be "audio")
+
+        Returns: a Stream object containing stream metadata.
+        """
+        if stream['codec_type'] != "audio":
+            raise ValueError("passed stream is not an audio stream")
+
+        # pylint: disable=invalid-name
+        s = Stream()
+        s.type = "audio"
+
+        # codec
+        if 'codec_name' not in stream:
+            s.codec = "unknown codec"
+        elif stream['codec_name'] == "aac":
+            if 'profile' in stream:
+                if stream['profile'] == "LC":
+                    profile = "Low Complexity"
+                else:
+                    profile = stream['profile']
+                s.codec = "AAC (%s)" % profile
+            else:
+                s.codec = "AAC"
+        elif stream['codec_name'] == "ac3":
+            s.codec = "Dolby AC-3"
+        elif stream['codec_name'] == "mp3":
+            s.codec = "MP3"
+        else:
+            s.codec = stream['codec_name'].upper()
+
+        # bit rate
+        if 'bit_rate' in stream:
+            s.bit_rate = float(stream['bit_rate'])
+            s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
+        else:
+            s.bit_rate = None
+            s.bit_rate_text = None
+
+        # language
+        if 'tags' in stream:
+            if 'language' in stream['tags']:
+                s.language_code = stream['tags']['language']
+            elif 'LANGUAGE' in stream['tags']:
+                s.language_code = stream['tags']['LANGUAGE']
+
+        # assemble info string
+        if s.language_code:
+            s.info_string = "Audio (%s), %s" % (s.language_code, s.codec)
+        else:
+            s.info_string = "Audio, %s" % s.codec
+        if s.bit_rate_text:
+            s.info_string += ", " + s.bit_rate_text
+
+        return s
+
+    def _process_subtitle_stream(self, stream):
+        # pylint: disable=no-self-use
+        """Process subtitle stream.
+
+        Keyword arguments:
+        stream: a JSON stream object returned by ffprobe (stream['codec_type']
+                must be "subtitle")
+
+        Returns: a Stream object containing stream metadata.
+        """
+        if stream['codec_type'] != "subtitle":
+            raise ValueError("passed stream is not a subtitle stream")
+
+        # pylint: disable=invalid-name
+        s = Stream()
+        s.type = "subtitle"
+
+        if 'codec_name' not in stream:
+            if 'codec_tag_string' in stream and \
+               stream['codec_tag_string'] == 'c608':
+                s.codec = 'EIA-608'
+            else:
+                s.codec = "unknown codec"
+        elif stream['codec_name'] == "srt":
+            s.codec = "SubRip"
+        elif stream['codec_name'] == "ass":
+            s.codec = "ASS"
+        else:
+            s.codec = stream['codec_name'].upper()
+
+        # language
+        if 'tags' in stream:
+            if 'language' in stream['tags']:
+                s.language_code = stream['tags']['language']
+            elif 'LANGUAGE' in stream['tags']:
+                s.language_code = stream['tags']['LANGUAGE']
+
+        # assemble info string
+        if s.language_code:
+            s.info_string = "Subtitle (%s), %s" % (s.language_code, s.codec)
+        else:
+            s.info_string = "Subtitle, %s" % s.codec
+
+        return s
+
     def _process_stream(self, stream):
         """Convert an FFprobe stream object to our own stream object."""
 
@@ -286,179 +499,24 @@ class Video(object):
         # favorite codecs.
 
         # pylint: disable=invalid-name
-        # the variable s (the Stream object for the stream current being
-        # processed) is used so many times, it makes sense to save some space
-        s = Stream()
-        s.index = stream['index']
+        # s is a Stream object for storing stream metadata
 
-        if not 'codec_type' in stream:
+        if 'codec_type' not in stream:
+            s = Stream()
             s.type = 'unknown'
             s.info_string = "Data"
         elif stream['codec_type'] == "video":
-            s.type = "video"
-
-            # codec
-            if not 'codec_name' in stream:
-                s.codec = "unknown codec"
-            elif stream['codec_name'] == "h264":
-                if 'profile' in stream and 'level' in stream:
-                    s.codec = "H.264 (%s Profile level %.1f)" %\
-                              (stream['profile'], stream['level'] / 10.0)
-                else:
-                    s.codec = "H.264"
-            elif stream['codec_name'] == "mpeg2video":
-                if 'profile' in stream:
-                    s.codec = "MPEG-2 video (%s Profile)" % stream['profile']
-                else:
-                    s.codec = "MPEG-2 video"
-            elif stream['codec_name'] == "mpeg4":
-                if 'profile' in stream:
-                    s.codec = "MPEG-4 Part 2 (%s)" % stream['profile']
-                else:
-                    s.codec = "MPEG-4 Part 2"
-            elif stream['codec_name'] == "mjpeg":
-                s.codec = "MJPEG"
-            else:
-                s.codec = stream['codec_name'].upper()
-
-            # dimension
-            s.width = stream['width']
-            s.height = stream['height']
-            s.dimension = (s.width, s.height)
-            s.dimension_text = "%dx%d" % (s.width, s.height)
-            if self.dimension is None:
-                # set video dimension to dimension of the first video stream
-                self.dimension = s.dimension
-                self.dimension_text = s.dimension_text
-
-            # display aspect ratio (DAR)
-            if 'display_aspect_ratio' in stream:
-                s.dar = _evaluate_ratio(stream['display_aspect_ratio'])
-                if s.dar is not None:
-                    s.dar_text = stream['display_aspect_ratio']
-            else:
-                gcd = fractions.gcd(s.width, s.height)
-                reduced_width = s.width // gcd
-                reduced_height = s.height // gcd
-                s.dar = reduced_width / reduced_height
-                s.dar_text = "%d:%d" % (reduced_width, reduced_height)
-            if self.dar is None:
-                # set video DAR to DAR of the first video stream
-                self.dar = s.dar
-                self.dar_text = s.dar_text
-
-            # frame rate
-            if 'r_frame_rate' in stream:
-                s.frame_rate = _evaluate_ratio(stream['r_frame_rate'])
-            elif 'avg_frame_rate' in stream:
-                s.frame_rate = _evaluate_ratio(stream['avg_frame_rate'])
-            else:
-                s.frame_rate = None
-
-            if s.frame_rate is not None:
-                fps = s.frame_rate
-                if abs(fps - int(fps)) < 0.0001: # integer
-                    s.frame_rate_text = '%d fps' % int(fps)
-                else:
-                    s.frame_rate_text = "%.2f fps" % fps
-            else:
-                s.frame_rate_text = None
-
-            if self.frame_rate is None:
-                # set video frame rate to that of the first video stream
-                self.frame_rate = s.frame_rate
-                self.frame_rate_text = s.frame_rate_text
-
-            # bit rate
-            if 'bit_rate' in stream:
-                s.bit_rate = float(stream['bit_rate'])
-                s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
-            else:
-                s.bit_rate = None
-                s.bit_rate_text = None
-
-            # assemble info string
-            s.info_string = "Video, %s, %s (DAR %s)" % \
-                            (s.codec, s.dimension_text, s.dar_text)
-            if s.frame_rate_text:
-                s.info_string += ", " + s.frame_rate_text
-            if s.bit_rate_text:
-                s.info_string += ", " + s.bit_rate_text
-            # end of video stream processing
+            s = self._process_video_stream(stream)
         elif stream['codec_type'] == "audio":
-            s.type = "audio"
-
-            # codec
-            if not 'codec_name' in stream:
-                s.codec = "unknown codec"
-            elif stream['codec_name'] == "aac":
-                if 'profile' in stream:
-                    if stream['profile'] == "LC":
-                        profile = "Low Complexity"
-                    else:
-                        profile = stream['profile']
-                    s.codec = "AAC (%s)" % profile
-                else:
-                    s.codec = "AAC"
-            elif stream['codec_name'] == "ac3":
-                s.codec = "Dolby AC-3"
-            elif stream['codec_name'] == "mp3":
-                s.codec = "MP3"
-            else:
-                s.codec = stream['codec_name'].upper()
-
-            # bit rate
-            if 'bit_rate' in stream:
-                s.bit_rate = float(stream['bit_rate'])
-                s.bit_rate_text = '%d kb/s' % int(round(s.bit_rate / 1000))
-            else:
-                s.bit_rate = None
-                s.bit_rate_text = None
-
-            # language
-            if 'tags' in stream:
-                if 'language' in stream['tags']:
-                    s.language_code = stream['tags']['language']
-                elif 'LANGUAGE' in stream['tags']:
-                    s.language_code = stream['tags']['LANGUAGE']
-
-            # assemble info string
-            if s.language_code:
-                s.info_string = "Audio (%s), %s" % (s.language_code, s.codec)
-            else:
-                s.info_string = "Audio, %s" % s.codec
-            if s.bit_rate_text:
-                s.info_string += ", " + s.bit_rate_text
-            # end of audio stream processing
+            s = self._process_audio_stream(stream)
         elif stream['codec_type'] == "subtitle":
-            if not 'codec_name' in stream:
-                if 'codec_tag_string' in stream and \
-                   stream['codec_tag_string'] == 'c608':
-                    s.codec = 'EIA-608'
-                else:
-                    s.codec = "unknown codec"
-            elif stream['codec_name'] == "srt":
-                s.codec = "SubRip"
-            elif stream['codec_name'] == "ass":
-                s.codec = "ASS"
-            else:
-                s.codec = stream['codec_name'].upper()
-
-            # language
-            if 'tags' in stream:
-                if 'language' in stream['tags']:
-                    s.language_code = stream['tags']['language']
-                elif 'LANGUAGE' in stream['tags']:
-                    s.language_code = stream['tags']['LANGUAGE']
-
-            # assemble info string
-            if s.language_code:
-                s.info_string = "Subtitle (%s), %s" % (s.language_code, s.codec)
-            else:
-                s.info_string = "Subtitle, %s" % s.codec
+            s = self._process_subtitle_stream(stream)
         else:
+            s = Stream()
             s.type = stream['codec_type']
             s.info_string = 'Data'
+
+        s.index = stream['index']
 
         return s
 
