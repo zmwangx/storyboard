@@ -372,8 +372,8 @@ class Video(object):
         # display aspect ratio (DAR)
         if 'display_aspect_ratio' in stream:
             s.dar = _evaluate_ratio(stream['display_aspect_ratio'])
-            if s.dar is not None:
-                s.dar_text = stream['display_aspect_ratio']
+        if s.dar is not None:
+            s.dar_text = stream['display_aspect_ratio']
         else:
             gcd = fractions.gcd(s.width, s.height)
             reduced_width = s.width // gcd
