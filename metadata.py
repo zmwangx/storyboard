@@ -92,6 +92,7 @@ class Video(object):
             self.filename = self.filename.decode('utf-8')
 
         self._call_ffprobe(ffprobe_bin)
+        self._extract_container_format()
         self._extract_title()
         self._extract_size()
         self._extract_duration()
@@ -137,6 +138,8 @@ class Video(object):
         if include_sha1sum:
             self.compute_sha1sum()
             s += "SHA-1 digest:           %s\n" % self.sha1sum
+        # container format
+        s += "Container format:       %s\n" % self.format
         # duration
         s += "Duration:               %s\n" % self.duration_human
         # dimension
@@ -187,6 +190,47 @@ class Video(object):
         if hasattr(self.title, 'decode'):
             # python2 str
             self.title = self.title.decode('utf-8')
+
+    def _extract_container_format(self):
+        """Extract container format of the video and store in self.format."""
+        format_name = self._ffprobe['format']['format_name']
+        # format_long_name = self._ffprobe['format']['format_long_name']
+        # lowercase extension without period
+        extension = os.path.splitext(self.path)[1].lower()
+        if format_name == 'mpegts':
+            self.format = "MPEG transport stream"
+        elif format_name == 'mpeg':
+            self.format = "MPEG program stream"
+        elif format_name == 'mov,mp4,m4a,3gp,3g2,mj2':
+            if extension in ['mov', 'qt']:
+                self.format = "QuickTime movie"
+            elif extension in ['3gp']:
+                self.format = "3GPP"
+            elif extension in ['3g2']:
+                self.format = "3GPP2"
+            elif extension in ['mj2', '.mjp2']:
+                self.format = "Motion JPEG 2000"
+            else:
+                # mp4, m4v, m4a, etc.
+                self.format = "MPEG-4 Part 14 (%s)" % extension.upper()
+        elif format_name == 'mpegvideo':
+            self.format = "MPEG video"
+        elif format_name == 'matroska,webm':
+            if extension in ['webm']:
+                self.format = "WebM"
+            else:
+                self.format = "Matroska"
+        elif format_name == 'flv':
+            self.format = "Flash video"
+        elif format_name == 'ogg':
+            self.format = "Ogg"
+        elif format_name == 'avi':
+            self.format = "Audio Video Interleaved"
+        elif format_name == 'asf':
+            # Microsoft Advanced Systems Format
+            self.format = "Advanced Systems Format"
+        else:
+            self.format = extension.upper()
 
     def _extract_size(self):
         """Extract size of the video file.
@@ -275,7 +319,7 @@ class Video(object):
             self.scan_type = 'Progressive scan'
 
     def _process_video_stream(self, stream):
-        # pylint: disable=too-many-branches,too-many-statements
+        # pylint: disable=too-many-statements
         """Process video stream.
 
         Keyword arguments:
@@ -382,7 +426,7 @@ class Video(object):
         return s
 
     def _process_audio_stream(self, stream):
-        # pylint: disable=no-self-use,too-many-branches,too-many-statements
+        # pylint: disable=no-self-use,too-many-statements
         """Process audio stream.
 
         Keyword arguments:
