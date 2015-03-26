@@ -272,18 +272,12 @@ class Video(object):
 
     def _extract_sha1sum(self):
         """Extract SHA-1 hexdigest of the video file."""
-        try:
-            with open(self.path, 'rb') as video:
-                self.sha1sum = hashlib.sha1(video.read()).hexdigest()
-        except OSError:
-            # OS X + Py3K read bug for files larger than 2 GiB
-            # see http://git.io/pDnA
-            # workaround: read in chunks of 1 GiB
-            with open(self.path, 'rb') as video:
-                buf = b''
-                for chunk in iter(lambda: video.read(2**30), b''):
-                    buf += chunk
-                self.sha1sum = hashlib.sha1(buf).hexdigest()
+        with open(self.path, 'rb') as video:
+            sha1 = hashlib.sha1()
+            # hash video in 65536 byte chunks
+            for chunk in iter(lambda: video.read(65536), b''):
+                sha1.update(chunk)
+            self.sha1sum = sha1.hexdigest()
 
     def _extract_scan_type(self, ffprobe_bin):
         """Determine the scan type of the video.
