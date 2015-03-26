@@ -196,7 +196,7 @@ class Video(object):
         format_name = self._ffprobe['format']['format_name']
         # format_long_name = self._ffprobe['format']['format_long_name']
         # lowercase extension without period
-        extension = os.path.splitext(self.path)[1].lower()
+        extension = os.path.splitext(self.path)[1].lower()[1:]
         if format_name == 'mpegts':
             self.format = "MPEG transport stream"
         elif format_name == 'mpeg':
@@ -208,7 +208,7 @@ class Video(object):
                 self.format = "3GPP"
             elif extension in ['3g2']:
                 self.format = "3GPP2"
-            elif extension in ['mj2', '.mjp2']:
+            elif extension in ['mj2', 'mjp2']:
                 self.format = "Motion JPEG 2000"
             else:
                 # mp4, m4v, m4a, etc.
