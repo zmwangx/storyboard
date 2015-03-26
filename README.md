@@ -12,8 +12,14 @@ This is a piece of work in progress. Currently the module is working, but
 
 etc.
 
-## Example storyboards
+## Sample storyboards
 
-Generated from [`0370f9f`](https://github.com/zmwangx/storyboard/commit/0370f9f) with default settings (except that `include_sha1sum` was set to `True`):
+Generated from [`f7148c0`](https://github.com/zmwangx/storyboard/commit/f7148c0) with default settings:
 
-![](http://i.imgur.com/8cma36g.jpg)
+![](http://i.imgur.com/q8uzpfc.jpg)
+
+(Proprietary video by Apple, available from <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>.)
+
+![](http://i.imgur.com/PDFXenh.jpg)
+
+(CC0 video by FSF, available from <https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv>.)
