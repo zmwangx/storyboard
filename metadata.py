@@ -350,8 +350,10 @@ class Video(object):
                 s.codec = "MPEG-4 Part 2"
         elif stream['codec_name'] == "mjpeg":
             s.codec = "MJPEG"
+        elif stream['codec_name'] == "theora":
+            s.codec = "Theora"
         else:
-            s.codec = stream['codec_name'].upper()
+            s.codec = stream['codec_long_name']
 
         # dimension
         s.width = stream['width']
@@ -452,8 +454,10 @@ class Video(object):
             s.codec = "Dolby AC-3"
         elif stream['codec_name'] == "mp3":
             s.codec = "MP3"
+        elif stream['codec_name'] == "vorbis":
+            s.codec = "Vorbis"
         else:
-            s.codec = stream['codec_name'].upper()
+            s.codec = stream['codec_long_name']
 
         # bit rate
         if 'bit_rate' in stream:
@@ -507,8 +511,10 @@ class Video(object):
             s.codec = "SubRip"
         elif stream['codec_name'] == "ass":
             s.codec = "ASS"
+        elif stream['codec_name'] == "cc_dec":
+            s.codec = "closed caption (EIA-608 / CEA-708)"
         else:
-            s.codec = stream['codec_name'].upper()
+            s.codec = stream['codec_long_name']
 
         # language
         if 'tags' in stream:
