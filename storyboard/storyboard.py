@@ -64,9 +64,9 @@ class StoryBoard(object):
     # Here we use a lot of extra space for alignment purposes.
 
     def __init__(self, video, num_thumbnails=16,
-                 ffmpeg_bin='ffmpeg', codec='png',
+                 ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
                  print_progress=False):
-        self.video = metadata.Video(video)
+        self.video = metadata.Video(video, ffprobe_bin=ffprobe_bin)
         self.frames = []
         duration = self.video.duration
 
@@ -267,11 +267,22 @@ class StoryBoard(object):
 def main():
     """CLI interface."""
     for video in sys.argv[1:]:
-        sb = StoryBoard(video)
+        # detect OS, and if Windows, append .exe to the executables
+        if os.name == 'nt':
+            ffmpeg_bin = 'ffmpeg.exe'
+            ffprobe_bin = 'ffprobe.exe'
+        else:
+            ffmpeg_bin = 'ffmpeg'
+            ffprobe_bin = 'ffprobe'
+
+        sb = StoryBoard(video, ffmpeg_bin=ffmpeg_bin, ffprobe_bin=ffprobe_bin)
         import tempfile
         path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-', dir='/tmp')[1]
         print(path)
-        sb.storyboard(include_sha1sum=True, print_progress=True).save(path, quality=90)
+        sb.storyboard(
+            include_sha1sum=True,
+            print_progress=True,
+        ).save(path, quality=90)
 
 if __name__ == "__main__":
     main()
