@@ -277,7 +277,7 @@ def main():
 
         sb = StoryBoard(video, ffmpeg_bin=ffmpeg_bin, ffprobe_bin=ffprobe_bin)
         import tempfile
-        path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-', dir='/tmp')[1]
+        path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')[1]
         print(path)
         sb.storyboard(
             include_sha1sum=True,
