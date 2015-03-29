@@ -14,7 +14,7 @@ from PIL import Image
 class Frame(object):
     """Video frame object containing a timestamp and an image."""
     def __init__(self, timestamp, image):
-        assert type(timestamp) is int or type(timestamp) is float,\
+        assert isinstance(timestamp, int) or isinstance(timestamp, float),\
             "timestamp is not an int or float"
         assert isinstance(image, Image.Image),\
             "image is not a PIL.Image.Image instance"
