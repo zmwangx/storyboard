@@ -6,6 +6,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
 import os
 import sys
 
@@ -267,7 +268,12 @@ class StoryBoard(object):
 
 def main():
     """CLI interface."""
-    for video in sys.argv[1:]:
+    description="Generate video storyboards with metadata reports."
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('videos', metavar='VIDEO', nargs='+',
+                        help="path(s) to the video file(s)")
+    args = parser.parse_args()
+    for video in args.videos:
         # detect OS, and if Windows, append .exe to the executables
         if os.name == 'nt':
             ffmpeg_bin = 'ffmpeg.exe'

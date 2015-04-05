@@ -575,7 +575,7 @@ def main():
     """CLI interface."""
     parser = argparse.ArgumentParser(description="Print video metadata.")
     parser.add_argument('videos', nargs='+', metavar='VIDEO',
-                        help="path to the video(s)")
+                        help="path(s) to the video file(s)")
     parser.add_argument('--include-sha1sum', '-s', action='store_true',
                         help="print SHA-1 digest of video(s); slow")
     parser.add_argument('--ffprobe-binary', '-f', default='ffprobe',
