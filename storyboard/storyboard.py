@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-"""Generate storyboards of videos (with metadata printed)."""
+"""Generate video storyboards with metadata reports."""
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -10,8 +11,8 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
-import frame as Frame
-import metadata
+from storyboard import frame as Frame
+from storyboard import metadata
 
 _SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 

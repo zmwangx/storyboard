@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-"""Extract video metadata and generate string for pretty-print."""
+"""Extract video metadata and generate string for pretty-printing."""
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
