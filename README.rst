@@ -101,6 +101,9 @@ Installation
 Make sure you satisfy the FFmpeg dependency and external library
 dependencies of Pillow, e.g., ``libjpeg`` and ``libfreetype``.
 
+Note that prereleases need to be installed with the ``--pre`` option, so
+be sure to try ``pip install --pre storyboard`` if the above fails.
+
 Command-line usage
 ------------------
 

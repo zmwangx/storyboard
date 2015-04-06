@@ -58,6 +58,8 @@ pip install storyboard
 
 Make sure you satisfy the FFmpeg dependency and external library dependencies of Pillow, e.g., `libjpeg` and `libfreetype`.
 
+Note that prereleases need to be installed with the `--pre` option, so be sure to try `pip install --pre storyboard` if the above fails.
+
 ## Command-line usage
 
 The package installs two console scripts, `metadata` and `storyboard`. Usage of both scripts can be found using the `-h,--help` option. **Note that CLIs are currently extremely primitive.** To generate customized storyboards, one needs to write one's own wrapper around the API (which is well-documented in the source code). I plan to improve the CLI in future releases, exposing more features and printing more information to the console.
