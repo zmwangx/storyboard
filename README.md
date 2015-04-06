@@ -1,3 +1,9 @@
+[![Latest Version](https://pypip.in/version/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Supported Python versions](https://pypip.in/py_versions/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Download format](https://pypip.in/format/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+
 `storyboard` is a customizable video storyboard generator with metadata reporting directly embedded in the generated images, based on [FFmpeg](https://ffmpeg.org/). Reported metadata fields include, but are not limited to, title, filename, file size, SHA-1 digest, container format, duration, pixel dimension, display aspect ratio (DAR), scan type (progressive or interlaced), frame rate, and per-stream metadata (type, codec, profile, dimensions, bitrate, etc.). See the samples below to get a feel for `storyboard`'s capabilities.
 
 ## Structure of this document
@@ -94,6 +100,8 @@ Currently, `storyboard` prints the path of the generated image to the console, w
 Please report issues or browse a list of known issues at <https://github.com/zmwangx/storyboard/issues>. See "Known issues" for instructions on how to report issues related to an unknown codec.
 
 ## Known issues
+
+* Windows support is planned and already covered to some extent, but I haven't tested this on Windows yet, not even once, so don't be surprised if it doesn't work on Windows. Please report in the issue tracker — that's very much appreciated.
 
 * `storyboard` uses `PIL.ImageFont` from Pillow to draw text, which is rather primitive and only allows one font at a time (no fallback). The default font packaged is Source Code Pro Regular, which only draws its supported code points, and leave unknown code points as boxes. In particular, there is no CJK support, so CJK characters in video filenames won't come out very nice.
 
