@@ -26,22 +26,15 @@ Structure of this document
 Sample storyboards
 ------------------
 
-Generated from
-```10987b4`` <https://github.com/zmwangx/storyboard/commit/10987b4>`__
-with default settings:
+Generated from ``10987b4`` with default settings (click for full
+resolution):
 
-.. figure:: http://i.imgur.com/AuGJBoA.jpg
-   :alt: 2015\_mar\_1080\_cc.m4v.storyboard.jpg
-
-   2015\_mar\_1080\_cc.m4v.storyboard.jpg
+|image0|
 
 (Proprietary video by Apple, available from
 http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v.)
 
-.. figure:: http://i.imgur.com/PbPGyvT.jpg
-   :alt: FSF\_30\_video.ogv.storyboard.jpg
-
-   FSF\_30\_video.ogv.storyboard.jpg
+|image1|
 
 (CC0 video by FSF, available from
 https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv.)
@@ -205,3 +198,8 @@ family <https://adobe-fonts.github.io/source-code-pro/>`__. See
 
 Source code in this package is released under `the MIT
 license <http://opensource.org/licenses/MIT>`__.
+
+.. |image0| image:: http://i.imgur.com/QHPgAZA.jpg
+   :target: http://i.imgur.com/AuGJBoA.jpg
+.. |image1| image:: http://i.imgur.com/zGHJUuf.jpg
+   :target: http://i.imgur.com/PbPGyvT.jpg

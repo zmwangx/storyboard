@@ -15,13 +15,13 @@
 
 ## Sample storyboards
 
-Generated from [`10987b4`](https://github.com/zmwangx/storyboard/commit/10987b4) with default settings:
+Generated from [`10987b4`](https://github.com/zmwangx/storyboard/commit/10987b4) with default settings (click for full resolution):
 
-![2015_mar_1080_cc.m4v.storyboard.jpg](http://i.imgur.com/AuGJBoA.jpg)
+[![](http://i.imgur.com/QHPgAZA.jpg)](http://i.imgur.com/AuGJBoA.jpg)
 
 (Proprietary video by Apple, available from <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>.)
 
-![FSF_30_video.ogv.storyboard.jpg](http://i.imgur.com/PbPGyvT.jpg)
+[![](http://i.imgur.com/zGHJUuf.jpg)](http://i.imgur.com/PbPGyvT.jpg)
 
 (CC0 video by FSF, available from <https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv>.)
 
