@@ -9,11 +9,13 @@ from __future__ import print_function
 import argparse
 import os
 import sys
+import tempfile
 
 from PIL import Image, ImageDraw, ImageFont
 
 from storyboard import frame as Frame
 from storyboard import metadata
+from storyboard import util
 
 _SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,25 +52,21 @@ def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
         y += line_height
     return (width, height)
 
-def _seconds_to_hhmmss(seconds):
-    """Number of seconds to HH:MM:SS format."""
-    t = round(seconds)
-    hh = t // 3600
-    mm = (t // 60) % 60
-    ss = t % 60
-    return "%02d:%02d:%02d" % (hh, mm, ss)
-
 class StoryBoard(object):
     """Class for storing video thumbnails and metadata, and creating storyboard
     on request.
     """
-    # pylint: disable=bad-whitespace
+    # pylint: disable=bad-whitespace,too-few-public-methods
     # Here we use a lot of extra space for alignment purposes.
 
     def __init__(self, video, num_thumbnails=16,
                  ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
                  print_progress=False):
-        self.video = metadata.Video(video, ffprobe_bin=ffprobe_bin)
+        self.video = metadata.Video(
+            video,
+            ffprobe_bin=ffprobe_bin,
+            print_progress=True,
+        )
         self.frames = []
         duration = self.video.duration
 
@@ -84,11 +82,12 @@ class StoryBoard(object):
         for timestamp in timestamps:
             counter += 1
             if print_progress:
-                print("generating thumbnail %d/%d..." %
-                      (counter, num_thumbnails),
-                      file=sys.stderr)
+                sys.stderr.write("\rCreating thumbnail %d/%d..." %
+                                 (counter, num_thumbnails))
             self.frames.append(Frame.extract_frame(video, timestamp,
                                                    ffmpeg_bin, codec))
+        if print_progress:
+            sys.stderr.write("\n")
 
     def storyboard(self,
                    padding=(10,10), include_banner=True, print_progress=False,
@@ -158,17 +157,23 @@ class StoryBoard(object):
             tile_aspect_ratio = self.video.dar
 
         # draw storyboard, meta sheet, and banner
+        if print_progress:
+            sys.stderr.write("Drawing main storyboard...\n")
         storyboard = self._draw_storyboard(tiling, tile_width,
                                            tile_aspect_ratio, tile_spacing,
                                            draw_timestamp,
                                            font)
         total_width = storyboard.size[0]
+        if print_progress:
+            sys.stderr.write("Generating metadata sheet...\n")
         meta_sheet = self._draw_meta_sheet(total_width, tile_spacing, font,
                                            font_size, text_spacing, text_color,
-                                           include_sha1sum)
+                                           include_sha1sum, print_progress)
 
         # assemble the parts
         if include_banner:
+            if print_progress:
+                sys.stderr.write("Drawing the bottom banner...\n")
             banner = self._draw_banner(total_width, font, font_size, text_color)
             total_height = storyboard.size[1] + meta_sheet.size[1] + \
                            banner.size[1]
@@ -178,6 +183,8 @@ class StoryBoard(object):
             total_width  += 2 * hp
             total_height += 2 * vp
             assembled = Image.new('RGBA', (total_width, total_height), 'white')
+            if print_progress:
+                sys.stderr.write("Assembling parts...\n")
             assembled.paste(meta_sheet, (hp, vp))
             assembled.paste(storyboard, (hp, vp + meta_sheet.size[1]))
             assembled.paste(banner,
@@ -223,7 +230,7 @@ class StoryBoard(object):
                 if draw_timestamp:
                     lowerright = (upperleft[0] + tile_width,
                                   upperleft[1] + tile_height)
-                    ts = _seconds_to_hhmmss(frame.timestamp)
+                    ts = util.humantime(frame.timestamp, ndigits=0)
                     ts_size = draw.textsize(ts, font)
                     ts_upperleft = (lowerright[0] - ts_size[0] - 5,
                                     lowerright[1] - ts_size[1] - 5)
@@ -237,11 +244,14 @@ class StoryBoard(object):
 
     def _draw_meta_sheet(self, total_width, tile_spacing,
                          font, font_size, text_spacing, text_color,
-                         include_sha1sum):
+                         include_sha1sum, print_progress):
         """Draw the metadata sheet."""
         horz_spacing = tile_spacing[0]
         vert_spacing = tile_spacing[1]
-        text         = self.video.pretty_print_metadata(include_sha1sum)
+        text         = self.video.pretty_print_metadata(
+            include_sha1sum=include_sha1sum,
+            print_progress=print_progress,
+        )
         num_lines    = len(text.splitlines())
         total_height = int(round(font_size * text_spacing)) * num_lines + \
                        vert_spacing * 3 # double verticle spacing at the bottom
@@ -268,28 +278,41 @@ class StoryBoard(object):
 
 def main():
     """CLI interface."""
-    description="Generate video storyboards with metadata reports."
+    description = "Generate video storyboards with metadata reports."
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('videos', metavar='VIDEO', nargs='+',
                         help="path(s) to the video file(s)")
     args = parser.parse_args()
-    for video in args.videos:
-        # detect OS, and if Windows, append .exe to the executables
-        if os.name == 'nt':
-            ffmpeg_bin = 'ffmpeg.exe'
-            ffprobe_bin = 'ffprobe.exe'
-        else:
-            ffmpeg_bin = 'ffmpeg'
-            ffprobe_bin = 'ffprobe'
 
-        sb = StoryBoard(video, ffmpeg_bin=ffmpeg_bin, ffprobe_bin=ffprobe_bin)
-        import tempfile
-        path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')[1]
+    # process arguments
+    include_sha1sum = True #! for the moment
+    print_progress = True #! for the moment
+    # detect OS, and if Windows, append .exe to the executables
+    if os.name == 'nt':
+        ffmpeg_bin = 'ffmpeg.exe'
+        ffprobe_bin = 'ffprobe.exe'
+    else:
+        ffmpeg_bin = 'ffmpeg'
+        ffprobe_bin = 'ffprobe'
+
+    for video in args.videos:
+        sb = StoryBoard(
+            video,
+            ffmpeg_bin=ffmpeg_bin,
+            ffprobe_bin=ffprobe_bin,
+            print_progress=print_progress,
+        )
+
+        storyboard = sb.storyboard(
+            include_sha1sum=include_sha1sum,
+            print_progress=print_progress,
+        )
+
+        _, path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')
+        storyboard.save(path, quality=90) #! will have output format and quality options
+        if print_progress:
+            sys.stderr.write("Done. Generated storyboard saved to:\n")
         print(path)
-        sb.storyboard(
-            include_sha1sum=True,
-            print_progress=True,
-        ).save(path, quality=90)
 
 if __name__ == "__main__":
     main()
