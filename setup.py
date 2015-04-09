@@ -9,9 +9,13 @@ here = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(here, 'README.rst'), 'r') as f:
     long_description = f.read()
 
+# read version from version.py and save in __version__
+with open(os.path.join(here, 'storyboard', 'version.py')) as f:
+    exec(f.read())
+
 setup(
     name='storyboard',
-    version='0.1a1',
+    version=__version__,
     description='Customizable video storyboard generator with metadata report',
     long_description=long_description,
     url='https://github.com/zmwangx/storyboard',
