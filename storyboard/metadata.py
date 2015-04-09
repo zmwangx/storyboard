@@ -14,6 +14,8 @@ import math
 import os
 import re
 import subprocess
+import sys
+import time
 
 def _round_up(number, ndigits=0):
     """Round a nonnegative number UPWARD to a given precision in decimal digits.
@@ -51,6 +53,157 @@ def _evaluate_ratio(ratio_str):
         denominator = int(match.group(2))
         return numerator / denominator
     return None
+
+def _humansize(size):
+    """Return a human readable string of the given size in bytes."""
+    multiplier = 1024.0
+    if size < multiplier:
+        return "%dB" % size
+    for unit in ['Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
+        size /= multiplier
+        if size < multiplier:
+            if size < 10:
+                return "%.2f%sB" % (_round_up(size, 2), unit)
+            elif size < 100:
+                return "%.1f%sB" % (_round_up(size, 1), unit)
+            else:
+                return "%.0f%sB" % (_round_up(size, 0), unit)
+            break
+    else:
+        return "%.1f%sB" % (_round_up(size, 1), unit)
+
+def _humantime(seconds, ndigits=2, one_hour_digit=False):
+    """Return a human readable string of the given duration in seconds.
+
+    Keyword arguments:
+    ndigits - number of digits after the decimal point for the seconds part,
+              default is 2
+    one_hour_digit - if True, only print one hour digit; default is two hour
+                     digits
+    """
+    hh = int(seconds) // 3600 # hours
+    mm = (int(seconds) // 60) % 60 # minutes
+    ss = seconds - (int(seconds) // 60) * 60 # seconds
+    hh_format = "%01d" if one_hour_digit else "%02d"
+    mm_format = "%02d"
+    ss_format = "%02d" if ndigits == 0 else \
+                "%0{0}.{1}f".format(ndigits + 3, ndigits)
+    format_string = "{0}:{1}:{2}".format(hh_format, mm_format, ss_format)
+    return format_string % (hh, mm, ss)
+
+_PROGRESS_UPDATE_INTERVAL = 1.0
+class ProgressBar(object):
+    """Progress bar for file processing.
+
+    Format inspired by pv(1) (pipe viewer).
+    """
+
+    def __init__(self, totalsize, interval = _PROGRESS_UPDATE_INTERVAL):
+        self.totalsize = totalsize
+        self.processed = 0
+        self.last_processed = 0
+        self.start = time.time()
+        self.last = self.start
+        self.elapsed = None # to be set after finishing
+        # calculate bar length
+        try:
+            ncol, _ = os.get_terminal_size()
+        except AttributeError:
+            # python2 do not have os.get_terminal_size
+            # assume a minimum of 80 columns
+            ncol = 80
+        self.barlen = (ncol - 47) if ncol >= 57 else 10
+        # generate the format string for a progress bar line
+        #
+        # 0: processed size, e.g., 2.02GiB
+        # 1: elapsed time (7 chars), e.g., 0:00:04
+        # 2: current processing speed, e.g., 424MiB (/s is already hardcoded)
+        # 3: the bar, in the form "=====>   "
+        # 4: number of percent done, e.g., 99
+        # 5: estimated time remaining (11 chars), in the form "ETA H:MM:SS"; if
+        #    finished, fill with space
+        self.fmtstr = '{0:>7s} {1} [{2:>7s}/s] [{3}] {4:>3s}% {5}\r'
+
+    def update(self, chunk_size):
+        """Update the progress bar for the newly processed chunk.
+
+        Keyword arguments:
+        chunk_size: the size of the new chunk since the last update
+        """
+        self.processed += chunk_size
+        if self.processed > self.totalsize:
+            self.processed = self.totalsize
+        self._update_output()
+
+    def refresh(self, processed_size):
+        """Refresh the progress bar with the updated processed size.
+
+        Keyword arguments:
+        processed_size: size of the processed part of the file, overwrites
+                        existing value
+        """
+        self.processed = processed_size
+        if self.processed > self.totalsize:
+            self.processed = self.totalsize
+        self._update_output()
+
+    def finish(self):
+        self.elapsed = time.time() - self.start
+        self.processed = self.totalsize
+        self.last = None
+        self.last_processed = None
+
+        processed_s = _humansize(self.totalsize)
+        elapsed_s = self._humantime(self.elapsed)
+        speed_s = _humansize(self.totalsize / self.elapsed)
+        bar = '=' * (self.barlen - 1) + '>'
+        percent_s = '100'
+        eta_s = ' ' * 11
+        sys.stderr.write(self.fmtstr.format(
+            processed_s, elapsed_s, speed_s, bar, percent_s, eta_s
+        ))
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+
+    def _update_output(self):
+        if time.time() - self.last < 1:
+            return
+
+        # speed in the last second
+        speed = (self.processed - self.last_processed) / \
+                (time.time() - self.last) # bytes per second
+        # update last stats for the next update
+        self.last = time.time()
+        self.last_processed = self.processed
+
+        # _s suffix stands for string
+        processed_s = _humansize(self.processed)
+        elapsed_s = self._humantime(time.time() - self.start)
+        speed_s = _humansize(speed)
+        percentage = self.processed / self.totalsize # absolute
+        percent_s = str(int(percentage * 100))
+        # generate bar
+        length = int(round(self.barlen * percentage))
+        fill = self.barlen - length
+        if length == 0:
+            bar = " " * self.barlen
+        else:
+            bar = '=' * (length - 1) + '>' + ' ' * fill
+        # calculate ETA
+        remaining = self.totalsize - self.processed
+        # estimate based on current speed
+        eta = remaining / speed
+        eta_s = "ETA %s" % self._humantime(eta)
+
+        sys.stderr.write(self.fmtstr.format(
+            processed_s, elapsed_s, speed_s, bar, percent_s, eta_s
+        ))
+        sys.stderr.flush()
+
+    def _humantime(self, seconds):
+        # pylint: disable=no-self-use
+        """Customized _humantime"""
+        return _humantime(seconds, ndigits=0, one_hour_digit=True)
 
 class Stream(object):
     """Container for stream metadata."""
@@ -240,21 +393,7 @@ class Video(object):
         string in self.size_human.
         """
         self.size = int(self._ffprobe['format']['size'])
-        size = self.size
-        multiplier = 1024.0
-        if size < multiplier:
-            self.size_human = "%dB" % size
-            return
-        for unit in ['Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi']:
-            size /= multiplier
-            if size < multiplier:
-                if size < 10:
-                    self.size_human = "%.2f%sB" % (_round_up(size, 2), unit)
-                else:
-                    self.size_human = "%.1f%sB" % (_round_up(size, 1), unit)
-                break
-        else:
-            self.size_human = "%.1f%sB" % (_round_up(size, 1), unit)
+        self.size_human = _humansize(self.size)
 
     def _extract_duration(self):
         """Extract duration of the video.
@@ -263,21 +402,25 @@ class Video(object):
         readable string in self.duration_human.
         """
         self.duration = float(self._ffprobe['format']['duration'])
-        # pylint: disable=invalid-name
-        # t is a computation register
-        t = self.duration
-        hh = int(t) // 3600 # hours
-        mm = (int(t) // 60) % 60 # minutes
-        ss = t - (int(t) // 60) * 60 # seconds
-        self.duration_human = "%02d:%02d:%05.2f" % (hh, mm, ss)
+        self.duration_human = _humantime(self.duration)
 
-    def _extract_sha1sum(self):
+    _SHA_CHUNK_SIZE = 65536
+    def _extract_sha1sum(self, print_progress=False):
         """Extract SHA-1 hexdigest of the video file."""
         with open(self.path, 'rb') as video:
             sha1 = hashlib.sha1()
-            # hash video in 65536 byte chunks
-            for chunk in iter(lambda: video.read(65536), b''):
+            totalsize = os.path.getsize(self.path)
+            chunksize = self._SHA_CHUNK_SIZE
+
+            if print_progress:
+                pbar = ProgressBar(totalsize)
+            for chunk in iter(lambda: video.read(chunksize), b''):
                 sha1.update(chunk)
+                if print_progress:
+                    pbar.update(chunksize)
+            if print_progress:
+                pbar.finish()
+
             self.sha1sum = sha1.hexdigest()
 
     def _extract_scan_type(self, ffprobe_bin):
