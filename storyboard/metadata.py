@@ -47,7 +47,7 @@ class Video(object):
     # pylint: disable=too-many-instance-attributes
     # again, a video can have any number of metadata attributes
 
-    def __init__(self, video, ffprobe_bin='ffprobe'):
+    def __init__(self, video, ffprobe_bin='ffprobe', print_progress=False):
         self.path = os.path.abspath(video)
         if not os.path.exists(self.path):
             raise OSError("'" + video + "' does not exist")
@@ -55,6 +55,10 @@ class Video(object):
         if hasattr(self.filename, 'decode'):
             # python2 str
             self.filename = self.filename.decode('utf-8')
+
+        if print_progress:
+            sys.stderr.write("Processing %s\n" % self.filename)
+            sys.stderr.write("Crunching metadata...\n")
 
         self._call_ffprobe(ffprobe_bin)
         self._extract_container_format()
@@ -71,13 +75,15 @@ class Video(object):
         self.frame_rate_text = None
         self._extract_streams()
 
-    def compute_sha1sum(self):
+    def compute_sha1sum(self, print_progress=False):
         """Compute SHA-1 hex digest of the video file."""
         if not self.sha1sum:
-            self._extract_sha1sum()
+            if print_progress:
+                sys.stderr.write("Calculating SHA-1 digest...\n")
+            self._extract_sha1sum(print_progress)
         return self.sha1sum
 
-    def pretty_print_metadata(self, include_sha1sum=False):
+    def pretty_print_metadata(self, include_sha1sum=False, print_progress=False):
         """Pretty print video metadata.
 
         Keyword arguments:
@@ -85,6 +91,8 @@ class Video(object):
                         file -- defaults to false; keep in mind that computing
                         SHA-1 is an expansive operation, and is only done upon
                         request
+        print_progress: boolean, whether to print progress information to stderr
+                        -- defaults to false
 
         Returns: a string that can be printed directly
         """
@@ -101,7 +109,7 @@ class Video(object):
         s += "File size:              %d (%s)\n" % (self.size, self.size_human)
         # sha1sum
         if include_sha1sum:
-            self.compute_sha1sum()
+            self.compute_sha1sum(print_progress)
             s += "SHA-1 digest:           %s\n" % self.sha1sum
         # container format
         s += "Container format:       %s\n" % self.format
@@ -536,11 +544,24 @@ def main():
     parser.add_argument('--ffprobe-binary', '-f', default='ffprobe',
                         help="""the name/path of the ffprobe binary; default is
                         'ffprobe'""")
+    parser.add_argument('--quiet', '-q', action='store_true',
+                        help="""when enabled, suppress progress information and
+                        only print the metadata you ask for""")
     args = parser.parse_args()
+    ffprobe_bin = args.ffprobe_binary
+    include_sha1sum = args.include_sha1sum
+    print_progress = not(args.quiet)
     for video in args.videos:
         # pylint: disable=invalid-name
-        v = Video(video, args.ffprobe_binary)
-        print(v.pretty_print_metadata(include_sha1sum=args.include_sha1sum))
+        v = Video(video, ffprobe_bin=ffprobe_bin, print_progress=print_progress)
+        metadata_string = v.pretty_print_metadata(
+            include_sha1sum=include_sha1sum,
+            print_progress=print_progress
+        )
+        if print_progress:
+            # print one empty line to separate progress info and output content
+            sys.stderr.write("\n")
+        print(metadata_string)
         print('')
 
 if __name__ == "__main__":
