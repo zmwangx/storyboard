@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import pkg_resources
 import sys
 import tempfile
 
@@ -16,8 +17,6 @@ from PIL import Image, ImageDraw, ImageFont
 from storyboard import frame as Frame
 from storyboard import metadata
 from storyboard import util
-
-_SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
 # pylint: disable=too-many-locals,invalid-name
 # In this file we use a lot of short local variable names to save space.
@@ -149,9 +148,9 @@ class StoryBoard(object):
         Return value:
         Storyboard as a PIL.Image.Image image.
         """
-        # TO DO: check argument types and n * m = num_thumbnails
+        #! TO DO: check argument types and n * m = num_thumbnails
         if font is None:
-            font_file = _SCRIPT_PATH + '/SourceCodePro-Regular.otf'
+            font_file = pkg_resources.resource_filename(__name__, 'SourceCodePro-Regular.otf')
             font = ImageFont.truetype(font_file, size=16)
         if tile_aspect_ratio is None:
             tile_aspect_ratio = self.video.dar
