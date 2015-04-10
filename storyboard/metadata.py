@@ -65,7 +65,6 @@ class Video(object):
         self._extract_title()
         self._extract_size()
         self._extract_duration()
-        self._extract_scan_type(ffprobe_bin)
         self.sha1sum = None
         self.dimension = None
         self.dimension_text = None
@@ -74,6 +73,17 @@ class Video(object):
         self.frame_rate = None
         self.frame_rate_text = None
         self._extract_streams()
+
+        # detect if the file contains any video streams at all
+        # try to extract scan type only if it does
+        for stream in self.streams:
+            if stream.type == 'video':
+                break
+        else:
+            # no video stream
+            self.scan_type = None
+            return
+        self._extract_scan_type(ffprobe_bin)
 
     def compute_sha1sum(self, print_progress=False):
         """Compute SHA-1 hex digest of the video file."""
