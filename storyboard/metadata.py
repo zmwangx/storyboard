@@ -256,35 +256,91 @@ class Video(object):
     def _extract_scan_type(self, ffprobe_bin):
         """Determine the scan type of the video.
 
-        Progressive or interlaced scan. Saved in self.scan_type.
+        "Progressive scan", "Interlaced scan", or "Telecined video". Saved in
+        self.scan_type.
         """
-        # experimental feature
+        # Extract data of the first forty video frames with ffprobe.
         #
-        # Scan the first megabyte of the video and use FFprobe to determine if
-        # there are interlaced frames; if so, decide that the video is
-        # interlaced.
+        # If less than forty video frames are available, then either we are
+        # dealing with an audio file, or the video file is just too
+        # short. Either case we do not try to determine the scan type, and just
+        # set it to None.
         #
-        # This is of course a dirty hack and an oversimplification. For intance,
-        # there's no distinction between fully interlaced video and telecined
-        # video. (In fact I know little about telecine, so I don't have to plan
-        # to distinguish it.)
+        # Otherwise, we drop the first twenty frames (since there are sometimes
+        # junk frames at the beginning), and count the number of interlaced
+        # frames in the latter twenty frames. If they are all progressive or all
+        # interlaced, then the answer is obvious. If there are 8 interlaced
+        # frames out of 20, then it is highly probable that the video is
+        # telecined. Other than that it's pretty confusing, and I would just
+        # call it interlaced, since a deinterlacer might come in handy anyway.
+        #
+        # Note that this solution assumes that the output format of the relevant
+        # ffprobe command is
+        #
+        # {
+        #     "frames": [
+        #         { frame object ... },
+        #         { frame object ... },
+        #         ...
+        #
+        # See https://github.com/zmwangx/storyboard/issues/11 for details.
 
-        # read first megabyte of the video
-        with open(self.path, 'rb') as video:
-            head = video.read(1000000)
-        # pass the first megabyte to ffprobe
-        ffprobe_args = [ffprobe_bin,
-                        '-select_streams', 'v',
-                        '-show_frames',
-                        '-']
+        ffprobe_args = [
+            ffprobe_bin,
+            '-select_streams', 'v',
+            '-show_frames',
+            '-print_format', 'json',
+            self.path,
+        ]
         proc = subprocess.Popen(ffprobe_args,
-                                stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        ffprobe_out, _ = proc.communicate(input=head)
-        if b'interlaced_frame=1' in ffprobe_out:
-            self.scan_type = 'Interlaced scan'
+        lines = iter(proc.stdout.readline, b'')
+        # skip two lines
+        lines.__next__()
+        lines.__next__()
+        # empty string for incremental storage of json object
+        obj_str = ''
+        objs = []
+        for line in lines:
+            obj_str += line.decode('utf-8').strip()
+            try:
+                # a complete frame object might be followed by a comma in the
+                # array
+                if obj_str[-1] == ',':
+                    objs.append(json.loads(obj_str[0:-1]))
+                else:
+                    objs.append(json.loads(obj_str))
+                obj_str = ''
+                if len(objs) >= 40:
+                    proc.terminate()
+                    break
+            except ValueError:
+                # incomplete frame object
+                pass
+        if len(objs) < 40:
+            # frame count less than 40, either file is audio or file is video
+            # but too short
+            self.scan_type = None
+            return
+
+        # drop the first half of the frame objects
+        frames = objs[20:]
+        # count interlaced frames in the remaining 20 frames
+        num_interlaced = 0
+        for frame in frames:
+            if 'interlaced_frame' in frame:
+                num_interlaced += frame['interlaced_frame']
+
+        if num_interlaced == 0:
+            self.scan_type = "Progressive scan"
+        elif num_interlaced == 20:
+            self.scan_type = "Interlaced scan"
+        elif num_interlaced == 8:
+            # telecined, 3:2 pull down
+            self.scan_type = "Telecined video"
         else:
-            self.scan_type = 'Progressive scan'
+            # confused, see #11
+            self.scan_type = "Interlaced scan"
 
     def _process_video_stream(self, stream):
         """Process video stream.
