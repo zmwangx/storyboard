@@ -296,8 +296,14 @@ class Video(object):
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         lines = iter(proc.stdout.readline, b'')
         # skip two lines
-        lines.__next__()
-        lines.__next__()
+        if hasattr(lines, '__next__'):
+            # py3k iterator has __next__
+            lines.__next__()
+            lines.__next__()
+        else:
+            # python2 iterator has next
+            lines.next()
+            lines.next()
         # empty string for incremental storage of json object
         obj_str = ''
         objs = []
