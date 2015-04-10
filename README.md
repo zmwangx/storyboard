@@ -21,13 +21,13 @@
 
 ## Sample storyboards
 
-Generated from [`10987b4`](https://github.com/zmwangx/storyboard/commit/10987b4) with default settings (click for full resolution):
+Generated from [58ba702](https://github.com/zmwangx/storyboard/commit/58ba702) with default settings (click for full resolution):
 
-[![](http://i.imgur.com/QHPgAZA.jpg)](http://i.imgur.com/AuGJBoA.jpg)
+[![](https://i.imgur.com/FEB56cq.jpg)](http://i.imgur.com/9T2zM8R.jpg)
 
 (Proprietary video by Apple, available from <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>.)
 
-[![](http://i.imgur.com/zGHJUuf.jpg)](http://i.imgur.com/PbPGyvT.jpg)
+[![](http://i.imgur.com/f8J5ZRJ.jpg)](http://i.imgur.com/l5nrxKD.jpg)
 
 (CC0 video by FSF, available from <https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv>.)
 
@@ -68,7 +68,7 @@ Note that prereleases need to be installed with the `--pre` option, so be sure t
 
 ## Command-line usage
 
-The package installs two console scripts, `metadata` and `storyboard`. Usage of both scripts can be found using the `-h,--help` option. **Note that CLIs are currently extremely primitive.** To generate customized storyboards, one needs to write one's own wrapper around the API (which is well-documented in the source code). I plan to improve the CLI in future releases, exposing more features and printing more information to the console.
+The package installs two console scripts, `metadata` and `storyboard`. Usage of both scripts can be found using the `-h,--help` option. **Note that CLIs are currently extremely primitive.** To generate customized storyboards, one needs to write one's own wrapper around the API (which is well-documented in the source code). I plan to improve the CLI in future releases and expose more features.
 
 ### `metadata`
 

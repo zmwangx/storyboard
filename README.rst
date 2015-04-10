@@ -1,3 +1,6 @@
+|Latest Version| |Supported Python versions| |Download format| |License|
+|Development Status|
+
 ``storyboard`` is a customizable video storyboard generator with
 metadata reporting directly embedded in the generated images, based on
 `FFmpeg <https://ffmpeg.org/>`__. Reported metadata fields include, but
@@ -22,19 +25,21 @@ Structure of this document
 -  Reporting issues
 -  Known issues
 -  License
+-  Changelog
 
 Sample storyboards
 ------------------
 
-Generated from ``10987b4`` with default settings (click for full
-resolution):
+Generated from
+`58ba702 <https://github.com/zmwangx/storyboard/commit/58ba702>`__ with
+default settings (click for full resolution):
 
-|image0|
+|image5|
 
 (Proprietary video by Apple, available from
 http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v.)
 
-|image1|
+|image6|
 
 (CC0 video by FSF, available from
 https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv.)
@@ -112,8 +117,8 @@ The package installs two console scripts, ``metadata`` and
 ``-h,--help`` option. **Note that CLIs are currently extremely
 primitive.** To generate customized storyboards, one needs to write
 one's own wrapper around the API (which is well-documented in the source
-code). I plan to improve the CLI in future releases, exposing more
-features and printing more information to the console.
+code). I plan to improve the CLI in future releases and expose more
+features.
 
 ``metadata``
 ~~~~~~~~~~~~
@@ -160,6 +165,11 @@ instructions on how to report issues related to an unknown codec.
 Known issues
 ------------
 
+-  Windows support is planned and already covered to some extent, but I
+   haven't tested this on Windows yet, not even once, so don't be
+   surprised if it doesn't work on Windows. Please report in the issue
+   tracker — that's very much appreciated.
+
 -  ``storyboard`` uses ``PIL.ImageFont`` from Pillow to draw text, which
    is rather primitive and only allows one font at a time (no fallback).
    The default font packaged is Source Code Pro Regular, which only
@@ -180,16 +190,16 @@ Known issues
    Hopefully you're using ASCII filenames anyway; if you're not, you
    really should.
 
--  ``metadata.py`` treats each codec separately, and list of supported
-   codecs is far from complete. If you encounter an audio/video/subtitle
-   codec that triggers stupid output, please report an issue or open a
-   pull request. **If it's not a commonly seen codec, please link to a
-   sample video with the relevant codec (cut it short with FFmpeg if
-   possible) so that I can inspect and test.**
+-  ``metadata.py`` treats each codec separately, and the list of
+   supported codecs is far from complete. If you encounter an
+   audio/video/subtitle codec that triggers stupid output, please report
+   an issue or open a pull request. **If it's not a commonly seen codec,
+   please link to a sample video with the relevant codec (cut it short
+   with FFmpeg if possible) so that I can inspect and test.**
 
 -  ``ffprobe`` might report the wrong duration for certain VOB or other
    videos, which screws up the whole thing. This will be addressed
-   later. See #3.
+   later. See `#3 <https://github.com/zmwangx/storyboard/issues/3>`__.
 
 License
 -------
@@ -202,7 +212,35 @@ family <https://adobe-fonts.github.io/source-code-pro/>`__. See
 Source code in this package is released under `the MIT
 license <http://opensource.org/licenses/MIT>`__.
 
-.. |image0| image:: http://i.imgur.com/QHPgAZA.jpg
-   :target: http://i.imgur.com/AuGJBoA.jpg
-.. |image1| image:: http://i.imgur.com/zGHJUuf.jpg
-   :target: http://i.imgur.com/PbPGyvT.jpg
+.. |Latest Version| image:: https://pypip.in/version/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
+.. |Supported Python versions| image:: https://pypip.in/py_versions/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
+.. |Download format| image:: https://pypip.in/format/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
+.. |License| image:: https://pypip.in/license/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
+.. |Development Status| image:: https://pypip.in/status/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
+.. |image5| image:: https://i.imgur.com/FEB56cq.jpg
+   :target: http://i.imgur.com/9T2zM8R.jpg
+.. |image6| image:: http://i.imgur.com/f8J5ZRJ.jpg
+   :target: http://i.imgur.com/l5nrxKD.jpg
+
+Changelog
+---------
+
+0.1a2
+~~~~~
+
+*Date: 2015-04-09*
+
+* Print progress information to console
+* Version info included in banner
+
+0.1a1
+~~~~~
+
+*Date: 2015-04-05*
+
+* Initial release
