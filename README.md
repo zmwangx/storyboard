@@ -93,7 +93,7 @@ which is a good alternative to `ffprobe`'s basic functionality. Compare this to 
 
 ### `storyboard`
 
-Currently, `storyboard` prints the path of the generated image to the console, which by default resides in one's `$TMPDIR`. One can then move it to a permanent place, or upload it to a image hosting site. Please wait for `storyboard` to finish before trying to move or open the image.
+Currently, `storyboard` prints the path of the generated image to the console, which by default resides in one's `$TMPDIR`. One can then move it to a permanent place, or upload it to a image hosting site.
 
 ## Reporting issues
 
