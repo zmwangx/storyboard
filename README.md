@@ -47,14 +47,13 @@ brew install ffmpeg
 
     Unfortunately, `avconv` and `avprobe` have incompatible interfaces with their FFmpeg counterparts, so there is no plan to support Libav. Fortunately, FFmpeg is making its come back to Ubuntu in [15.04 vivid](http://packages.ubuntu.com/vivid/ffmpeg).
 
-* [Pillow](https://python-pillow.github.io/), which will be automatically installed when one installs `storyboard` via `pip`. However, be advised that **some features of Pillow depend on external non-Python libraries; in particular, the `libjpeg` and `libfreetype` dependencies are required for `storyboard`.** Homebrew users are encouraged to install Pillow by
+* [Pillow](https://python-pillow.github.io/). Python Wheels of Pillow are provided for OS X and Windows on [PyPI](https://pypi.python.org/pypi/Pillow/), so it is usually enough to simply
 
     ```
-brew tap homebrew/python
-brew install Pillow --with-python3
+pip install Pillow
 ```
 
-    (which automatically satisfies the `libjpeg` and `libfreetype` dependencies) and non-Homebrew users are encouraged to [check dependencies](https://pillow.readthedocs.org/installation.html#external-libraries) manually.
+    However, it is recommended that you also satisfy the external dependencies, especially `libjpeg` and `libfreetype`, on OS X and Linux. See [the official installation guide](https://pillow.readthedocs.org/installation.html) for details.
 
 ## Installation
 
@@ -101,7 +100,7 @@ Please report issues or browse a list of known issues at <https://github.com/zmw
 
 ## Known issues
 
-* Windows support is planned and already covered to some extent, but I haven't tested this on Windows yet, not even once, so don't be surprised if it doesn't work on Windows. Please report in the issue tracker — that's very much appreciated.
+* Windows support is planned and already tested to some extent, but testing is limited since unlike OS X, Windows is not my primary platform. Please report any issue in the issue tracker — that's very much appreciated.
 
 * `storyboard` uses `PIL.ImageFont` from Pillow to draw text, which is rather primitive and only allows one font at a time (no fallback). The default font packaged is Source Code Pro Regular, which only draws its supported code points, and leave unknown code points as boxes. In particular, there is no CJK support, so CJK characters in video filenames won't come out very nice.
 
