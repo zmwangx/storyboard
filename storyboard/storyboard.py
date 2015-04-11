@@ -314,6 +314,8 @@ def main():
         if print_progress:
             sys.stderr.write("Done. Generated storyboard saved to:\n")
         print(path)
+        if print_progress:
+            sys.stderr.write("\n")
 
 if __name__ == "__main__":
     main()
