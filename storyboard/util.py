@@ -99,7 +99,7 @@ _PROGRESS_UPDATE_INTERVAL = 1.0
 # 4: number of percent done, e.g., 99
 # 5: estimated time remaining (11 chars), in the form "ETA H:MM:SS"; if
 #    finished, fill with space
-_FORMAT_STRING = '{0:>7s} {1} [{2:>7s}/s] [{3}] {4:>3s}% {5}\r'
+_FORMAT_STRING = '\r{0:>7s} {1} [{2:>7s}/s] [{3}] {4:>3s}% {5}'
 class ProgressBar(object):
     """Progress bar for file processing.
 
@@ -147,7 +147,7 @@ class ProgressBar(object):
             # python2 do not have os.get_terminal_size
             # assume a minimum of 80 columns
             ncol = 80
-        self._barlen = (ncol - 47) if ncol >= 57 else 10
+        self._barlen = (ncol - 48) if ncol >= 58 else 10
 
     def update(self, chunk_size):
         """Update the progress bar for the newly processed chunk.
