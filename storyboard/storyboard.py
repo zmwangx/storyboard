@@ -84,8 +84,14 @@ class StoryBoard(object):
             if print_progress:
                 sys.stderr.write("\rCreating thumbnail %d/%d..." %
                                  (counter, num_thumbnails))
-            self.frames.append(Frame.extract_frame(video, timestamp,
-                                                   ffmpeg_bin, codec))
+            try:
+                self.frames.append(Frame.extract_frame(video, timestamp,
+                                                       ffmpeg_bin, codec))
+            except:
+                # \rCreating thumbnail %d/%d... isn't terminated by newline yet
+                if print_progress:
+                    sys.stderr.write("\n")
+                raise
         if print_progress:
             sys.stderr.write("\n")
 
@@ -296,13 +302,19 @@ def main():
         ffmpeg_bin = 'ffmpeg'
         ffprobe_bin = 'ffprobe'
 
+    returncode = 0
     for video in args.videos:
-        sb = StoryBoard(
-            video,
-            ffmpeg_bin=ffmpeg_bin,
-            ffprobe_bin=ffprobe_bin,
-            print_progress=print_progress,
-        )
+        try:
+            sb = StoryBoard(
+                video,
+                ffmpeg_bin=ffmpeg_bin,
+                ffprobe_bin=ffprobe_bin,
+                print_progress=print_progress,
+            )
+        except (OSError, ValueError) as err:
+            sys.stderr.write("error: %s\n\n" % str(err))
+            returncode = 1
+            continue
 
         storyboard = sb.storyboard(
             include_sha1sum=include_sha1sum,
@@ -316,6 +328,7 @@ def main():
         print(path)
         if print_progress:
             sys.stderr.write("\n")
+    return returncode
 
 if __name__ == "__main__":
-    main()
+    exit(main())

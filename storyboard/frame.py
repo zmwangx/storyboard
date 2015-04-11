@@ -62,7 +62,8 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
         sys.stderr.write(msg)
 
     if not frame_bytes:
-        msg = "ffmpeg generated no output (timestamp might be out of range)"
+        msg = "ffmpeg generated no output " + \
+              "(timestamp %.2f might be out of range)" % timestamp
         raise ValueError(msg)
 
     try:

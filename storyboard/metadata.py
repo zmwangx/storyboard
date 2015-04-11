@@ -149,16 +149,16 @@ class Video(object):
         ffprobe is called with -show_format and -show_streams options.
         """
         ffprobe_args = [ffprobe_bin,
-                        '-loglevel', 'fatal',
                         '-print_format', 'json',
                         '-show_format', '-show_streams',
+                        '-hide_banner',
                         self.path]
         proc = subprocess.Popen(ffprobe_args,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ffprobe_out, ffprobe_err = proc.communicate()
         if proc.returncode != 0:
-            msg = "ffprobe failed on '%s'\n%s" %(self.path, ffprobe_err)
-            msg = msg.strip()
+            msg = "ffprobe failed on '%s'\nffprobe error message:\n%s" %\
+                  (self.path, ffprobe_err.strip().decode('utf-8'))
             raise OSError(msg)
         self._ffprobe = json.loads(ffprobe_out.decode('utf-8'))
 
@@ -634,9 +634,18 @@ def main():
     ffprobe_bin = args.ffprobe_binary
     include_sha1sum = args.include_sha1sum
     print_progress = not(args.quiet)
+
+    returncode = 0
     for video in args.videos:
         # pylint: disable=invalid-name
-        v = Video(video, ffprobe_bin=ffprobe_bin, print_progress=print_progress)
+        try:
+            v = Video(video, ffprobe_bin=ffprobe_bin,
+                      print_progress=print_progress)
+        except OSError as err:
+            sys.stderr.write("error: %s\n\n" % str(err))
+            returncode = 1
+            continue
+
         metadata_string = v.pretty_print_metadata(
             include_sha1sum=include_sha1sum,
             print_progress=print_progress
@@ -646,6 +655,7 @@ def main():
             sys.stderr.write("\n")
         print(metadata_string)
         print('')
+    return returncode
 
 if __name__ == "__main__":
-    main()
+    exit(main())
