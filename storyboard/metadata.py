@@ -83,7 +83,7 @@ class Video(object):
             # no video stream
             self.scan_type = None
             return
-        self._extract_scan_type(ffprobe_bin)
+        self._extract_scan_type(ffprobe_bin, print_progress)
 
     def compute_sha1sum(self, print_progress=False):
         """Compute SHA-1 hex digest of the video file."""
@@ -253,7 +253,7 @@ class Video(object):
 
             self.sha1sum = sha1.hexdigest()
 
-    def _extract_scan_type(self, ffprobe_bin):
+    def _extract_scan_type(self, ffprobe_bin, print_progress=False):
         """Determine the scan type of the video.
 
         "Progressive scan", "Interlaced scan", or "Telecined video". Saved in
@@ -285,6 +285,9 @@ class Video(object):
         #
         # See https://github.com/zmwangx/storyboard/issues/11 for details.
 
+        if print_progress:
+            sys.stderr.write("Trying to determine scan type...\n")
+
         ffprobe_args = [
             ffprobe_bin,
             '-select_streams', 'v',
@@ -307,6 +310,7 @@ class Video(object):
         # empty string for incremental storage of json object
         obj_str = ''
         objs = []
+        counter = 0
         for line in lines:
             obj_str += line.decode('utf-8').strip()
             try:
@@ -316,6 +320,11 @@ class Video(object):
                     objs.append(json.loads(obj_str[0:-1]))
                 else:
                     objs.append(json.loads(obj_str))
+
+                counter += 1
+                if print_progress:
+                    sys.stderr.write("\rInspecting frame %d/40..." % counter)
+
                 obj_str = ''
                 if len(objs) >= 40:
                     proc.terminate()
@@ -323,6 +332,8 @@ class Video(object):
             except ValueError:
                 # incomplete frame object
                 pass
+        if print_progress:
+            sys.stderr.write("\n")
         if len(objs) < 40:
             # frame count less than 40, either file is audio or file is video
             # but too short
