@@ -8,7 +8,6 @@ from __future__ import print_function
 import io
 import os
 import subprocess
-import sys
 
 from PIL import Image
 
@@ -40,35 +39,35 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
     A Frame object with the timestamp and the frame image as a PIL.Image.Image
     instance.
     """
-    command = [ffmpeg_bin,
-               '-ss', str(timestamp),
-               '-i', video,
-               '-f', 'image2',
-               '-vcodec', codec,
-               '-vframes', '1',
-               '-']
-
     if not os.path.exists(video):
         raise OSError("video file '" + video + "' does not exist")
 
-    # pylint: disable=unused-variable
-    # the exception object err might be useful in the future
-    try:
-        frame_bytes = subprocess.check_output(command,
-                                              stderr=open(os.devnull, "w"))
-    except subprocess.CalledProcessError as err:
-        msg = "error: failed to extract frame at time %.2f from video '%s'\n" %\
-              (timestamp, video)
-        sys.stderr.write(msg)
+    ffmpeg_args = [ffmpeg_bin,
+                   '-ss', str(timestamp),
+                   '-i', video,
+                   '-f', 'image2',
+                   '-vcodec', codec,
+                   '-vframes', '1',
+                   '-hide_banner',
+                   '-']
+    proc = subprocess.Popen(ffmpeg_args,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    frame_bytes, ffmpeg_err = proc.communicate()
+    if proc.returncode != 0:
+        msg = ("ffmpeg failed to extract frame at time %.2f\n" +\
+               "ffmpeg error message:\n%s") %\
+              (timestamp, ffmpeg_err.strip().decode('utf-8'))
+        raise OSError(msg)
 
     if not frame_bytes:
+        # empty output, no frame generated
         msg = "ffmpeg generated no output " + \
               "(timestamp %.2f might be out of range)" % timestamp
-        raise ValueError(msg)
+        raise OSError(msg)
 
     try:
         frame_image = Image.open(io.BytesIO(frame_bytes))
     except IOError:
-        sys.exit("error: failed to open ffmpeg output with PIL.Image.open")
+        raise OSError("failed to open frame with PIL.Image.open")
 
     return Frame(timestamp, frame_image)

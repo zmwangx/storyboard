@@ -633,7 +633,7 @@ def main():
     args = parser.parse_args()
     ffprobe_bin = args.ffprobe_binary
     include_sha1sum = args.include_sha1sum
-    print_progress = not(args.quiet)
+    print_progress = not args.quiet
 
     returncode = 0
     for video in args.videos:

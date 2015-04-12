@@ -311,7 +311,7 @@ def main():
                 ffprobe_bin=ffprobe_bin,
                 print_progress=print_progress,
             )
-        except (OSError, ValueError) as err:
+        except OSError as err:
             sys.stderr.write("error: %s\n\n" % str(err))
             returncode = 1
             continue
