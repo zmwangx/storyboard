@@ -4,7 +4,7 @@
 [![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 
-`storyboard` is a customizable video storyboard generator with metadata reporting directly embedded in the generated images, based on [FFmpeg](https://ffmpeg.org/). Reported metadata fields include, but are not limited to, title, filename, file size, SHA-1 digest, container format, duration, pixel dimension, display aspect ratio (DAR), scan type (progressive or interlaced), frame rate, and per-stream metadata (type, codec, profile, dimensions, bitrate, etc.). See the samples below to get a feel for `storyboard`'s capabilities.
+`storyboard` is a customizable video storyboard generator with metadata reporting directly embedded in the generated images, based on [FFmpeg](https://ffmpeg.org/). Reported metadata fields include, but are not limited to, title, filename, file size, SHA-1 digest, container format, duration, pixel dimension, display aspect ratio (DAR), scan type (progressive, interlaced, or telecined), frame rate, and per-stream metadata (type, codec, profile, dimensions, bitrate, etc.). See the samples below to get a feel for `storyboard`'s capabilities.
 
 ## Structure of this document
 
@@ -74,7 +74,7 @@ The package installs two console scripts, `metadata` and `storyboard`. Usage of 
 `metadata` prints video metadata in a human-readable format, e.g. (for [this video](http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v)),
 
 ```
-Filename:               20150309-apple-special-event__c343d40.m4v
+Filename:               2015_mar_1080_cc.m4v
 File size:              6083965352 (5.67GiB)
 Container format:       MPEG-4 Part 14 (M4V)
 Duration:               01:34:45.27
@@ -83,9 +83,9 @@ Display aspect ratio:   16:9
 Scan type:              Progressive scan
 Frame rate:             29.97 fps
 Streams:
-#0: Audio (eng), AAC (Low Complexity), 99 kb/s
-#1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
-#2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
+    #0: Audio (eng), AAC (Low Complexity), 99 kb/s
+    #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
+    #2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
 ```
 
 which is a good alternative to `ffprobe`'s basic functionality. Compare this to the mess that `ffprobe -hide_banner` prints (see [this gist](https://gist.github.com/zmwangx/ee8986c2f0596f1ebbb0)).

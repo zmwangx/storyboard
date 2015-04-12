@@ -49,7 +49,7 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
                '-']
 
     if not os.path.exists(video):
-        raise IOError("video file '" + video + "' does not exist")
+        raise OSError("video file '" + video + "' does not exist")
 
     # pylint: disable=unused-variable
     # the exception object err might be useful in the future
@@ -68,7 +68,7 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
 
     try:
         frame_image = Image.open(io.BytesIO(frame_bytes))
-    except IOError as err:
+    except IOError:
         sys.exit("error: failed to open ffmpeg output with PIL.Image.open")
 
     return Frame(timestamp, frame_image)
