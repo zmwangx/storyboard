@@ -71,6 +71,8 @@ def humansize(size):
 def humantime(seconds, ndigits=2, one_hour_digit=False):
     """Return a human readable string of the given duration in seconds.
 
+    Raises ValueError if seconds is negative.
+
     Keyword arguments:
     ndigits - number of digits after the decimal point for the seconds part,
               default is 2
@@ -78,6 +80,10 @@ def humantime(seconds, ndigits=2, one_hour_digit=False):
                      digits
     """
     # pylint: disable=invalid-name
+    if seconds < 0:
+        raise ValueError("seconds=%f is negative, " \
+                         "expected nonnegative value" % seconds)
+
     hh = int(seconds) // 3600 # hours
     mm = (int(seconds) // 60) % 60 # minutes
     ss = seconds - (int(seconds) // 60) * 60 # seconds
