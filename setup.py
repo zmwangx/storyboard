@@ -53,4 +53,5 @@ setup(
             'metadata=storyboard.metadata:main',
         ]
     },
+    test_suite='tests',
 )

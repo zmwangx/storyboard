@@ -66,7 +66,7 @@ class StoryBoard(object):
         self.video = metadata.Video(
             video,
             ffprobe_bin=ffprobe_bin,
-            print_progress=True,
+            print_progress=print_progress,
         )
         self.frames = []
         duration = self.video.duration
