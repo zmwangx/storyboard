@@ -10,7 +10,7 @@ with open(os.path.join(here, 'README.rst'), 'r') as f:
     long_description = f.read()
 
 # read version from version.py and save in __version__
-with open(os.path.join(here, 'storyboard', 'version.py')) as f:
+with open(os.path.join(here, 'src', 'storyboard', 'version.py')) as f:
     exec(f.read())
 
 setup(
@@ -38,6 +38,7 @@ setup(
     ],
     keywords='video storyboard metadata thumbnail ffmpeg',
     packages=['storyboard'],
+    package_dir={'':'src'},
     install_requires=[
         'Pillow>=2.7',
     ],
