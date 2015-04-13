@@ -14,6 +14,7 @@ import tempfile
 
 from PIL import Image, ImageDraw, ImageFont
 
+from storyboard import fflocate
 from storyboard import frame as Frame
 from storyboard import metadata
 from storyboard import util
@@ -294,13 +295,15 @@ def main():
     # process arguments
     include_sha1sum = True #! for the moment
     print_progress = True #! for the moment
-    # detect OS, and if Windows, append .exe to the executables
-    if os.name == 'nt':
-        ffmpeg_bin = 'ffmpeg.exe'
-        ffprobe_bin = 'ffprobe.exe'
-    else:
-        ffmpeg_bin = 'ffmpeg'
-        ffprobe_bin = 'ffprobe'
+    # detect ffmpeg and ffprobe binaries
+    #! guessing for the moment
+    #! will consider command line options and config file
+    ffmpeg_bin, ffprobe_bin = fflocate.guess_bins()
+    try:
+        fflocate.check_bins((ffmpeg_bin, ffprobe_bin))
+    except OSError as err:
+        sys.stderr.write("fatal error: %s\n" % str(err))
+        return 1
 
     returncode = 0
     for video in args.videos:
