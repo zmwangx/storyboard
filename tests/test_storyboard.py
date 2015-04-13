@@ -8,7 +8,7 @@ import unittest
 from storyboard import fflocate
 from storyboard.storyboard import *
 
-class TestMetadata(unittest.TestCase):
+class TestStoryBoard(unittest.TestCase):
 
     def setUp(self):
         _, self.videofile = tempfile.mkstemp(prefix='storyboard-test-',
