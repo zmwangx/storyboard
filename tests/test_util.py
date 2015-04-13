@@ -19,12 +19,12 @@ class TestUtil(unittest.TestCase):
     def test_evaluate_ratio(self):
         self.assertAlmostEqual(evaluate_ratio('15:20'), 3/4)
         self.assertAlmostEqual(evaluate_ratio('15/20'), 3/4)
-        self.assertIs(evaluate_ratio('0:1'), None)
-        self.assertIs(evaluate_ratio('1:0'), None)
-        self.assertIs(evaluate_ratio('0:0'), None)
-        self.assertIs(evaluate_ratio('0/1'), None)
-        self.assertIs(evaluate_ratio('1/0'), None)
-        self.assertIs(evaluate_ratio('0/0'), None)
+        self.assertIsNone(evaluate_ratio('0:1'))
+        self.assertIsNone(evaluate_ratio('1:0'))
+        self.assertIsNone(evaluate_ratio('0:0'))
+        self.assertIsNone(evaluate_ratio('0/1'))
+        self.assertIsNone(evaluate_ratio('1/0'))
+        self.assertIsNone(evaluate_ratio('0/0'))
 
     def test_humansize(self):
         self.assertEqual(humansize(1), '1B')

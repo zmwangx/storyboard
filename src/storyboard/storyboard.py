@@ -7,7 +7,6 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import os
 import pkg_resources
 import sys
 import tempfile
