@@ -3,6 +3,7 @@
 [![Download format](https://pypip.in/format/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Code Health](https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat)](https://landscape.io/github/zmwangx/storyboard/master)
 
 `storyboard` is a customizable video storyboard generator with metadata reporting directly embedded in the generated images, based on [FFmpeg](https://ffmpeg.org/). Reported metadata fields include, but are not limited to, title, filename, file size, SHA-1 digest, container format, duration, pixel dimension, display aspect ratio (DAR), scan type (progressive, interlaced, or telecined), frame rate, and per-stream metadata (type, codec, profile, dimensions, bitrate, etc.). See the samples below to get a feel for `storyboard`'s capabilities.
 
@@ -47,7 +48,7 @@ brew install ffmpeg
 
     Unfortunately, `avconv` and `avprobe` have incompatible interfaces with their FFmpeg counterparts, so there is no plan to support Libav. Fortunately, FFmpeg is making its come back to Ubuntu in [15.04 vivid](http://packages.ubuntu.com/vivid/ffmpeg).
 
-* [Pillow](https://python-pillow.github.io/). Python Wheels of Pillow are provided for OS X and Windows on [PyPI](https://pypi.python.org/pypi/Pillow/), so it is usually enough to simply
+* [Pillow](https://python-pillow.github.io/). Python wheels of Pillow are provided for OS X and Windows on [PyPI](https://pypi.python.org/pypi/Pillow/), so it is usually enough to simply
 
     ```
 pip install Pillow
