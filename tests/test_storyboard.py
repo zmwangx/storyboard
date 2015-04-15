@@ -8,13 +8,14 @@ import unittest
 from storyboard import fflocate
 from storyboard.storyboard import *
 
+
 class TestStoryBoard(unittest.TestCase):
 
     def setUp(self):
         _, self.videofile = tempfile.mkstemp(prefix='storyboard-test-',
                                              suffix='.mp4')
         bins = fflocate.guess_bins()
-        fflocate.check_bins(bins) # error if bins do not exist
+        fflocate.check_bins(bins)  # error if bins do not exist
         self.ffmpeg_bin, self.ffprobe_bin = bins
         with open(os.devnull, 'wb') as devnull:
             command = [
@@ -39,6 +40,7 @@ class TestStoryBoard(unittest.TestCase):
             include_sha1sum=True,
             print_progress=False,
         )
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,6 +16,7 @@ import sys
 
 from storyboard import util
 
+
 class Stream(object):
     """Container for stream metadata."""
 
@@ -38,8 +39,9 @@ class Stream(object):
         self.dimension_text = None
         self.frame_rate = None
         self.frame_rate_text = None
-        self.dar = None # display aspect ratio
+        self.dar = None  # display aspect ratio
         self.dar_text = None
+
 
 class Video(object):
     """Container for video and streams metadata."""
@@ -93,16 +95,17 @@ class Video(object):
             self._extract_sha1sum(print_progress)
         return self.sha1sum
 
-    def pretty_print_metadata(self, include_sha1sum=False, print_progress=False):
+    def pretty_print_metadata(self, include_sha1sum=False,
+                              print_progress=False):
         """Pretty print video metadata.
 
         Keyword arguments:
-        includ_sha1sum: boolean, whether to include SHA-1 hexdigest of the video
-                        file -- defaults to false; keep in mind that computing
-                        SHA-1 is an expansive operation, and is only done upon
-                        request
-        print_progress: boolean, whether to print progress information to stderr
-                        -- defaults to false
+        includ_sha1sum: boolean, whether to include SHA-1 hexdigest of the
+                        video file -- defaults to false; keep in mind that
+                        computing SHA-1 is an expansive operation, and is only
+                        done upon request
+        print_progress: boolean, whether to print progress information to
+                        stderr -- defaults to false
 
         Returns: a string that can be printed directly
         """
@@ -235,6 +238,7 @@ class Video(object):
         self.duration_human = util.humantime(self.duration)
 
     _SHA_CHUNK_SIZE = 65536
+
     def _extract_sha1sum(self, print_progress=False):
         """Extract SHA-1 hexdigest of the video file."""
         with open(self.path, 'rb') as video:
@@ -268,14 +272,14 @@ class Video(object):
         #
         # Otherwise, we drop the first twenty frames (since there are sometimes
         # junk frames at the beginning), and count the number of interlaced
-        # frames in the latter twenty frames. If they are all progressive or all
-        # interlaced, then the answer is obvious. If there are 8 interlaced
+        # frames in the latter twenty frames. If they are all progressive or
+        # all interlaced, then the answer is obvious. If there are 8 interlaced
         # frames out of 20, then it is highly probable that the video is
         # telecined. Other than that it's pretty confusing, and I would just
         # call it interlaced, since a deinterlacer might come in handy anyway.
         #
-        # Note that this solution assumes that the output format of the relevant
-        # ffprobe command is
+        # Note that this solution assumes that the output format of the
+        # relevant ffprobe command is
         #
         # {
         #     "frames": [
@@ -438,7 +442,7 @@ class Video(object):
 
         if s.frame_rate is not None:
             fps = s.frame_rate
-            if abs(fps - int(fps)) < 0.0001: # integer
+            if abs(fps - int(fps)) < 0.0001:  # integer
                 s.frame_rate_text = '%d fps' % int(fps)
             else:
                 s.frame_rate_text = "%.2f fps" % fps
@@ -617,6 +621,7 @@ class Video(object):
         for stream in self._ffprobe['streams']:
             self.streams.append(self._process_stream(stream))
 
+
 def main():
     """CLI interface."""
     parser = argparse.ArgumentParser(description="Print video metadata.")
@@ -656,6 +661,7 @@ def main():
         print(metadata_string)
         print('')
     return returncode
+
 
 if __name__ == "__main__":
     exit(main())

@@ -5,16 +5,19 @@
 import os
 import subprocess
 
+
 def guess_bins():
     """Guess ffmpeg and ffprobe binary names based on OS.
 
     Returns a tuple (ffmpeg_bin, ffprobe_bin) of two strings, where ffmpeg_bin
-    is the guessed ffmpeg binary, and ffprobe_bin is the guessed ffprobe binary.
+    is the guessed ffmpeg binary, and ffprobe_bin is the guessed ffprobe
+    binary.
     """
     if os.name == 'nt':
         return ('ffmpeg.exe', 'ffprobe.exe')
     else:
         return ('ffmpeg', 'ffprobe')
+
 
 def check_bins(bins):
     """Check existance of ffmpeg and ffprobe binaries.

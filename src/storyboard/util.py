@@ -12,6 +12,7 @@ import re
 import sys
 import time
 
+
 def round_up(number, ndigits=0):
     """Round a nonnegative number UPWARD to a given precision in decimal digits.
 
@@ -24,9 +25,12 @@ def round_up(number, ndigits=0):
     multiplier = 10 ** ndigits
     return math.ceil(number * multiplier) / multiplier
 
+
 # patterns numerator:denominator and numerator/denominator
 _NUM_COLON_DEN = re.compile(r'^([1-9][0-9]*):([1-9][0-9]*)$')
 _NUM_SLASH_DEN = re.compile(r'^([1-9][0-9]*)/([1-9][0-9]*)$')
+
+
 def evaluate_ratio(ratio_str):
     """Evaluate ratio in the form num:den or num/den.
 
@@ -50,6 +54,7 @@ def evaluate_ratio(ratio_str):
         return numerator / denominator
     return None
 
+
 def humansize(size):
     """Return a human readable string of the given size in bytes."""
     multiplier = 1024.0
@@ -68,6 +73,7 @@ def humansize(size):
     else:
         return "%.1f%sB" % (round_up(size, 1), unit)
 
+
 def humantime(seconds, ndigits=2, one_hour_digit=False):
     """Return a human readable string of the given duration in seconds.
 
@@ -81,18 +87,19 @@ def humantime(seconds, ndigits=2, one_hour_digit=False):
     """
     # pylint: disable=invalid-name
     if seconds < 0:
-        raise ValueError("seconds=%f is negative, " \
+        raise ValueError("seconds=%f is negative, "
                          "expected nonnegative value" % seconds)
 
-    hh = int(seconds) // 3600 # hours
-    mm = (int(seconds) // 60) % 60 # minutes
-    ss = seconds - (int(seconds) // 60) * 60 # seconds
+    hh = int(seconds) // 3600  # hours
+    mm = (int(seconds) // 60) % 60  # minutes
+    ss = seconds - (int(seconds) // 60) * 60  # seconds
     hh_format = "%01d" if one_hour_digit else "%02d"
     mm_format = "%02d"
     ss_format = "%02d" if ndigits == 0 else \
                 "%0{0}.{1}f".format(ndigits + 3, ndigits)
     format_string = "{0}:{1}:{2}".format(hh_format, mm_format, ss_format)
     return format_string % (hh, mm, ss)
+
 
 # default progress bar update interval
 _PROGRESS_UPDATE_INTERVAL = 1.0
@@ -106,6 +113,8 @@ _PROGRESS_UPDATE_INTERVAL = 1.0
 # 5: estimated time remaining (11 chars), in the form "ETA H:MM:SS"; if
 #    finished, fill with space
 _FORMAT_STRING = '\r{0:>7s} {1} [{2:>7s}/s] [{3}] {4:>3s}% {5}'
+
+
 class ProgressBar(object):
     """Progress bar for file processing.
 
@@ -207,7 +216,7 @@ class ProgressBar(object):
 
         # speed in the last second
         speed = (self.processed - self._last_processed) / \
-                (time.time() - self._last) # bytes per second
+                (time.time() - self._last)  # bytes per second
         # update last stats for the next update
         self._last = time.time()
         self._last_processed = self.processed
@@ -216,7 +225,7 @@ class ProgressBar(object):
         processed_s = humansize(self.processed)
         elapsed_s = self.humantime(time.time() - self.start)
         speed_s = humansize(speed)
-        percentage = self.processed / self.totalsize # absolute
+        percentage = self.processed / self.totalsize  # absolute
         percent_s = str(int(percentage * 100))
         # generate bar
         length = int(round(self._barlen * percentage))

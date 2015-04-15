@@ -11,13 +11,14 @@ from storyboard import fflocate
 from storyboard.metadata import *
 from storyboard.util import humansize
 
+
 class TestMetadata(unittest.TestCase):
 
     def setUp(self):
         _, self.videofile = tempfile.mkstemp(prefix='storyboard-test-',
                                              suffix='.mp4')
         bins = fflocate.guess_bins()
-        fflocate.check_bins(bins) # error if bins do not exist
+        fflocate.check_bins(bins)  # error if bins do not exist
         self.ffmpeg_bin, self.ffprobe_bin = bins
         with open(os.devnull, 'wb') as devnull:
             command = [
@@ -69,6 +70,7 @@ class TestMetadata(unittest.TestCase):
         self.assertIsNone(stream.language_code)
         self.assertEqual(stream.type, 'video')
         self.assertEqual(stream.width, 320)
+
 
 if __name__ == '__main__':
     unittest.main()

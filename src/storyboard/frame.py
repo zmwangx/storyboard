@@ -11,6 +11,7 @@ import subprocess
 
 from PIL import Image
 
+
 class Frame(object):
     """Video frame object containing a timestamp and an image."""
     def __init__(self, timestamp, image):
@@ -21,13 +22,14 @@ class Frame(object):
         self.timestamp = timestamp
         self.image = image
 
+
 def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
     """Seek to a specified timestamp in the given video file and return the
     corresponding frame.
 
     Positional arguments:
     video      -- path to the video file
-    timestamp  -- an int or float in seconds specifying the timestamp to seek to
+    timestamp  -- int or float in seconds specifying the timestamp to seek to
 
     Keyword arguments:
     ffmpeg_bin -- name or path of the FFmpeg binary, e.g., \"ffmpeg.exe\" on
@@ -54,7 +56,7 @@ def extract_frame(video, timestamp, ffmpeg_bin='ffmpeg', codec='png'):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     frame_bytes, ffmpeg_err = proc.communicate()
     if proc.returncode != 0:
-        msg = ("ffmpeg failed to extract frame at time %.2f\n" +\
+        msg = ("ffmpeg failed to extract frame at time %.2f\n"
                "ffmpeg error message:\n%s") %\
               (timestamp, ffmpeg_err.strip().decode('utf-8'))
         raise OSError(msg)

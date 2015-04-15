@@ -7,6 +7,7 @@ import unittest
 
 from storyboard.util import *
 
+
 class TestUtil(unittest.TestCase):
 
     def test_round_up(self):
@@ -60,6 +61,7 @@ class TestUtil(unittest.TestCase):
         pbar.finish()
         self.assertEqual(sha1.hexdigest(),
                          '3b71f43ff30f4b15b5cd85dd9e95ebc7e84eb5a3')
+
 
 if __name__ == '__main__':
     unittest.main()

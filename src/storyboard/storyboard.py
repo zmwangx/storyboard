@@ -19,6 +19,7 @@ from storyboard import metadata
 from storyboard import util
 from storyboard.version import __version__
 
+
 # pylint: disable=too-many-locals,invalid-name
 # In this file we use a lot of short local variable names to save space.
 # These short variable names are carefully documented when not obvious.
@@ -52,12 +53,12 @@ def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
         y += line_height
     return (width, height)
 
+
 class StoryBoard(object):
     """Class for storing video thumbnails and metadata, and creating storyboard
     on request.
     """
-    # pylint: disable=bad-whitespace,too-few-public-methods
-    # Here we use a lot of extra space for alignment purposes.
+    # pylint: too-few-public-methods
 
     def __init__(self, video, num_thumbnails=16,
                  ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
@@ -70,10 +71,10 @@ class StoryBoard(object):
         self.frames = []
         duration = self.video.duration
 
-        # generate equally spaced timestamps at 1/2N, 3/2N, ... (2N-1)/2N of the
-        # video, where N is the number of thumbnails
+        # generate equally spaced timestamps at 1/2N, 3/2N, ... (2N-1)/2N of
+        # the video, where N is the number of thumbnails
         interval = duration / num_thumbnails
-        timestamps = [ interval/2 ]
+        timestamps = [interval/2]
         for _ in range(1, num_thumbnails):
             timestamps.append(timestamps[-1] + interval)
 
@@ -96,7 +97,7 @@ class StoryBoard(object):
             sys.stderr.write("\n")
 
     def storyboard(self,
-                   padding=(10,10), include_banner=True, print_progress=False,
+                   padding=(10, 10), include_banner=True, print_progress=False,
                    font=None, font_size=16, text_spacing=1.2,
                    text_color='black',
                    include_sha1sum=True,
@@ -155,9 +156,12 @@ class StoryBoard(object):
         Return value:
         Storyboard as a PIL.Image.Image image.
         """
-        #! TO DO: check argument types and n * m = num_thumbnails
+        # !TO DO: check argument types and n * m = num_thumbnails
         if font is None:
-            font_file = pkg_resources.resource_filename(__name__, 'SourceCodePro-Regular.otf')
+            font_file = pkg_resources.resource_filename(
+                __name__,
+                'SourceCodePro-Regular.otf'
+            )
             font = ImageFont.truetype(font_file, size=16)
         if tile_aspect_ratio is None:
             tile_aspect_ratio = self.video.dar
@@ -180,13 +184,14 @@ class StoryBoard(object):
         if include_banner:
             if print_progress:
                 sys.stderr.write("Drawing the bottom banner...\n")
-            banner = self._draw_banner(total_width, font, font_size, text_color)
-            total_height = storyboard.size[1] + meta_sheet.size[1] + \
-                           banner.size[1]
+            banner = self._draw_banner(total_width,
+                                       font, font_size, text_color)
+            total_height = (storyboard.size[1] + meta_sheet.size[1] +
+                            banner.size[1])
             # add padding
-            hp = padding[0] # horizontal padding
-            vp = padding[1] # vertical padding
-            total_width  += 2 * hp
+            hp = padding[0]  # horizontal padding
+            vp = padding[1]  # vertical padding
+            total_width += 2 * hp
             total_height += 2 * vp
             assembled = Image.new('RGBA', (total_width, total_height), 'white')
             if print_progress:
@@ -198,9 +203,9 @@ class StoryBoard(object):
         else:
             total_height = storyboard.size[1] + meta_sheet.size[1]
             # add padding
-            hp = padding[0] # horizontal padding
-            vp = padding[1] # vertical padding
-            total_width  += 2 * hp
+            hp = padding[0]  # horizontal padding
+            vp = padding[1]  # vertical padding
+            total_width += 2 * hp
             total_height += 2 * vp
             assembled = Image.new('RGBA', (total_width, total_height), 'white')
             assembled.paste(meta_sheet, (hp, vp))
@@ -213,22 +218,22 @@ class StoryBoard(object):
                          draw_timestamp,
                          font):
         """Draw the storyboard (thumbnails only)."""
-        horz_tiles   = tiling[0]
-        vert_tiles   = tiling[1]
-        tile_height  = int(tile_width / tile_aspect_ratio)
-        tile_size    = (tile_width, tile_height)
+        horz_tiles = tiling[0]
+        vert_tiles = tiling[1]
+        tile_height = int(tile_width / tile_aspect_ratio)
+        tile_size = (tile_width, tile_height)
         horz_spacing = tile_spacing[0]
         vert_spacing = tile_spacing[1]
-        total_width  = horz_tiles * (tile_width  + 2 * horz_spacing)
+        total_width = horz_tiles * (tile_width + 2 * horz_spacing)
         total_height = vert_tiles * (tile_height + 2 * vert_spacing)
-        storyboard   = Image.new('RGBA', (total_width, total_height), 'white')
+        storyboard = Image.new('RGBA', (total_width, total_height), 'white')
         if draw_timestamp:
             draw = ImageDraw.Draw(storyboard)
         for i in range(0, horz_tiles):
             for j in range(0, vert_tiles):
                 index = j * vert_tiles + i
                 frame = self.frames[index]
-                upperleft = (tile_width  * i + horz_spacing * (2 * i + 1), \
+                upperleft = (tile_width * i + horz_spacing * (2 * i + 1),
                              tile_height * j + vert_spacing * (2 * j + 1))
                 storyboard.paste(frame.image.resize(tile_size, Image.LANCZOS),
                                  upperleft)
@@ -254,16 +259,16 @@ class StoryBoard(object):
         """Draw the metadata sheet."""
         horz_spacing = tile_spacing[0]
         vert_spacing = tile_spacing[1]
-        text         = self.video.pretty_print_metadata(
+        text = self.video.pretty_print_metadata(
             include_sha1sum=include_sha1sum,
             print_progress=print_progress,
         )
-        num_lines    = len(text.splitlines())
-        total_height = int(round(font_size * text_spacing)) * num_lines + \
-                       vert_spacing * 3 # double verticle spacing at the bottom
-        upperleft    = (horz_spacing, vert_spacing)
-        meta_sheet   = Image.new('RGBA', (total_width, total_height), 'white')
-        draw         = ImageDraw.Draw(meta_sheet)
+        num_lines = len(text.splitlines())
+        total_height = (int(round(font_size * text_spacing)) * num_lines +
+                        vert_spacing * 3)  # double vert spacing at the bottom
+        upperleft = (horz_spacing, vert_spacing)
+        meta_sheet = Image.new('RGBA', (total_width, total_height), 'white')
+        draw = ImageDraw.Draw(meta_sheet)
         _draw_text_block(text, draw, upperleft,
                          text_color, font, font_size, text_spacing)
         return meta_sheet
@@ -272,16 +277,16 @@ class StoryBoard(object):
         """Draw the promotion banner."""
         # pylint: disable=no-self-use
         # This function is an integral part of the class.
-        text         = "Generated by storyboard version %s. " % __version__ +\
-                       "Fork me on GitHub: " +\
-                       "github.com/zmwangx/storyboard"
-        total_height = font_size + 3 * 2 # hard code vertical spacing in banner
-        banner       = Image.new('RGBA', (total_width, total_height), 'white')
-        draw         = ImageDraw.Draw(banner)
-        text_width   = draw.textsize(text, font=font)[0]
+        text = ("Generated by storyboard version %s. " % __version__ +
+                "Fork me on GitHub: github.com/zmwangx/storyboard")
+        total_height = font_size + 3 * 2  # hard code vert spacing in banner
+        banner = Image.new('RGBA', (total_width, total_height), 'white')
+        draw = ImageDraw.Draw(banner)
+        text_width = draw.textsize(text, font=font)[0]
         horz_spacing = (total_width - text_width) // 2
         draw.text((horz_spacing, 3), text, fill=text_color, font=font)
         return banner
+
 
 def main():
     """CLI interface."""
@@ -292,11 +297,11 @@ def main():
     args = parser.parse_args()
 
     # process arguments
-    include_sha1sum = True #! for the moment
-    print_progress = True #! for the moment
+    include_sha1sum = True  # ! for the moment
+    print_progress = True  # ! for the moment
     # detect ffmpeg and ffprobe binaries
-    #! guessing for the moment
-    #! will consider command line options and config file
+    # ! guessing for the moment
+    # ! will consider command line options and config file
     ffmpeg_bin, ffprobe_bin = fflocate.guess_bins()
     try:
         fflocate.check_bins((ffmpeg_bin, ffprobe_bin))
@@ -324,13 +329,15 @@ def main():
         )
 
         _, path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')
-        storyboard.save(path, quality=90) #! will have output format and quality options
+        # ! will have output format and quality options
+        storyboard.save(path, quality=90)
         if print_progress:
             sys.stderr.write("Done. Generated storyboard saved to:\n")
         print(path)
         if print_progress:
             sys.stderr.write("\n")
     return returncode
+
 
 if __name__ == "__main__":
     exit(main())

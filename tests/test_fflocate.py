@@ -4,6 +4,7 @@ import unittest
 
 from storyboard.fflocate import *
 
+
 class TestFFlocate(unittest.TestCase):
 
     def test_guess_bins(self):
@@ -17,6 +18,7 @@ class TestFFlocate(unittest.TestCase):
         self.assertTrue(check_bins(guess_bins()))
         with self.assertRaises(OSError):
             check_bins(('', ''))
+
 
 if __name__ == '__main__':
     unittest.main()
