@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.1a4
+~~~~~
+
+*Date: 2015-04-14*
+
+* Improved error handling at various places
+* Wrote a test suite (and successfully tested on Ubuntu 14.04 LTS)
+
 0.1a3
 ~~~~~
 
