@@ -33,19 +33,18 @@ class TestMetadata(unittest.TestCase):
         os.remove(self.videofile)
 
     def test_metadata(self):
-        vid = Video(
-            self.videofile,
-            ffprobe_bin=self.ffprobe_bin,
-            print_progress=False
-        )
+        vid = Video(self.videofile, params={
+            'ffprobe_bin': self.ffprobe_bin,
+            'print_progress': False,
+        })
         self.assertEqual(vid.path, self.videofile)
         self.assertEqual(vid.filename, os.path.basename(self.videofile))
         self.assertIsNone(vid.title)
         self.assertIsInstance(vid.size, int)
-        self.assertEqual(humansize(vid.size), vid.size_human)
+        self.assertEqual(humansize(vid.size), vid.size_text)
         self.assertEqual(vid.format, 'MPEG-4 Part 14 (MP4)')
         self.assertAlmostEqual(vid.duration, 10.0)
-        self.assertEqual(vid.duration_human, '00:00:10.00')
+        self.assertEqual(vid.duration_text, '00:00:10.00')
         self.assertEqual(vid.dimension, (320, 180))
         self.assertEqual(vid.dimension_text, '320x180')
         self.assertAlmostEqual(vid.dar, 16/9)
@@ -70,6 +69,8 @@ class TestMetadata(unittest.TestCase):
         self.assertIsNone(stream.language_code)
         self.assertEqual(stream.type, 'video')
         self.assertEqual(stream.width, 320)
+        print('')
+        print(vid.format_metadata())
 
 
 if __name__ == '__main__':

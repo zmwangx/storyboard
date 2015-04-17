@@ -63,11 +63,10 @@ class StoryBoard(object):
     def __init__(self, video, num_thumbnails=16,
                  ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
                  print_progress=False):
-        self.video = metadata.Video(
-            video,
-            ffprobe_bin=ffprobe_bin,
-            print_progress=print_progress,
-        )
+        self.video = metadata.Video(video, params={
+            'ffprobe_bin': ffprobe_bin,
+            'print_progress': print_progress,
+        })
         self.frames = []
         duration = self.video.duration
 
@@ -259,10 +258,10 @@ class StoryBoard(object):
         """Draw the metadata sheet."""
         horz_spacing = tile_spacing[0]
         vert_spacing = tile_spacing[1]
-        text = self.video.pretty_print_metadata(
-            include_sha1sum=include_sha1sum,
-            print_progress=print_progress,
-        )
+        text = self.video.format_metadata(params={
+            'include_sha1sum': include_sha1sum,
+            'print_progress': print_progress,
+        })
         num_lines = len(text.splitlines())
         total_height = (int(round(font_size * text_spacing)) * num_lines +
                         vert_spacing * 3)  # double vert spacing at the bottom
