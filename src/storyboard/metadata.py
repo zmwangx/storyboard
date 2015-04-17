@@ -109,42 +109,40 @@ class Video(object):
 
         Returns: a string that can be printed directly
         """
-        # pylint: disable=invalid-name
-        # s is fully recognizable as the variable name of the string, and in
-        # fact, it is the only variable here
-        s = ""
+        lines = []  # holds the lines that will be joined in the end
         # title
         if self.title:
-            s += "Title:                  %s\n" % self.title
+            lines.append("Title:                  %s" % self.title)
         # filename
-        s += "Filename:               %s\n" % self.filename
+        lines.append("Filename:               %s" % self.filename)
         # size
-        s += "File size:              %d (%s)\n" % (self.size, self.size_human)
+        lines.append("File size:              %d (%s)" %
+                     (self.size, self.size_human))
         # sha1sum
         if include_sha1sum:
             self.compute_sha1sum(print_progress)
-            s += "SHA-1 digest:           %s\n" % self.sha1sum
+            lines.append("SHA-1 digest:           %s" % self.sha1sum)
         # container format
-        s += "Container format:       %s\n" % self.format
+        lines.append("Container format:       %s" % self.format)
         # duration
-        s += "Duration:               %s\n" % self.duration_human
+        lines.append("Duration:               %s" % self.duration_human)
         # dimension
         if self.dimension_text:
-            s += "Pixel dimensions:       %s\n" % self.dimension_text
+            lines.append("Pixel dimensions:       %s" % self.dimension_text)
         # aspect ratio
         if self.dar_text:
-            s += "Display aspect ratio:   %s\n" % self.dar_text
+            lines.append("Display aspect ratio:   %s" % self.dar_text)
         # scanning type
         if self.scan_type:
-            s += "Scan type:              %s\n" % self.scan_type
+            lines.append("Scan type:              %s" % self.scan_type)
         # frame rate
         if self.frame_rate:
-            s += "Frame rate:             %s\n" % self.frame_rate_text
+            lines.append("Frame rate:             %s" % self.frame_rate_text)
         # streams
-        s += "Streams:\n"
+        lines.append("Streams:")
         for stream in self.streams:
-            s += "    #%d: %s\n" % (stream.index, stream.info_string)
-        return s.strip()
+            lines.append("    #%d: %s" % (stream.index, stream.info_string))
+        return '\n'.join(lines).strip()
 
     def _call_ffprobe(self, ffprobe_bin):
         """Call ffprobe and store json output in self._ffprobe.
