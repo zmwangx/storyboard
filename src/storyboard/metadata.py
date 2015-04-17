@@ -279,19 +279,31 @@ class Video(object):
 
         Examples
         --------
-        >>> print(video.format_metadata)
-        Filename:               FSF_30_video.ogv
-        File size:              133364484 (128MiB)
-        Container format:       Ogg
-        Duration:               00:02:53.33
-        Pixel dimensions:       1920x1080
-        Display aspect ratio:   16:9
+        >>> import os
+        >>> import tempfile
+        >>> import requests
+        >>> from storyboard import metadata
+        >>> video_uri = 'https://static.fsf.org/nosvn/FSF30-video/FSF_30_240p.webm'
+        >>> tempdir = tempfile.mkdtemp()
+        >>> video_file = os.path.join(tempdir, 'FSF_30_240p.webm')
+        >>> r = requests.get(video_uri, stream=True)
+        >>> with open(video_file, 'wb') as fd:
+        ...     for chunk in r.iter_content(65536):
+        ...         bytes_written = fd.write(chunk)
+        >>> print(metadata.Video(video_file).format_metadata())
+        Filename:               FSF_30_240p.webm
+        File size:              8687494 (8.29MiB)
+        Container format:       WebM
+        Duration:               00:02:53.82
+        Pixel dimensions:       428x240
+        Display aspect ratio:   107:60
         Scan type:              Progressive scan
-        Frame rate:             24 fps
+        Frame rate:             120 fps
         Streams:
-            #0: Video, Theora, 1920x1080 (DAR 16:9), 24 fps
-            #1: Audio, Vorbis, 360 kb/s
-
+            #0: Video, On2 VP8, 428x240 (DAR 107:60), 120 fps
+            #1: Audio (eng), Vorbis
+        >>> os.remove(video_file)
+        >>> os.rmdir(tempdir)
         """
 
         if params is None:
