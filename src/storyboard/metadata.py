@@ -164,6 +164,13 @@ class Video(object):
     dimension_text : str
         Dimension as a human readable string, e.g. ``'1920x1080'``.
 
+    sha1sum : str
+        The SHA-1 hex digest of the video file (40 character hexadecimal
+        string). Since computing SHA-1 digest is an expensive operation,
+        this attribute is only calculated and set upon request, either
+        through `compute_sha1sum` or `format_metadata` with the
+        ``include_sha1sum`` optional parameter set to ``True``.
+
     frame_rate : float
         Frame rate of video stream, in frames per second (fps).
 
@@ -187,7 +194,7 @@ class Video(object):
 
     """
 
-    # pylint: disable=too-many-instance-attributes,too-few-public-methods
+    # pylint: disable=too-many-instance-attributes
     # again, a video can have any number of metadata attributes
 
     def __init__(self, video, params=None):
@@ -346,6 +353,44 @@ class Video(object):
         for stream in self.streams:
             lines.append("    #%d: %s" % (stream.index, stream.info_string))
         return '\n'.join(lines).strip()
+
+    def compute_sha1sum(self, params=None):
+        """Computes the SHA-1 digest of the video file.
+
+        Parameters
+        ----------
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is ``None``.
+            See the "Other Parameters" section for understood key/value
+            pairs.
+
+        Returns
+        -------
+        sha1sum : str
+            The SHA-1 hex digest of the video file (40 character
+            hexadecimal string).
+
+        Other Parameters
+        ________________
+        print_progress : bool
+            Whether to print progress information (to stderr). Default
+            is False.
+
+        Notes
+        -----
+        Since computing SHA-1 digest is an expensive operation, the
+        digest is only calculated and set upon request, either through
+        this method or `format_metadata` with the ``include_sha1sum``
+        optional parameter set to ``True``. Further requests load the
+        calculated value rather than repeat the computation.
+
+        """
+
+        if params is None:
+            params = {}
+        print_progress = (params['print_progress']
+                          if 'print_progress' in params else False)
+        return self._get_sha1sum(print_progress=print_progress)
 
     def _call_ffprobe(self, ffprobe_bin):
         """Call ffprobe to extract video metadata.

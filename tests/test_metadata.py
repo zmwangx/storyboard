@@ -71,6 +71,10 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(vid.frame_rate_text, '25 fps')
         self.assertIsInstance(vid.streams, list)
         self.assertEqual(len(vid.streams), 3)
+        # sha1sum
+        sha1sum = vid.compute_sha1sum()
+        self.assertEqual(vid.sha1sum, sha1sum)
+        self.assertEqual(len(sha1sum), 40)
         # video stream
         vstream = vid.streams[0]
         self.assertIsInstance(vstream, Stream)
@@ -100,7 +104,7 @@ class TestMetadata(unittest.TestCase):
         self.assertIsNone(sstream.language_code)
         self.assertEqual(sstream.type, 'subtitle')
         print('')
-        print(vid.format_metadata())
+        print(vid.format_metadata(params={'include_sha1sum': True}))
 
 
 if __name__ == '__main__':
