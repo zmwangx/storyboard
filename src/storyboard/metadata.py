@@ -2,6 +2,8 @@
 
 """Extract video metadata with FFprobe."""
 
+# pylint: disable=too-many-lines
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -113,7 +115,7 @@ class Video(object):
     video : str
         Path to the video file.
     params : dict, optional
-        Optional parameters enclosed in a dict. Default is empty. See
+        Optional parameters enclosed in a dict. Default is ``None``. See
         the "Other Parameters" section for understood key/value pairs.
 
     Raises
@@ -188,13 +190,15 @@ class Video(object):
     # pylint: disable=too-many-instance-attributes,too-few-public-methods
     # again, a video can have any number of metadata attributes
 
-    def __init__(self, video, params={}):
+    def __init__(self, video, params=None):
         """Initialize the Video class.
 
         See module docstring for parameters of the constructor.
 
         """
 
+        if params is None:
+            params = {}
         if 'ffprobe_bin' in params:
             ffprobe_bin = params['ffprobe_bin']
         else:
@@ -245,15 +249,15 @@ class Video(object):
             return
         self.scan_type = self._get_scan_type(ffprobe_bin, print_progress)
 
-    def format_metadata(self, params={}):
+    def format_metadata(self, params=None):
         """Return video metadata in one formatted string.
 
         Parameters
         ----------
         params : dict, optional
-            Optional parameters enclosed in a dict. Default is
-            empty. See the "Other Parameters" section for understood
-            key/value pairs.
+            Optional parameters enclosed in a dict. Default is ``None``.
+            See the "Other Parameters" section for understood key/value
+            pairs.
 
         Returns
         -------
@@ -290,6 +294,8 @@ class Video(object):
 
         """
 
+        if params is None:
+            params = {}
         include_sha1sum = (params['include_sha1sum']
                            if 'include_sha1sum' in params else False)
         print_progress = (params['print_progress']
@@ -580,6 +586,8 @@ class Video(object):
 
         """
 
+        # pylint: disable=too-many-branches
+
         if print_progress:
             sys.stderr.write("Trying to determine scan type...\n")
 
@@ -852,7 +860,7 @@ class Video(object):
 
         """
 
-        # pylint: disable=too-many-statements,too-many-branches
+        # pylint: disable=too-many-statements,too-many-branches,no-self-use
 
         sdict = stream_dict  # alias to the long long name
 
@@ -926,7 +934,7 @@ class Video(object):
 
         """
 
-        # pylint: disable=too-many-statements,too-many-branches
+        # pylint: disable=too-many-statements,too-many-branches,no-self-use
 
         sdict = stream_dict  # alias to the long long name
 
