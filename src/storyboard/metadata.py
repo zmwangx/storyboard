@@ -282,7 +282,6 @@ class Video(object):
         >>> import os
         >>> import tempfile
         >>> import requests
-        >>> from storyboard import metadata
         >>> video_uri = 'https://static.fsf.org/nosvn/FSF30-video/FSF_30_240p.webm'
         >>> tempdir = tempfile.mkdtemp()
         >>> video_file = os.path.join(tempdir, 'FSF_30_240p.webm')
@@ -290,7 +289,7 @@ class Video(object):
         >>> with open(video_file, 'wb') as fd:
         ...     for chunk in r.iter_content(65536):
         ...         bytes_written = fd.write(chunk)
-        >>> print(metadata.Video(video_file).format_metadata())
+        >>> print(Video(video_file).format_metadata())
         Filename:               FSF_30_240p.webm
         File size:              8687494 (8.29MiB)
         Container format:       WebM
