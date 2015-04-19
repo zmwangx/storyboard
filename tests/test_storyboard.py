@@ -3,7 +3,7 @@
 import os
 import subprocess
 import tempfile
-import unittest2
+import unittest
 
 from storyboard import fflocate
 from storyboard.storyboard import *
