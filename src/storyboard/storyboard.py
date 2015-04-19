@@ -97,10 +97,16 @@ class Font(object):
 def draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
+    You need to specify a canvas to draw upon. If you are not sure about
+    the size of the canvas, there is a `dry_run` option (see "Other
+    Parameters" that help determine the size of the text block before
+    creating the canvas.
+
     Parameters
     ----------
     canvas : PIL.ImageDraw.Image
-        The canvas to draw the text block upon.
+        The canvas to draw the text block upon. If the `dry_run` option
+        is on (see "Other Parameters"), `canvas` can be ``None``.
     xy : tuple
         Tuple ``(x, y)`` consisting of x and y coordinates of the
         topleft corner of the text block.
@@ -118,32 +124,38 @@ def draw_text_block(canvas, xy, text, params=None):
 
     Other Parameters
     ----------------
+    font : Font, optional
+        Default is the font constructed by ``Font()`` without arguments.
     color : color, optional
         Color of text; can be in any color format accepted by Pillow
         (used for the ``fill`` argument of
         ``PIL.ImageDraw.Draw.text``). Default is ``'black'``.
-    font : Font, optional
-        Default is the font constructed by Font() with no arguments.
     spacing : float, optional
         Line spacing as a float. Default is 1.2.
+    dry_run : bool, optional
+        If ``True``, do not draw anything, only return the size of the
+        text block. Default is ``False``.
 
     """
 
     if params is None:
         params = {}
     x, y = xy
-    color = params['color'] if 'color' in params else 'black'
     font = params['font'] if 'font' in params else Font()
+    color = params['color'] if 'color' in params else 'black'
     spacing = params['spacing'] if 'spacing' in params else 1.2
+    dry_run = params['dry_run'] if 'dry_run' in params else False
 
-    draw = ImageDraw.Draw(canvas)
+    if not dry_run:
+        draw = ImageDraw.Draw(canvas)
 
     line_height = int(round(font.size * spacing))
     width = 0
     height = 0
     for line in text.splitlines():
         w, _ = draw.textsize(line, font=font.obj)
-        draw.text((x, y), line, fill=color, font=font.obj)
+        if not dry_run:
+            draw.text((x, y), line, fill=color, font=font.obj)
         if w > width:
             width = w  # update width to that of the current widest line
         height += line_height
@@ -184,7 +196,7 @@ def create_thumbnail(frame, width, params=None):
         ``False``.
     timestamp_font : Font, optional
         Font for the timestamp, if `draw_timestamp` is ``True``.
-        Default is the font constructed by Font() with no arguments.
+        Default is the font constructed by ``Font()`` without arguments.
     timestamp_align : {'right', 'center', 'left'}, optional
         Horizontal alignment of the timestamp over the thumbnail, if
         `draw_timestamp` is ``True``. Default is ``'right'``. Note that
@@ -204,10 +216,11 @@ def create_thumbnail(frame, width, params=None):
     size = (width, height)
     draw_timestamp = (params['draw_timestamp'] if 'draw_timestamp' in params
                       else False)
-    timestamp_font = (params['timestamp_font'] if 'timestamp_font' in params
-                      else Font())
-    timestamp_align = (params['timestamp_align'] if 'timestamp_align' in params
-                       else 'right')
+    if draw_timestamp:
+        timestamp_font = (params['timestamp_font']
+                          if 'timestamp_font' in params else Font())
+        timestamp_align = (params['timestamp_align']
+                           if 'timestamp_align' in params else 'right')
 
     thumbnail = frame.image.resize(size, Image.LANCZOS)
 
@@ -306,7 +319,7 @@ def tile_images(images, tile, params=None):
         relevant if you have nonzero tile spacing or margins, when the
         background shines through the spacing or margins. Default is
         ``'white'``.
-    close_separate_images : tool
+    close_separate_images : bool
         Whether to close the separate after combining. Closing the
         images will release the corresponding resources. Default is
         ``False``.
@@ -575,10 +588,6 @@ class StoryBoard(object):
 
         Other Parameters
         ----------------
-        codec : str, optional
-            Image codec to use when extracting frames using
-            FFmpeg. Default is ``'png'``. Use this option with care only
-            if your FFmpeg cannot encode PNG, which is unlikely.
         print_progress : bool, optional
             Whether to print progress information (to stderr). Default
             is False.
@@ -589,7 +598,6 @@ class StoryBoard(object):
             params = {}
         print_progress = (params['print_progress']
                           if 'print_progress' in params else False)
-        codec = params['codec'] if 'codec' in params else 'png'
 
         if len(self.frames) == count:
             return
@@ -606,7 +614,7 @@ class StoryBoard(object):
             try:
                 frame = _extract_frame(self.video, timestamp, params={
                     'ffmpeg_bin': self._bins[0],
-                    'codec' : codec
+                    'codec' : self._frame_codec,
                 })
                 self.frames.append(frame)
             except:
@@ -642,9 +650,6 @@ class StoryBoard(object):
         tile_spacing : tuple, optional
             See the `tile_spacing` parameter of the `tile_images`
             function. Default is ``(0, 0)``.
-        margins : tuple, optional
-            See the `margins` paramter of the `tile_images`
-            function. Default is ``(0, 0)``.
 
         background_color : color, optional
             See the `canvas_color` paramter of the `tile_images`
@@ -666,11 +671,6 @@ class StoryBoard(object):
             See the `timestamp_align` parameter of the
             `create_thumbnail` function. Default is ``'right'``.
 
-        frame_codec : str, optional
-            See the `codec` parameter of the `gen_frames`
-            method. Default is 'png'. You only need this under rare
-            occasions.
-
         print_progress : bool, optional
             Whether to print progress information (to stderr). Default
             is False.
@@ -681,7 +681,6 @@ class StoryBoard(object):
             params = {}
         tile_spacing = (params['tile_spacing'] if 'tile_spacing' in params
                         else (0, 0))
-        margins = params['margins'] if 'margins' in params else (0, 0)
         background_color = (params['background_color']
                             if 'background_color' in params else 'white')
         if 'thumbnail_aspect_ratio' in params:
@@ -698,8 +697,6 @@ class StoryBoard(object):
                               if 'timestamp_font' in params else Font())
             timestamp_align = (params['timestamp_align']
                                if 'timestamp_align' in params else 'right')
-        frame_codec = (params['frame_codec'] if 'frame_codec' in params
-                       else 'png')
         print_progress = (params['print_progress']
                           if 'print_progress' in params else False)
 
@@ -709,7 +706,6 @@ class StoryBoard(object):
             raise ValueError('tile is not a tuple of positive integers')
         thumbnail_count = cols * rows
         self.gen_frames(cols * rows, params={
-            'codec': frame_codec,
             'print_progress': print_progress,
         })
         if thumbnail_aspect_ratio is None:
@@ -736,7 +732,6 @@ class StoryBoard(object):
             sys.stderr.write("Tiling thumbnails...\n")
         return tile_images(thumbnails, tile, params={
             'tile_spacing': tile_spacing,
-            'margins': margins,
             'canvas_color': background_color,
             'close_separate_images': True,
         })

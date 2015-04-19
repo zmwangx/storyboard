@@ -127,11 +127,11 @@ class Video(object):
 
     Other Parameters
     ----------------
-    ffprobe_bin : str
+    ffprobe_bin : str, optional
         Name/path of the ffprobe binary (should be callable). By default
         the name is guessed based on OS type. (See the
         storyboard.fflocate module.)
-    print_progress : bool
+    print_progress : bool, optional
         Whether to print progress information (to stderr). Default is
         False.
 
@@ -275,12 +275,12 @@ class Video(object):
 
         Other Parameters
         ________________
-        include_sha1sum : bool
+        include_sha1sum : bool, optional
             Whether to include the SHA-1 hex digest. Default is
             False. Keep in mind that computing SHA-1 digest is an
             expensive operation, and hence is only performed upon
             request.
-        print_progress : bool
+        print_progress : bool, optional
             Whether to print progress information (to stderr). Default
             is False.
 
@@ -372,7 +372,7 @@ class Video(object):
 
         Other Parameters
         ________________
-        print_progress : bool
+        print_progress : bool, optional
             Whether to print progress information (to stderr). Default
             is False.
 
