@@ -17,6 +17,7 @@ from storyboard import fflocate
 from storyboard.frame import extract_frame as _extract_frame
 from storyboard import metadata
 from storyboard import util
+from storyboard.util import read_param as _read_param
 from storyboard.version import __version__
 
 
@@ -94,6 +95,9 @@ class Font(object):
         self.size = font_size
 
 
+DEFAULT_FONT = Font()
+
+
 def draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
@@ -141,10 +145,10 @@ def draw_text_block(canvas, xy, text, params=None):
     if params is None:
         params = {}
     x, y = xy
-    font = params['font'] if 'font' in params else Font()
-    color = params['color'] if 'color' in params else 'black'
-    spacing = params['spacing'] if 'spacing' in params else 1.2
-    dry_run = params['dry_run'] if 'dry_run' in params else False
+    font = _read_param(params, 'font', DEFAULT_FONT)
+    color = _read_param(params, 'color', 'black')
+    spacing = _read_param(params, 'spacing', 1.2)
+    dry_run = _read_param(params, 'dry_run', False)
 
     if not dry_run:
         draw = ImageDraw.Draw(canvas)
@@ -214,13 +218,10 @@ def create_thumbnail(frame, width, params=None):
         aspect_ratio = image_width / image_height
     height = int(round(width / aspect_ratio))
     size = (width, height)
-    draw_timestamp = (params['draw_timestamp'] if 'draw_timestamp' in params
-                      else False)
+    draw_timestamp = _read_param(params, 'draw_timestamp', False)
     if draw_timestamp:
-        timestamp_font = (params['timestamp_font']
-                          if 'timestamp_font' in params else Font())
-        timestamp_align = (params['timestamp_align']
-                           if 'timestamp_align' in params else 'right')
+        timestamp_font = _read_param(params, 'timestamp_font', DEFAULT_FONT)
+        timestamp_align = _read_param(params, 'timestamp_align', 'right')
 
     thumbnail = frame.image.resize(size, Image.LANCZOS)
 
@@ -335,16 +336,10 @@ def tile_images(images, tile, params=None):
         msg = "{} images cannot fit into a {}x{}={} array".format(
             len(images), cols, rows, cols * rows)
         raise ValueError(msg)
-    hor_spacing, ver_spacing = (params['tile_spacing']
-                                if 'tile_spacing' in params
-                                else (0, 0))
-    hor_margin, ver_margin = (params['margins'] if 'margins' in params
-                              else (0, 0))
-    canvas_color = (params['canvas_color'] if 'canvas_color' in params
-                    else 'white')
-    close_separate_images = (params['close_separate_images']
-                             if 'close_separate_images' in params
-                             else False)
+    hor_spacing, ver_spacing = _read_param(params, 'tile_spacing', (0, 0))
+    hor_margin, ver_margin = _read_param(params, 'margins', (0, 0))
+    canvas_color = _read_param(params, 'canvas_color', 'white')
+    close_separate_images = _read_param(params, 'close_separate_images', False)
     if 'tile_size' in params and params['tile_size'] is not None:
         tile_size = params['tile_size']
         tile_width, tile_height = tile_size
@@ -596,8 +591,7 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+        print_progress = _read_param(params, 'print_progress', False)
 
         if len(self.frames) == count:
             return
@@ -679,10 +673,8 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        tile_spacing = (params['tile_spacing'] if 'tile_spacing' in params
-                        else (0, 0))
-        background_color = (params['background_color']
-                            if 'background_color' in params else 'white')
+        tile_spacing = _read_param(params, 'tile_spacing', (0, 0))
+        background_color = _read_param(params, 'background_color', 'white')
         if 'thumbnail_aspect_ratio' in params:
             thumbnail_aspect_ratio = params['thumbnail_aspect_ratio']
         elif self.video.dar is not None:
@@ -690,15 +682,12 @@ class StoryBoard(object):
         else:
             # defer calculation to after generating frames
             thumbnail_aspect_ratio = None
-        draw_timestamp = (params['draw_timestamp']
-                          if 'draw_timestamp' in params else False)
+        draw_timestamp = _read_param(params, 'draw_timestamp', False)
         if draw_timestamp:
-            timestamp_font = (params['timestamp_font']
-                              if 'timestamp_font' in params else Font())
-            timestamp_align = (params['timestamp_align']
-                               if 'timestamp_align' in params else 'right')
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+            timestamp_font = _read_param(params, 'timestamp_font',
+                                         DEFAULT_FONT)
+            timestamp_align = _read_param(params, 'timestamp_align', 'right')
+        print_progress = _read_param(params, 'print_progress', False)
 
         cols, rows = tile
         if (not(isinstance(cols, int) and isinstance(rows, int) and
@@ -760,7 +749,7 @@ class StoryBoard(object):
             arguments.
         text_color: color, optional
             Default is 'black'.
-        text_spacing : float, optional
+        line_spacing : float, optional
             Line spacing as a float. Default is 1.2.
         background_color: color, optional
             Default is 'white'.
@@ -776,17 +765,12 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        text_font = params['text_font'] if 'text_font' in params else Font()
-        text_color = (params['text_color'] if 'text_color' in params
-                      else 'black')
-        text_spacing = (params['text_spacing'] if 'text_spacing' in params
-                        else 1.2)
-        background_color = (params['background_color']
-                            if 'background_color' in params else 'white')
-        include_sha1sum = (params['include_sha1sum']
-                           if 'include_sha1sum' in params else False)
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_color = _read_param(params, 'text_color', 'black')
+        line_spacing = _read_param(params, 'line_spacing', 1.2)
+        background_color = _read_param(params, 'background_color', 'white')
+        include_sha1sum = _read_param(params, 'include_sha1sum', False)
+        print_progress = _read_param(params, 'print_progress', False)
 
         text = self.video.format_metadata(params={
             'include_sha1sum': include_sha1sum,
@@ -795,7 +779,7 @@ class StoryBoard(object):
 
         _, total_height = draw_text_block(None, (0, 0), text, params={
             'font': text_font,
-            'spacing': text_spacing,
+            'spacing': line_spacing,
             'dry_run': True,
         })
 
@@ -804,7 +788,7 @@ class StoryBoard(object):
         draw_text_block(metadata_sheet, (0, 0), text, params={
             'font': text_font,
             'color': text_color,
-            'spacing': text_spacing,
+            'spacing': line_spacing,
         })
 
         return metadata_sheet
@@ -843,11 +827,9 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        text_font = params['text_font'] if 'text_font' in params else Font()
-        text_color = (params['text_color'] if 'text_color' in params
-                      else 'black')
-        background_color = (params['background_color']
-                            if 'background_color' in params else 'white')
+        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_color = _read_param(params, 'text_color', 'black')
+        background_color = _read_param(params, 'background_color', 'white')
 
         text = ("Generated by storyboard version %s. "
                 "Fork me on GitHub: github.com/zmwangx/storyboard"

@@ -13,6 +13,35 @@ import sys
 import time
 
 
+def read_param(params, key, default):
+    """Read and return a parameter from a dict.
+
+    If the key `key` is absent from the dict `params`, return the
+    default value `default` instead.
+
+    Parameters
+    ----------
+    params : dict
+        A dict containing parameters.
+    key : str
+        Name of the parameter, i.e., its corresponding key in `params`.
+    default
+        Default value for the parameter, if `key` is absent from `params`.
+
+    Returns
+    -------
+    value
+        If `key` in `params`, return ``params[key]``; otherwise, return
+        `default` instead.
+
+    """
+
+    if not isinstance(key, 'str'):
+        raise ValueError('invalid parameter name %s' % str(key))
+
+    return params[key] if key in params else default
+
+
 def round_up(number, ndigits=0):
     """Round a nonnegative number UPWARD to a given precision in decimal digits.
 
