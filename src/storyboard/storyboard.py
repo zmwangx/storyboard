@@ -318,6 +318,10 @@ def _tile_images(images, tile, params=None):
     if params is None:
         params = {}
     cols, rows = tile
+    if len(images) != cols * rows:
+        msg = "{} images cannot fit into a {}x{}={} array".format(
+            len(images), cols, rows, cols * rows)
+        raise ValueError(msg)
     hor_spacing, ver_spacing = (params['tile_spacing']
                                 if 'tile_spacing' in params
                                 else (0, 0))

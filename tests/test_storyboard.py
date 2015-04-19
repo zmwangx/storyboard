@@ -107,6 +107,11 @@ class TestStoryBoard(unittest.TestCase):
         )
         self.assertEqual(combined.size, (100, 100))
         combined.close()
+        # default, wrong number of images
+        with self.assertRaises(ValueError):
+            combined = _tile_images(
+                [standard, standard, standard], (2, 2)
+            )
         # default, inconsistent
         with self.assertRaises(ValueError):
             combined = _tile_images(
