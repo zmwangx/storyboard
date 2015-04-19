@@ -14,6 +14,7 @@ from storyboard.frame import Frame
 from storyboard.storyboard import *
 from storyboard.storyboard import _draw_text_block
 from storyboard.storyboard import _create_thumbnail
+from storyboard.storyboard import _tile_images
 
 
 class TestStoryBoard(unittest.TestCase):
@@ -96,6 +97,46 @@ class TestStoryBoard(unittest.TestCase):
         )
         self.assertEqual(thumbnail.size, (180, 180))
         thumbnail.close()
+
+    def test_tile_images(self):
+        standard = Image.new('RGBA', (50, 50))
+        larger = Image.new('RGBA', (60, 60))
+        # default, consistent
+        combined = _tile_images(
+            [standard, standard, standard, standard], (2, 2)
+        )
+        self.assertEqual(combined.size, (100, 100))
+        combined.close()
+        # default, inconsistent
+        with self.assertRaises(ValueError):
+            combined = _tile_images(
+                [standard, standard, standard, larger], (2, 2)
+            )
+        # inconsistent but work around with tile_size
+        combined = _tile_images(
+            [standard, standard, standard, larger], (2, 2), params={
+                'tile_size': (40, 40)
+            }
+        )
+        self.assertEqual(combined.size, (80, 80))
+        combined.close()
+        # with all other options
+        combined = _tile_images(
+            [standard, standard, standard, standard, standard, standard],
+            (2, 3),
+            params={
+                'tile_spacing': (20, 10),
+                'margins': (20, 10),
+                'canvas_color': 'pink',
+                'close_separate_images': True,
+            }
+        )
+        self.assertEqual(combined.size, (160, 190))
+        combined.close()
+        # make sure that the separate images are closed
+        with self.assertRaises(ValueError):
+            standard.resize((25, 25))
+        larger.close()
 
     def test_storyboard(self):
         sb = StoryBoard(

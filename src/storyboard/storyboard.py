@@ -118,7 +118,7 @@ def _draw_text_block(canvas, xy, text, params=None):
 
     Other Parameters
     ----------------
-    color : optional
+    color : color, optional
         Color of text; can be in any color format accepted by Pillow
         (used for the ``fill`` argument of
         ``PIL.ImageDraw.Draw.text``). Default is ``'black'``.
@@ -202,12 +202,12 @@ def _create_thumbnail(frame, width, params=None):
         aspect_ratio = image_width / image_height
     height = int(round(width / aspect_ratio))
     size = (width, height)
-    draw_timestamp = (params['draw_timestamp']
-                      if 'draw_timestamp' in params else False)
-    timestamp_font = (params['timestamp_font']
-                      if 'timestamp_font' in params else Font())
-    timestamp_align = (params['timestamp_align']
-                       if 'timestamp_align' in params else 'right')
+    draw_timestamp = (params['draw_timestamp'] if 'draw_timestamp' in params
+                      else False)
+    timestamp_font = (params['timestamp_font'] if 'timestamp_font' in params
+                      else Font())
+    timestamp_align = (params['timestamp_align'] if 'timestamp_align' in params
+                       else 'right')
 
     thumbnail = frame.image.resize(size, Image.LANCZOS)
 
@@ -242,6 +242,167 @@ def _create_thumbnail(frame, width, params=None):
                   fill='white', font=timestamp_font.obj)
 
     return thumbnail
+
+
+def _tile_images(images, tile, params=None):
+    """
+    Combine images into a composite image through 2D tiling.
+
+    For example, 16 thumbnails can be combined into an 4x4 array. As
+    another example, three images of the same width (think of the
+    metadata sheet, the bare storyboard, and the promotional banner) can
+    be combined into a 1x3 array, i.e., assembled vertically.
+
+    The image list is processed column-first.
+
+    Note that except if you use the `tile_size` option (see "Other
+    Parameters"), you should make sure that images passed into this
+    function satisfy the condition that the widths of all images in each
+    column and the heights of all images in each row match perfectly;
+    otherwise, this function will give up and raise a ValueError.
+
+    Parameters
+    ----------
+    images : list
+        A list of PIL.Image.Image objects, satisfying the necessary
+        height and width conditions (see explanation above).
+    tile : tuple
+        A tuple ``(m, n)`` indicating `m` columns and `n` rows. The
+        product of `m` and `n` should be the length of `images`, or a
+        `ValueError` will arise.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
+
+    Returns
+    -------
+    PIL.Image.Image
+        The composite image.
+
+    Raises
+    ------
+    ValueError
+        If the length of `images` does not match the product of columns
+        and rows (as defined in `tile`), or the widths and heights of
+        the images do not satisfy the necessary consistency conditions.
+
+    Other Parameters
+    ----------------
+    tile_size : tuple, optional
+        A tuple ``(width, height)``. If this parameter is specified,
+        width and height consistency conditions won't be checked, and
+        every image will be resized to (width, height) when
+        combined. Default is ``None``.
+    tile_spacing : tuple, optional
+        A tuple ``(hor, ver)`` specifying the horizontal and vertical
+        spacing between adjacent tiles. Default is ``(0, 0)``.
+    margins : tuple, optional
+        A tuple ``(hor, ver)`` specifying the horizontal and vertical
+        margins ``(padding)`` around the combined image. Default is
+        ``(0, 0)``.
+    canvas_color : color, optional
+        A color in any format recognized by Pillow. This is only
+        relevant if you have nonzero tile spacing or margins, when the
+        background shines through the spacing or margins. Default is
+        ``'white'``.
+    close_separate_images : tool
+        Whether to close the separate after combining. Closing the
+        images will release the corresponding resources. Default is
+        ``False``.
+
+    """
+
+    # pylint: disable=too-many-branches
+
+    if params is None:
+        params = {}
+    cols, rows = tile
+    hor_spacing, ver_spacing = (params['tile_spacing']
+                                if 'tile_spacing' in params
+                                else (0, 0))
+    hor_margin, ver_margin = (params['margins'] if 'margins' in params
+                              else (0, 0))
+    canvas_color = (params['canvas_color'] if 'canvas_color' in params
+                    else 'white')
+    close_separate_images = (params['close_separate_images']
+                             if 'close_separate_images' in params
+                             else False)
+    if 'tile_size' in params and params['tile_size'] is not None:
+        tile_size = params['tile_size']
+        tile_width, tile_height = tile_size
+        canvas_width = (tile_width * cols + hor_spacing * (cols - 1) +
+                        hor_margin * 2)
+        canvas_height = (tile_height * rows + ver_spacing * (rows - 1) +
+                         ver_margin * 2)
+        resize = True
+    else:
+        # check column width consistency, bark if not
+        # calculate total width along the way
+        canvas_width = hor_spacing * (cols - 1) + hor_margin * 2
+        for col in range(0, cols):
+            # reference width set by the first image in the column
+            ref_index = 0 * cols + col
+            ref_width, ref_height = images[ref_index].size
+            canvas_width += ref_width
+            for row in range(1, rows):
+                index = row * cols + col
+                width, height = images[index].size
+                if width != ref_width:
+                    msg = ("the width of image #{} "
+                           "(row #{}, col #{}, {}x{}) "
+                           "does not agree with that of image #{} "
+                           "(row #{}, col #{}, {}x{})".format(
+                               index, row, col, width, height,
+                               ref_index, 0, col, ref_width, ref_height,
+                           ))
+                    raise ValueError(msg)
+        # check row height consistency, bark if not
+        # calculate total height along the way
+        canvas_height = ver_spacing * (rows - 1) + ver_margin * 2
+        for row in range(0, rows):
+            # reference width set by the first image in the column
+            ref_index = row * cols + 0
+            ref_width, ref_height = images[ref_index].size
+            canvas_height += ref_height
+            for col in range(1, cols):
+                index = row * cols + col
+                width, height = images[index].size
+                if height != ref_height:
+                    msg = ("the height of image #{} "
+                           "(row #{}, col #{}, {}x{}) "
+                           "does not agree with that of image #{} "
+                           "(row #{}, col #{}, {}x{})".format(
+                               index, row, col, width, height,
+                               ref_index, 0, col, ref_width, ref_height,
+                           ))
+                    raise ValueError(msg)
+        # passed tests, will assemble as is
+        resize = False
+
+    # start assembling images
+    canvas = Image.new('RGBA', (canvas_width, canvas_height), canvas_color)
+    y = ver_margin
+    for row in range(0, rows):
+        x = hor_margin
+        for col in range(0, cols):
+            image = images[row * cols + col]
+
+            if resize:
+                canvas.paste(image.resize(tile_size, Image.LANCZOS), (x, y))
+            else:
+                canvas.paste(image, (x, y))
+
+            # accumulate width of this column, as well as horizontal spacing
+            x += image.size[0] + hor_spacing
+        # accumulate height of this row, as well as vertical spacing
+        y += images[row * cols + 0].size[1] + ver_spacing
+
+    if close_separate_images:
+        for image in images:
+            image.close()
+
+    return canvas
 
 
 class StoryBoard(object):
