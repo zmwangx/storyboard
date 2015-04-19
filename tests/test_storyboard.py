@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 
+from __future__ import division
+
 import os
 import subprocess
 import tempfile
 import unittest
 
+from PIL import Image, ImageFont, ImageFont
+
 from storyboard import fflocate
+from storyboard.frame import Frame
 from storyboard.storyboard import *
+from storyboard.storyboard import _draw_text_block
+from storyboard.storyboard import _draw_thumbnail
 
 
 class TestStoryBoard(unittest.TestCase):
@@ -46,6 +53,50 @@ class TestStoryBoard(unittest.TestCase):
         os.remove(self.srtfile)
         os.remove(self.videofile)
 
+    def test_font(self):
+        # test default font with default size
+        font = Font()
+        self.assertEqual(font.size, DEFAULT_FONT_SIZE)
+        self.assertIsInstance(font.obj, ImageFont.FreeTypeFont)
+        self.assertEqual(font.obj.path, DEFAULT_FONT_FILE)
+        self.assertEqual(font.obj.size, DEFAULT_FONT_SIZE)
+        # test default font with custom size
+        font = Font(font_size=10)
+        self.assertEqual(font.size, 10)
+        self.assertIsInstance(font.obj, ImageFont.FreeTypeFont)
+        self.assertEqual(font.obj.path, DEFAULT_FONT_FILE)
+        self.assertEqual(font.obj.size, 10)
+        # test a nonexistent font
+        with self.assertRaises(OSError):
+            font = Font(font_file='')
+
+    def test_draw_text_block(self):
+        canvas = Image.new('RGBA', (100, 100), 'white')
+        text = "hello,\nworld!\n"
+        text_block_size = _draw_text_block(canvas, (10, 10), text)
+        # the following test is based on the current DEFAULT_FONT_FILE
+        # and DEFAULT_FONT_SIZE (SourceCodePro-Regular at size 16)
+        self.assertEqual(text_block_size, (60, 38))
+        canvas.close()
+
+    def test_draw_thumbnail(self):
+        canvas = Image.new('RGBA', (200, 200), 'white')
+        frame = Frame(15.50, Image.new('RGBA', (320, 180), 'pink'))
+        # default aspect ratio
+        thumbnail_size = _draw_thumbnail(canvas, (10, 10), frame, 180)
+        self.assertEqual(thumbnail_size, (180, 101))
+        # custom aspect ratio with timestamp overlay
+        thumbnail_size = _draw_thumbnail(
+            canvas, (10, 10), frame, 180,
+            params={
+                'aspect_ratio': 1/1,
+                'draw_timestamp': True,
+                'timestamp_align': 'center',
+            }
+        )
+        self.assertEqual(thumbnail_size, (180, 180))
+        canvas.close()
+
     def test_storyboard(self):
         sb = StoryBoard(
             self.videofile,
@@ -57,6 +108,7 @@ class TestStoryBoard(unittest.TestCase):
             include_sha1sum=True,
             print_progress=False,
         )
+        board.close()
 
 
 if __name__ == '__main__':

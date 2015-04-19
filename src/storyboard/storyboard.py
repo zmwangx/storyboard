@@ -14,43 +14,242 @@ import tempfile
 from PIL import Image, ImageDraw, ImageFont
 
 from storyboard import fflocate
-from storyboard import frame as Frame
+from storyboard.frame import extract_frame as _extract_frame
 from storyboard import metadata
 from storyboard import util
 from storyboard.version import __version__
+
+
+# load default font
+DEFAULT_FONT_FILE = pkg_resources.resource_filename(
+    __name__,
+    'SourceCodePro-Regular.otf'
+)
+DEFAULT_FONT_SIZE = 16
 
 
 # pylint: disable=too-many-locals,invalid-name
 # In this file we use a lot of short local variable names to save space.
 # These short variable names are carefully documented when not obvious.
 
-def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
+
+class Font(object):
+
+    """Wrapper for a font loaded by PIL.ImageFont.
+
+    Parameters
+    ----------
+    font_file : str
+        Path to the font file to be loaded. If ``None``, load the
+        default font defined by the module variable
+        ``DEFAULT_FONT_FILE``. Default is ``None``. Note that the font
+        must be supported by FreeType.
+    font_size : int
+        Font size to be loaded. If ``None``, use the default font size
+        defined by the module variable ``DEFAULT_FONT_SIZE``. Default is
+        ``None``.
+
+    Raises
+    ------
+    OSError:
+        If the font cannot be loaded (by ``PIL.ImageFont.truetype``).
+
+    Attributes
+    ----------
+    obj
+        A Pillow font object, e.g., of the type
+        ``PIL.ImageFont.FreeTypeFont``.
+    size : int
+        The font size.
+
+    Notes
+    -----
+    We are creating this wrapper because there's no guarantee that a
+    font loaded by Pillow will have the ``.size`` property, and
+    sometimes it certainly doesn't (try
+    ``PIL.ImageFont.load_default()``, for instance). The font size,
+    however, is crucial for some of other drawings, so we would like to
+    keep it around all the time.
+
+    """
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, font_file=None, font_size=None):
+        """Initialize the Font class.
+
+        See module docstring for parameters of the constructor.
+
+        """
+
+        if font_file is None:
+            font_file = DEFAULT_FONT_FILE
+        if font_size is None:
+            font_size = DEFAULT_FONT_SIZE
+
+        try:
+            self.obj = ImageFont.truetype(font_file, size=font_size)
+        except IOError:
+            raise OSError("font file '%s' cannot be loaded" % font_file)
+        self.size = font_size
+
+
+def _draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
-    Positional arguments:
-    text      -- a string to be drawn (multi-line allowed)
-    draw      -- an PIL.ImageDraw.ImageDraw object
-    xy        -- (x, y) coordinate of topleft corner of the text block
-    color     -- color of the text (used for the fill argument of draw.text)
-    font      -- a font loaded by ImageFont
-    font_size -- font size in pixels
-    spacing   -- line spacing as a float, e.g., 1.2
+    Parameters
+    ----------
+    canvas : PIL.ImageDraw.Image
+        The canvas to draw the thumbnail upon.
+    xy : tuple
+        Tuple ``(x, y)`` consisting of x and y coordinates of the
+        topleft corner of the text block.
+    text : str
+        Text to be drawn, can be multiline.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
 
-    Return value:
-    (width, height) -- size of the text block
+    Returns
+    -------
+    (width, height)
+        Size of text block.
+
+    Other Parameters
+    ----------------
+    color : optional
+        Color of text; can be in any color format accepted by Pillow
+        (used for the ``fill`` argument of
+        ``PIL.ImageDraw.Draw.text``). Default is ``'black'``.
+    font : Font, optional
+        Default is the font constructed by Font() with no arguments.
+    spacing : float, optional
+        Line spacing as a float. Default is 1.2.
+
     """
-    x = xy[0]
-    y = xy[1]
-    line_height = int(round(font_size * spacing))
+
+    if params is None:
+        params = {}
+    x, y = xy
+    color = params['color'] if 'color' in params else 'black'
+    font = params['font'] if 'font' in params else Font()
+    spacing = params['spacing'] if 'spacing' in params else 1.2
+
+    draw = ImageDraw.Draw(canvas)
+
+    line_height = int(round(font.size * spacing))
     width = 0
     height = 0
     for line in text.splitlines():
-        (w, _) = draw.textsize(line, font=font)
-        draw.text((x, y), line, fill=color, font=font)
+        w, _ = draw.textsize(line, font=font.obj)
+        draw.text((x, y), line, fill=color, font=font.obj)
         if w > width:
-            width = w
+            width = w  # update width to that of the current widest line
         height += line_height
         y += line_height
+    return (width, height)
+
+
+def _draw_thumbnail(canvas, xy, frame, width, params=None):
+    """Draw thumbnail of a video frame.
+
+    The timestamp of the frame can be overlayed to the thumbnail. See
+    "Other Parameters" to how to enable this feature and relevant
+    options.
+
+    Parameters
+    ----------
+    canvas : PIL.ImageDraw.Image
+        The canvas to draw the thumbnail upon.
+    xy : tuple
+        Tuple ``(x, y)`` consisting of x and y coordinates of the
+        topleft corner of the thumbnail.
+    frame : storyboard.frame.Frame
+        The video frame to be thumbnailed.
+    width : int
+        Width of the thumbnail.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
+
+    Returns
+    -------
+    (width, height)
+        Size of thumbnail.
+
+    Other Parameters
+    ----------------
+    aspect_ratio : float, optional
+        Aspect ratio of the thumbnail. If ``None``, use the aspect ratio
+        (only considering the pixel dimensions) of the frame. Default is
+        ``None``.
+    draw_timestamp : bool, optional
+        Whether to draw frame timestamp over the timestamp. Default is
+        ``False``.
+    timestamp_font : Font, optional
+        Font for the timestamp, if `draw_timestamp` is ``True``.
+        Default is the font constructed by Font() with no arguments.
+    timestamp_align : {'right', 'center', 'left'}, optional
+        Horizontal alignment of the timestamp over the thumbnail, if
+        `draw_timestamp` is ``True``. Default is ``'right'``. Note that
+        the timestamp is always vertically aligned towards the bottom of
+        the thumbnail.
+
+    """
+
+    if params is None:
+        params = {}
+    x, y = xy
+    if 'aspect_ratio' in params:
+        aspect_ratio = params['aspect_ratio']
+    else:
+        image_width, image_height = frame.image.size
+        aspect_ratio = image_width / image_height
+    height = int(round(width / aspect_ratio))
+    size = (width, height)
+    draw_timestamp = (params['draw_timestamp']
+                      if 'draw_timestamp' in params else False)
+    timestamp_font = (params['timestamp_font']
+                      if 'timestamp_font' in params else Font())
+    timestamp_align = (params['timestamp_align']
+                       if 'timestamp_align' in params else 'right')
+
+    thumbnail = frame.image.resize(size, Image.LANCZOS)
+    canvas.paste(thumbnail, xy)
+    thumbnail.close()
+
+    if draw_timestamp:
+        draw = ImageDraw.Draw(canvas)
+
+        timestamp_text = util.humantime(frame.timestamp, ndigits=0)
+        timestamp_width, timestamp_height = \
+            draw.textsize(timestamp_text, timestamp_font.obj)
+
+        # calculate upperleft corner of the timestamp overlay
+        # we hard code a margin of 5 pixels
+        timestamp_y = y + height - 5 - timestamp_height
+        if timestamp_align == 'right':
+            timestamp_x = x + width - 5 - timestamp_width
+        elif timestamp_align == 'left':
+            timestamp_x = x + 5
+        elif timestamp_align == 'center':
+            timestamp_x = x + int((width - timestamp_width) / 2)
+        else:
+            raise ValueError("timestamp alignment option '%s' not recognized"
+                             % timestamp_align)
+
+        # draw white timestamp with 1px thick black border
+        for x_offset in range(-1, 2):
+            for y_offset in range(-1, 2):
+                draw.text((timestamp_x + x_offset, timestamp_y + y_offset),
+                          timestamp_text,
+                          fill='black', font=timestamp_font.obj)
+        draw.text((timestamp_x, timestamp_y),
+                  timestamp_text,
+                  fill='white', font=timestamp_font.obj)
+
     return (width, height)
 
 
