@@ -5,7 +5,7 @@ from __future__ import division
 import os
 import subprocess
 import tempfile
-import unittest
+import unittest2
 
 from storyboard import fflocate
 from storyboard.metadata import *

@@ -14,7 +14,7 @@ before_install:
   - export PATH=$PWD/ffmpeg:$PATH
 install:
   - pip install Pillow
-  - pip install coveralls
+  - pip install coveralls unittest2
 script:
   - coverage run --source=storyboard setup.py test
 after_success:

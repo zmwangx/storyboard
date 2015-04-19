@@ -3,7 +3,7 @@
 from __future__ import division
 
 import hashlib
-import unittest
+import unittest2
 
 from storyboard.util import *
 
