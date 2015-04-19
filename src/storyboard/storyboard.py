@@ -94,13 +94,13 @@ class Font(object):
         self.size = font_size
 
 
-def _draw_text_block(canvas, xy, text, params=None):
+def draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
     Parameters
     ----------
     canvas : PIL.ImageDraw.Image
-        The canvas to draw the thumbnail upon.
+        The canvas to draw the text block upon.
     xy : tuple
         Tuple ``(x, y)`` consisting of x and y coordinates of the
         topleft corner of the text block.
@@ -151,7 +151,7 @@ def _draw_text_block(canvas, xy, text, params=None):
     return (width, height)
 
 
-def _create_thumbnail(frame, width, params=None):
+def create_thumbnail(frame, width, params=None):
     """Create thumbnail of a video frame.
 
     The timestamp of the frame can be overlayed to the thumbnail. See
@@ -244,7 +244,7 @@ def _create_thumbnail(frame, width, params=None):
     return thumbnail
 
 
-def _tile_images(images, tile, params=None):
+def tile_images(images, tile, params=None):
     """
     Combine images into a composite image through 2D tiling.
 
