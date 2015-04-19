@@ -13,7 +13,7 @@ from storyboard import fflocate
 from storyboard.frame import Frame
 from storyboard.storyboard import *
 from storyboard.storyboard import _draw_text_block
-from storyboard.storyboard import _draw_thumbnail
+from storyboard.storyboard import _create_thumbnail
 
 
 class TestStoryBoard(unittest.TestCase):
@@ -79,23 +79,23 @@ class TestStoryBoard(unittest.TestCase):
         self.assertEqual(text_block_size, (60, 38))
         canvas.close()
 
-    def test_draw_thumbnail(self):
-        canvas = Image.new('RGBA', (200, 200), 'white')
+    def test_create_thumbnail(self):
         frame = Frame(15.50, Image.new('RGBA', (320, 180), 'pink'))
         # default aspect ratio
-        thumbnail_size = _draw_thumbnail(canvas, (10, 10), frame, 180)
-        self.assertEqual(thumbnail_size, (180, 101))
+        thumbnail = _create_thumbnail(frame, 180)
+        self.assertEqual(thumbnail.size, (180, 101))
+        thumbnail.close()
         # custom aspect ratio with timestamp overlay
-        thumbnail_size = _draw_thumbnail(
-            canvas, (10, 10), frame, 180,
+        thumbnail = _create_thumbnail(
+            frame, 180,
             params={
                 'aspect_ratio': 1/1,
                 'draw_timestamp': True,
                 'timestamp_align': 'center',
             }
         )
-        self.assertEqual(thumbnail_size, (180, 180))
-        canvas.close()
+        self.assertEqual(thumbnail.size, (180, 180))
+        thumbnail.close()
 
     def test_storyboard(self):
         sb = StoryBoard(

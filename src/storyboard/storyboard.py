@@ -151,8 +151,8 @@ def _draw_text_block(canvas, xy, text, params=None):
     return (width, height)
 
 
-def _draw_thumbnail(canvas, xy, frame, width, params=None):
-    """Draw thumbnail of a video frame.
+def _create_thumbnail(frame, width, params=None):
+    """Create thumbnail of a video frame.
 
     The timestamp of the frame can be overlayed to the thumbnail. See
     "Other Parameters" to how to enable this feature and relevant
@@ -160,11 +160,6 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
 
     Parameters
     ----------
-    canvas : PIL.ImageDraw.Image
-        The canvas to draw the thumbnail upon.
-    xy : tuple
-        Tuple ``(x, y)`` consisting of x and y coordinates of the
-        topleft corner of the thumbnail.
     frame : storyboard.frame.Frame
         The video frame to be thumbnailed.
     width : int
@@ -176,8 +171,7 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
 
     Returns
     -------
-    (width, height)
-        Size of thumbnail.
+    thumbnail : PIL.Image.Image
 
     Other Parameters
     ----------------
@@ -201,7 +195,6 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
 
     if params is None:
         params = {}
-    x, y = xy
     if 'aspect_ratio' in params:
         aspect_ratio = params['aspect_ratio']
     else:
@@ -217,11 +210,9 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
                        if 'timestamp_align' in params else 'right')
 
     thumbnail = frame.image.resize(size, Image.LANCZOS)
-    canvas.paste(thumbnail, xy)
-    thumbnail.close()
 
     if draw_timestamp:
-        draw = ImageDraw.Draw(canvas)
+        draw = ImageDraw.Draw(thumbnail)
 
         timestamp_text = util.humantime(frame.timestamp, ndigits=0)
         timestamp_width, timestamp_height = \
@@ -229,13 +220,13 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
 
         # calculate upperleft corner of the timestamp overlay
         # we hard code a margin of 5 pixels
-        timestamp_y = y + height - 5 - timestamp_height
+        timestamp_y = height - 5 - timestamp_height
         if timestamp_align == 'right':
-            timestamp_x = x + width - 5 - timestamp_width
+            timestamp_x = width - 5 - timestamp_width
         elif timestamp_align == 'left':
-            timestamp_x = x + 5
+            timestamp_x = 5
         elif timestamp_align == 'center':
-            timestamp_x = x + int((width - timestamp_width) / 2)
+            timestamp_x = int((width - timestamp_width) / 2)
         else:
             raise ValueError("timestamp alignment option '%s' not recognized"
                              % timestamp_align)
@@ -250,7 +241,7 @@ def _draw_thumbnail(canvas, xy, frame, width, params=None):
                   timestamp_text,
                   fill='white', font=timestamp_font.obj)
 
-    return (width, height)
+    return thumbnail
 
 
 class StoryBoard(object):
