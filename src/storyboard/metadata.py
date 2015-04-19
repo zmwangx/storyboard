@@ -784,6 +784,11 @@ class Video(object):
     def _process_video_stream(self, stream_dict):
         """Process video stream object returned by FFprobe.
 
+        Also set Video's `dimension`, `dimension_text`, `dar`,
+        `dar_text`, `frame_rate`, and `frame_rate_text` attributes
+        (attributes of ``self`` ) if they are available in this video
+        stream and they are not already set.
+
         Parameters
         ----------
         stream_dict : dict
@@ -901,7 +906,8 @@ class Video(object):
 
         return s
 
-    def _process_audio_stream(self, stream_dict):
+    @staticmethod
+    def _process_audio_stream(stream_dict):
         """Process audio stream object returned by FFprobe.
 
         Parameters
@@ -917,7 +923,7 @@ class Video(object):
 
         """
 
-        # pylint: disable=too-many-statements,too-many-branches,no-self-use
+        # pylint: disable=too-many-statements,too-many-branches
 
         sdict = stream_dict  # alias to the long long name
 
@@ -975,7 +981,8 @@ class Video(object):
 
         return s
 
-    def _process_subtitle_stream(self, stream_dict):
+    @staticmethod
+    def _process_subtitle_stream(stream_dict):
         """Process subtitle stream object returned by FFprobe.
 
         Parameters
@@ -991,7 +998,7 @@ class Video(object):
 
         """
 
-        # pylint: disable=too-many-statements,too-many-branches,no-self-use
+        # pylint: disable=too-many-statements,too-many-branches
 
         sdict = stream_dict  # alias to the long long name
 
