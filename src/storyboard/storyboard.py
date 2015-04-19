@@ -423,32 +423,6 @@ class StoryBoard(object):
             'print_progress': print_progress,
         })
         self.frames = []
-        duration = self.video.duration
-
-        # generate equally spaced timestamps at 1/2N, 3/2N, ... (2N-1)/2N of
-        # the video, where N is the number of thumbnails
-        interval = duration / num_thumbnails
-        timestamps = [interval/2]
-        for _ in range(1, num_thumbnails):
-            timestamps.append(timestamps[-1] + interval)
-
-        # generate frames accordingly
-        counter = 0
-        for timestamp in timestamps:
-            counter += 1
-            if print_progress:
-                sys.stderr.write("\rCreating thumbnail %d/%d..." %
-                                 (counter, num_thumbnails))
-            try:
-                self.frames.append(Frame.extract_frame(video, timestamp,
-                                                       ffmpeg_bin, codec))
-            except:
-                # \rCreating thumbnail %d/%d... isn't terminated by newline yet
-                if print_progress:
-                    sys.stderr.write("\n")
-                raise
-        if print_progress:
-            sys.stderr.write("\n")
 
     def storyboard(self,
                    padding=(10, 10), include_banner=True, print_progress=False,
@@ -567,45 +541,205 @@ class StoryBoard(object):
 
         return assembled
 
-    def _draw_storyboard(self, tiling, tile_width, tile_aspect_ratio,
-                         tile_spacing,
-                         draw_timestamp,
-                         font):
-        """Draw the storyboard (thumbnails only)."""
-        horz_tiles = tiling[0]
-        vert_tiles = tiling[1]
-        tile_height = int(tile_width / tile_aspect_ratio)
-        tile_size = (tile_width, tile_height)
-        horz_spacing = tile_spacing[0]
-        vert_spacing = tile_spacing[1]
-        total_width = horz_tiles * (tile_width + 2 * horz_spacing)
-        total_height = vert_tiles * (tile_height + 2 * vert_spacing)
-        storyboard = Image.new('RGBA', (total_width, total_height), 'white')
+    def gen_frames(self, count, params=None):
+        """Extract equally spaced frames from the video.
+
+        When tasked with extracting N frames, this method extracts them
+        at positions 1/2N, 3/2N, 5/2N, ... , (2N-1)/2N of the video. The
+        extracted frames are stored in the `frames` attribute.
+
+        Note that new frames are extracted only if the number of
+        existing frames in the `frames` attribute doesn't match the
+        specified `count` (0 at instantiation), in which case new frames
+        are extracted to match the specification, and the `frames`
+        attribute is overwritten.
+
+        Paramters
+        ----------
+        count : int
+            Number of (equally-spaced) frames to generate.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        None
+            Access the generated frames through the `frames` attribute.
+
+        RAISES
+        ------
+        OSError
+            If frame extraction with FFmpeg fails.
+
+        Other Parameters
+        ----------------
+        codec : str, optional
+            Image codec to use when extracting frames using
+            FFmpeg. Default is ``'png'``. Use this option with care only
+            if your FFmpeg cannot encode PNG, which is unlikely.
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is False.
+
+        """
+
+        if params is None:
+            params = {}
+        print_progress = (params['print_progress']
+                          if 'print_progress' in params else False)
+        codec = params['codec'] if 'codec' in params else 'png'
+
+        if len(self.frames) == count:
+            return
+
+        duration = self.video.duration
+        interval = duration / count
+        timestamps = [interval * (i + 1/2) for i in range(0, count)]
+        counter = 0
+        for timestamp in timestamps:
+            counter += 1
+            if print_progress:
+                sys.stderr.write("\rExtracting frame %d/%d..." %
+                                 (counter, count))
+            try:
+                frame = _extract_frame(self.video, timestamp, params={
+                    'ffmpeg_bin': self._bins[0],
+                    'codec' : codec
+                })
+                self.frames.append(frame)
+            except:
+                # \rExtracting frame %d/%d... isn't terminated by
+                # newline yet
+                if print_progress:
+                    sys.stderr.write("\n")
+                raise
+        if print_progress:
+            sys.stderr.write("\n")
+
+    def _gen_bare_storyboard(self, tile, thumbnail_width, params=None):
+        """Generate bare storyboard (thumbnails only).
+
+        Paramters
+        ----------
+        tile : tuple
+            A tuple ``(cols, rows)`` specifying the number of columns
+            and rows for the array of thumbnails.
+        thumbnail_width : int
+            Width of each thumbnail.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        base_storyboard : PIL.Image.Image
+
+        Other Parameters
+        ----------------
+        tile_spacing : tuple, optional
+            See the `tile_spacing` parameter of the `tile_images`
+            function. Default is ``(0, 0)``.
+        margins : tuple, optional
+            See the `margins` paramter of the `tile_images`
+            function. Default is ``(0, 0)``.
+
+        background_color : color, optional
+            See the `canvas_color` paramter of the `tile_images`
+            function. Default is ``'white'``.
+
+        thumbnail_aspect_ratio : float, optional
+            Aspect ratio of generated thumbnails. If ``None``, first try
+            to use ``self.dar``, then the aspect ratio of the frames if
+            ``self.dar`` is not available. Default is ``None``.
+
+        draw_timestamp : bool, optional
+            See the `draw_timestamp` parameter of the `create_thumbnail`
+            function. Default is ``False``.
+        timestamp_font : Font, optional
+            See the `timestamp_font` parameter of the `create_thumbnail`
+            function. Default is the font constructed by ``Font()`` with
+            no arguments.
+        timestamp_align : {'right', 'center', 'left'}, optional
+            See the `timestamp_align` parameter of the
+            `create_thumbnail` function. Default is ``'right'``.
+
+        frame_codec : str, optional
+            See the `codec` parameter of the `gen_frames`
+            method. Default is 'png'. You only need this under rare
+            occasions.
+
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is False.
+
+        """
+
+        if params is None:
+            params = {}
+        tile_spacing = (params['tile_spacing'] if 'tile_spacing' in params
+                        else (0, 0))
+        margins = params['margins'] if 'margins' in params else (0, 0)
+        background_color = (params['background_color']
+                            if 'background_color' in params else 'white')
+        if 'thumbnail_aspect_ratio' in params:
+            thumbnail_aspect_ratio = params['thumbnail_aspect_ratio']
+        elif self.video.dar is not None:
+            thumbnail_aspect_ratio = self.video.dar
+        else:
+            # defer calculation to after generating frames
+            thumbnail_aspect_ratio = None
+        draw_timestamp = (params['draw_timestamp']
+                          if 'draw_timestamp' in params else False)
         if draw_timestamp:
-            draw = ImageDraw.Draw(storyboard)
-        for i in range(0, horz_tiles):
-            for j in range(0, vert_tiles):
-                index = j * vert_tiles + i
-                frame = self.frames[index]
-                upperleft = (tile_width * i + horz_spacing * (2 * i + 1),
-                             tile_height * j + vert_spacing * (2 * j + 1))
-                storyboard.paste(frame.image.resize(tile_size, Image.LANCZOS),
-                                 upperleft)
-                # timestamp
-                if draw_timestamp:
-                    lowerright = (upperleft[0] + tile_width,
-                                  upperleft[1] + tile_height)
-                    ts = util.humantime(frame.timestamp, ndigits=0)
-                    ts_size = draw.textsize(ts, font)
-                    ts_upperleft = (lowerright[0] - ts_size[0] - 5,
-                                    lowerright[1] - ts_size[1] - 5)
-                    (x, y) = ts_upperleft
-                    for x_offset in range(-1, 2):
-                        for y_offset in range(-1, 2):
-                            draw.text((x + x_offset, y + y_offset),
-                                      ts, fill='black', font=font)
-                    draw.text((x, y), ts, fill='white', font=font)
-        return storyboard
+            timestamp_font = (params['timestamp_font']
+                              if 'timestamp_font' in params else Font())
+            timestamp_align = (params['timestamp_align']
+                               if 'timestamp_align' in params else 'right')
+        frame_codec = (params['frame_codec'] if 'frame_codec' in params
+                       else 'png')
+        print_progress = (params['print_progress']
+                          if 'print_progress' in params else False)
+
+        cols, rows = tile
+        if (not(isinstance(cols, int) and isinstance(rows, int) and
+                cols > 0 and rows > 0)):
+            raise ValueError('tile is not a tuple of positive integers')
+        thumbnail_count = cols * rows
+        self.gen_frames(cols * rows, params={
+            'codec': frame_codec,
+            'print_progress': print_progress,
+        })
+        if thumbnail_aspect_ratio is None:
+            frame_size = self.frames[0].image.size
+            thumbnail_aspect_ratio = frame_size[0] / frame_size[1]
+
+        thumbnails = []
+        counter = 0
+        for frame in self.frames:
+            counter += 1
+            if print_progress:
+                sys.stderr.write("\rGenerating thumbnail %d/%d..." %
+                                 (counter, thumbnail_count))
+            thumbnails.append(create_thumbnail(frame, thumbnail_width, params={
+                'aspect_ratio': thumbnail_aspect_ratio,
+                'draw_timestamp': draw_timestamp,
+                'timestamp_font': timestamp_font,
+                'timestamp_align': timestamp_align,
+            }))
+        if print_progress:
+            sys.stderr.write("\n")
+
+        if print_progress:
+            sys.stderr.write("Tiling thumbnails...\n")
+        return tile_images(thumbnails, tile, params={
+            'tile_spacing': tile_spacing,
+            'margins': margins,
+            'canvas_color': background_color,
+            'close_separate_images': True,
+        })
 
     def _draw_meta_sheet(self, total_width, tile_spacing,
                          font, font_size, text_spacing, text_color,
