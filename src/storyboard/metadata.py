@@ -21,6 +21,46 @@ from storyboard import util
 from storyboard.util import read_param as _read_param
 
 
+_FORMAT_MAP = {
+    'aac': 'raw ADTS AAC',
+    'asf': 'Advanced Systems Format',
+    'avi': 'Audio Video Interleaved',
+    'flv': 'Flash video',
+    'matroska,webm': 'Matroska',
+    'mpeg': 'MPEG program stream',
+    'mpegts': 'MPEG transport stream',
+    'mpegvideo': 'raw MPEG video',
+    'mov,mp4,m4a,3gp,3g2,mj2': 'MPEG-4 Part 14',
+    'ogg': 'Ogg',
+}
+
+_VCODEC_MAP = {
+    'h264': 'H.264',
+    'hevc': 'HEVC',
+    'mjpeg': 'MJPEG',
+    'mpeg1video': 'MPEG-1 Part 2',
+    'mpeg2video': 'MPEG-2 Part 2',
+    'mpeg4': 'MPEG-4 Part 2',
+    'png': 'PNG',
+    'theora': 'Theora',
+    'vp8': 'VP8',
+    'vp9': 'VP9',
+}
+
+_ACODEC_MAP = {
+    'aac': 'AAC',
+    'ac3': 'Dolby AC-3',
+    'mp3': 'MP3',
+    'vorbis': 'Vorbis',
+}
+
+_SCODEC_MAP = {
+    'ass': 'SubStation Alpha',
+    'cc_dec': 'closed caption (EIA-608 / CEA-708)',
+    'srt': 'SubRip',
+}
+
+
 class Stream(object):
 
     """Container for stream metadata.
@@ -307,7 +347,7 @@ class Video(object):
         Scan type:              Progressive scan
         Frame rate:             120 fps
         Streams:
-            #0: Video, On2 VP8, 428x240 (DAR 107:60), 120 fps
+            #0: Video, VP8, 428x240 (DAR 107:60), 120 fps
             #1: Audio (eng), Vorbis
         >>> os.remove(video_file)
         >>> os.rmdir(tempdir)
@@ -473,38 +513,29 @@ class Video(object):
         # lowercase extension without period
         extension = os.path.splitext(self.path)[1].lower()[1:]
 
-        if format_name == 'mpegts':
-            fmt = "MPEG transport stream"
-        elif format_name == 'mpeg':
-            fmt = "MPEG program stream"
-        elif format_name == 'mov,mp4,m4a,3gp,3g2,mj2':
-            if extension in ['mov', 'qt']:
-                fmt = "QuickTime movie"
-            elif extension in ['3gp']:
-                fmt = "3GPP"
-            elif extension in ['3g2']:
-                fmt = "3GPP2"
-            elif extension in ['mj2', 'mjp2']:
-                fmt = "Motion JPEG 2000"
-            else:
-                # mp4, m4v, m4a, etc.
-                fmt = "MPEG-4 Part 14 (%s)" % extension.upper()
-        elif format_name == 'mpegvideo':
-            fmt = "MPEG video"
-        elif format_name == 'matroska,webm':
-            if extension in ['webm']:
-                fmt = "WebM"
-            else:
-                fmt = "Matroska"
-        elif format_name == 'flv':
-            fmt = "Flash video"
-        elif format_name == 'ogg':
-            fmt = "Ogg"
-        elif format_name == 'avi':
-            fmt = "Audio Video Interleaved"
-        elif format_name == 'asf':
-            # Microsoft Advanced Systems Format
-            fmt = "Advanced Systems Format"
+        if format_name in _FORMAT_MAP:
+            fmt = _FORMAT_MAP[format_name]
+
+            # some formats that require special treatment (i.e., a
+            # collection of formats sharing a common format_name, in
+            # which case further subdivision is required)
+            if format_name == 'mov,mp4,m4a,3gp,3g2,mj2':
+                if extension in ['mov', 'qt']:
+                    fmt = "QuickTime movie"
+                elif extension in ['3gp']:
+                    fmt = "3GPP"
+                elif extension in ['3g2']:
+                    fmt = "3GPP2"
+                elif extension in ['mj2', 'mjp2']:
+                    fmt = "Motion JPEG 2000"
+                else:
+                    # mp4, m4v, m4a, etc.
+                    fmt = "MPEG-4 Part 14 (%s)" % extension.upper()
+            elif format_name == 'matroska,webm':
+                if extension in ['webm']:
+                    fmt = "WebM"
+                else:
+                    fmt = "Matroska"
         else:
             fmt = extension.upper()
 
@@ -818,26 +849,30 @@ class Video(object):
         # codec
         if 'codec_name' not in sdict:
             s.codec = "unknown codec"
-        elif sdict['codec_name'] == "h264":
-            if 'profile' in sdict and 'level' in sdict:
-                s.codec = ("H.264 (%s Profile level %.1f)" %
-                           (sdict['profile'], sdict['level'] / 10.0))
-            else:
-                s.codec = "H.264"
-        elif sdict['codec_name'] == "mpeg2video":
-            if 'profile' in sdict:
-                s.codec = "MPEG-2 video (%s Profile)" % sdict['profile']
-            else:
-                s.codec = "MPEG-2 video"
-        elif sdict['codec_name'] == "mpeg4":
-            if 'profile' in sdict:
-                s.codec = "MPEG-4 Part 2 (%s)" % sdict['profile']
-            else:
-                s.codec = "MPEG-4 Part 2"
-        elif sdict['codec_name'] == "mjpeg":
-            s.codec = "MJPEG"
-        elif sdict['codec_name'] == "theora":
-            s.codec = "Theora"
+        elif sdict['codec_name'] in _VCODEC_MAP:
+            codec_name = sdict['codec_name']
+            s.codec = _VCODEC_MAP[codec_name]
+
+            # some codecs that need special treatment
+            if ((codec_name in {'h264', 'hevc'} and
+                 'profile' in sdict and 'level' in sdict)):
+                # H.264 and HEVC have profiles and levels. Examples:
+                #     H.264 (High Profile level 1.1)
+                #     HEVC (Main Profile level 3.0)
+                s.codec = ("%s (%s Profile level %.1f)" %
+                           (s.codec, sdict['profile'], sdict['level'] / 10.0))
+            elif (codec_name in {'mpeg1video', 'mpeg2video'} and
+                  'profile' in sdict):
+                # MPEG-1 Part 2 and MPEG-2 Part 2 has profiles. Example:
+                #     MPEG-1 Part 2 (Main Profile)
+                #     MPEG-2 Part 2 (Main Profile)
+                s.codec = "%s (%s Profile)" % (s.codec, sdict['profile'])
+            elif codec_name in {'mpeg4'} and 'profile' in sdict:
+                # MPEG-4 Part 2 has profiles. Example:
+                #     MPEG-4 Part 2 (Simple Profile)
+                # This case is different in that FFprobe's profile field
+                # already includes the word "Profile".
+                s.codec = "%s (%s)" % (s.codec, sdict['profile'])
         else:
             s.codec = sdict['codec_long_name']
 
@@ -939,21 +974,19 @@ class Video(object):
         # codec
         if 'codec_name' not in sdict:
             s.codec = "unknown codec"
-        elif sdict['codec_name'] == "aac":
-            if 'profile' in sdict:
-                if sdict['profile'] == "LC":
-                    profile = "Low Complexity"
+        elif sdict['codec_name'] in _ACODEC_MAP:
+            codec_name = sdict['codec_name']
+            s.codec = _ACODEC_MAP[codec_name]
+
+            # some codecs that need special treatment
+            if codec_name == "aac" and 'profile' in sdict:
+                if sdict['profile'] == 'LC':
+                    profile = 'Low-Complexity'
+                elif sdict['profile'] == 'HE-AACv2':
+                    profile = 'HE-AAC v2'
                 else:
                     profile = sdict['profile']
                 s.codec = "AAC (%s)" % profile
-            else:
-                s.codec = "AAC"
-        elif sdict['codec_name'] == "ac3":
-            s.codec = "Dolby AC-3"
-        elif sdict['codec_name'] == "mp3":
-            s.codec = "MP3"
-        elif sdict['codec_name'] == "vorbis":
-            s.codec = "Vorbis"
         else:
             s.codec = sdict['codec_long_name']
 
@@ -1017,12 +1050,9 @@ class Video(object):
                 s.codec = 'EIA-608'
             else:
                 s.codec = "unknown codec"
-        elif sdict['codec_name'] == "srt":
-            s.codec = "SubRip"
-        elif sdict['codec_name'] == "ass":
-            s.codec = "ASS"
-        elif sdict['codec_name'] == "cc_dec":
-            s.codec = "closed caption (EIA-608 / CEA-708)"
+        elif sdict['codec_name'] in _SCODEC_MAP:
+            codec_name = sdict['codec_name']
+            s.codec = _SCODEC_MAP[codec_name]
         else:
             s.codec = sdict['codec_long_name']
 
