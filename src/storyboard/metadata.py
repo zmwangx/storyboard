@@ -692,6 +692,7 @@ class Video(object):
                 obj_str = ''
                 if len(objs) >= 40:
                     proc.terminate()
+                    proc.communicate()
                     break
             except ValueError:
                 # incomplete frame object
