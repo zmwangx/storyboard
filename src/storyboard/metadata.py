@@ -18,6 +18,7 @@ import sys
 
 from storyboard import fflocate
 from storyboard import util
+from storyboard.util import read_param as _read_param
 
 
 class Stream(object):
@@ -121,7 +122,7 @@ class Video(object):
 
     Raises
     ------
-    OSError:
+    OSError
         If fails to extract metadata with ffprobe, e.g., if the file is
         not present, or in a format that is not recognized by ffprobe,
         or if ffprobe cannot be called, etc.
@@ -211,8 +212,7 @@ class Video(object):
             ffprobe_bin = params['ffprobe_bin']
         else:
             _, ffprobe_bin = fflocate.guess_bins()
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+        print_progress = _read_param(params, 'print_progress', False)
 
         self.path = os.path.abspath(video)
         if not os.path.exists(self.path):
@@ -315,10 +315,8 @@ class Video(object):
 
         if params is None:
             params = {}
-        include_sha1sum = (params['include_sha1sum']
-                           if 'include_sha1sum' in params else False)
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+        include_sha1sum = _read_param(params, 'include_sha1sum', False)
+        print_progress = _read_param(params, 'print_progress', False)
 
         lines = []  # holds the lines that will be joined in the end
         # title
@@ -389,8 +387,8 @@ class Video(object):
 
         if params is None:
             params = {}
-        print_progress = (params['print_progress']
-                          if 'print_progress' in params else False)
+        print_progress = _read_param(params, 'print_progress', False)
+
         return self._get_sha1sum(print_progress=print_progress)
 
     def _call_ffprobe(self, ffprobe_bin):
@@ -571,6 +569,8 @@ class Video(object):
         if self.sha1sum is not None:
             return self.sha1sum
 
+        if print_progress:
+            sys.stderr.write("Computing SHA-1 digest...\n")
         with open(self.path, 'rb') as video:
             sha1 = hashlib.sha1()
             totalsize = os.path.getsize(self.path)

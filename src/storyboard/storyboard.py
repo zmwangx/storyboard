@@ -2,6 +2,8 @@
 
 """Generate video storyboards with metadata reports."""
 
+# pylint: disable=too-many-lines
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,276 +16,992 @@ import tempfile
 from PIL import Image, ImageDraw, ImageFont
 
 from storyboard import fflocate
-from storyboard import frame as Frame
+from storyboard.frame import extract_frame as _extract_frame
 from storyboard import metadata
 from storyboard import util
+from storyboard.util import read_param as _read_param
 from storyboard.version import __version__
+
+
+# load default font
+DEFAULT_FONT_FILE = pkg_resources.resource_filename(
+    __name__,
+    'SourceCodePro-Regular.otf'
+)
+DEFAULT_FONT_SIZE = 16
 
 
 # pylint: disable=too-many-locals,invalid-name
 # In this file we use a lot of short local variable names to save space.
 # These short variable names are carefully documented when not obvious.
 
-def _draw_text_block(text, draw, xy, color, font, font_size, spacing):
+
+class Font(object):
+
+    """Wrapper for a font loaded by PIL.ImageFont.
+
+    Parameters
+    ----------
+    font_file : str
+        Path to the font file to be loaded. If ``None``, load the
+        default font defined by the module variable
+        ``DEFAULT_FONT_FILE``. Default is ``None``. Note that the font
+        must be supported by FreeType.
+    font_size : int
+        Font size to be loaded. If ``None``, use the default font size
+        defined by the module variable ``DEFAULT_FONT_SIZE``. Default is
+        ``None``.
+
+    Raises
+    ------
+    OSError
+        If the font cannot be loaded (by ``PIL.ImageFont.truetype``).
+
+    Attributes
+    ----------
+    obj
+        A Pillow font object, e.g., of the type
+        ``PIL.ImageFont.FreeTypeFont``.
+    size : int
+        The font size.
+
+    Notes
+    -----
+    We are creating this wrapper because there's no guarantee that a
+    font loaded by Pillow will have the ``.size`` property, and
+    sometimes it certainly doesn't (try
+    ``PIL.ImageFont.load_default()``, for instance). The font size,
+    however, is crucial for some of other drawings, so we would like to
+    keep it around all the time.
+
+    """
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, font_file=None, font_size=None):
+        """Initialize the Font class.
+
+        See module docstring for parameters of the constructor.
+
+        """
+
+        if font_file is None:
+            font_file = DEFAULT_FONT_FILE
+        if font_size is None:
+            font_size = DEFAULT_FONT_SIZE
+
+        try:
+            self.obj = ImageFont.truetype(font_file, size=font_size)
+        except IOError:
+            raise OSError("font file '%s' cannot be loaded" % font_file)
+        self.size = font_size
+
+
+DEFAULT_FONT = Font()
+
+
+def draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
-    Positional arguments:
-    text      -- a string to be drawn (multi-line allowed)
-    draw      -- an PIL.ImageDraw.ImageDraw object
-    xy        -- (x, y) coordinate of topleft corner of the text block
-    color     -- color of the text (used for the fill argument of draw.text)
-    font      -- a font loaded by ImageFont
-    font_size -- font size in pixels
-    spacing   -- line spacing as a float, e.g., 1.2
+    You need to specify a canvas to draw upon. If you are not sure about
+    the size of the canvas, there is a `dry_run` option (see "Other
+    Parameters" that help determine the size of the text block before
+    creating the canvas.
 
-    Return value:
-    (width, height) -- size of the text block
+    Parameters
+    ----------
+    canvas : PIL.ImageDraw.Image
+        The canvas to draw the text block upon. If the `dry_run` option
+        is on (see "Other Parameters"), `canvas` can be ``None``.
+    xy : tuple
+        Tuple ``(x, y)`` consisting of x and y coordinates of the
+        topleft corner of the text block.
+    text : str
+        Text to be drawn, can be multiline.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
+
+    Returns
+    -------
+    (width, height)
+        Size of text block.
+
+    Other Parameters
+    ----------------
+    font : Font, optional
+        Default is the font constructed by ``Font()`` without arguments.
+    color : color, optional
+        Color of text; can be in any color format accepted by Pillow
+        (used for the ``fill`` argument of
+        ``PIL.ImageDraw.Draw.text``). Default is ``'black'``.
+    spacing : float, optional
+        Line spacing as a float. Default is 1.2.
+    dry_run : bool, optional
+        If ``True``, do not draw anything, only return the size of the
+        text block. Default is ``False``.
+
     """
-    x = xy[0]
-    y = xy[1]
-    line_height = int(round(font_size * spacing))
+
+    if params is None:
+        params = {}
+    x, y = xy
+    font = _read_param(params, 'font', DEFAULT_FONT)
+    color = _read_param(params, 'color', 'black')
+    spacing = _read_param(params, 'spacing', 1.2)
+    dry_run = _read_param(params, 'dry_run', False)
+
+    if not dry_run:
+        draw = ImageDraw.Draw(canvas)
+
+    line_height = int(round(font.size * spacing))
     width = 0
     height = 0
     for line in text.splitlines():
-        (w, _) = draw.textsize(line, font=font)
-        draw.text((x, y), line, fill=color, font=font)
+        w, _ = font.obj.getsize(line)
+        if not dry_run:
+            draw.text((x, y), line, fill=color, font=font.obj)
         if w > width:
-            width = w
+            width = w  # update width to that of the current widest line
         height += line_height
         y += line_height
     return (width, height)
 
 
-class StoryBoard(object):
-    """Class for storing video thumbnails and metadata, and creating storyboard
-    on request.
+def create_thumbnail(frame, width, params=None):
+    """Create thumbnail of a video frame.
+
+    The timestamp of the frame can be overlayed to the thumbnail. See
+    "Other Parameters" to how to enable this feature and relevant
+    options.
+
+    Parameters
+    ----------
+    frame : storyboard.frame.Frame
+        The video frame to be thumbnailed.
+    width : int
+        Width of the thumbnail.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
+
+    Returns
+    -------
+    thumbnail : PIL.Image.Image
+
+    Other Parameters
+    ----------------
+    aspect_ratio : float, optional
+        Aspect ratio of the thumbnail. If ``None``, use the aspect ratio
+        (only considering the pixel dimensions) of the frame. Default is
+        ``None``.
+    draw_timestamp : bool, optional
+        Whether to draw frame timestamp over the timestamp. Default is
+        ``False``.
+    timestamp_font : Font, optional
+        Font for the timestamp, if `draw_timestamp` is ``True``.
+        Default is the font constructed by ``Font()`` without arguments.
+    timestamp_align : {'right', 'center', 'left'}, optional
+        Horizontal alignment of the timestamp over the thumbnail, if
+        `draw_timestamp` is ``True``. Default is ``'right'``. Note that
+        the timestamp is always vertically aligned towards the bottom of
+        the thumbnail.
+
     """
-    # pylint: too-few-public-methods
 
-    def __init__(self, video, num_thumbnails=16,
-                 ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
-                 print_progress=False):
-        self.video = metadata.Video(video, params={
-            'ffprobe_bin': ffprobe_bin,
-            'print_progress': print_progress,
-        })
+    if params is None:
+        params = {}
+    if 'aspect_ratio' in params:
+        aspect_ratio = params['aspect_ratio']
+    else:
+        image_width, image_height = frame.image.size
+        aspect_ratio = image_width / image_height
+    height = int(round(width / aspect_ratio))
+    size = (width, height)
+    draw_timestamp = _read_param(params, 'draw_timestamp', False)
+    if draw_timestamp:
+        timestamp_font = _read_param(params, 'timestamp_font', DEFAULT_FONT)
+        timestamp_align = _read_param(params, 'timestamp_align', 'right')
+
+    thumbnail = frame.image.resize(size, Image.LANCZOS)
+
+    if draw_timestamp:
+        draw = ImageDraw.Draw(thumbnail)
+
+        timestamp_text = util.humantime(frame.timestamp, ndigits=0)
+        timestamp_width, timestamp_height = \
+            draw.textsize(timestamp_text, timestamp_font.obj)
+
+        # calculate upperleft corner of the timestamp overlay
+        # we hard code a margin of 5 pixels
+        timestamp_y = height - 5 - timestamp_height
+        if timestamp_align == 'right':
+            timestamp_x = width - 5 - timestamp_width
+        elif timestamp_align == 'left':
+            timestamp_x = 5
+        elif timestamp_align == 'center':
+            timestamp_x = int((width - timestamp_width) / 2)
+        else:
+            raise ValueError("timestamp alignment option '%s' not recognized"
+                             % timestamp_align)
+
+        # draw white timestamp with 1px thick black border
+        for x_offset in range(-1, 2):
+            for y_offset in range(-1, 2):
+                draw.text((timestamp_x + x_offset, timestamp_y + y_offset),
+                          timestamp_text,
+                          fill='black', font=timestamp_font.obj)
+        draw.text((timestamp_x, timestamp_y),
+                  timestamp_text,
+                  fill='white', font=timestamp_font.obj)
+
+    return thumbnail
+
+
+def tile_images(images, tile, params=None):
+    """
+    Combine images into a composite image through 2D tiling.
+
+    For example, 16 thumbnails can be combined into an 4x4 array. As
+    another example, three images of the same width (think of the
+    metadata sheet, the bare storyboard, and the promotional banner) can
+    be combined into a 1x3 array, i.e., assembled vertically.
+
+    The image list is processed column-first.
+
+    Note that except if you use the `tile_size` option (see "Other
+    Parameters"), you should make sure that images passed into this
+    function satisfy the condition that the widths of all images in each
+    column and the heights of all images in each row match perfectly;
+    otherwise, this function will give up and raise a ValueError.
+
+    Parameters
+    ----------
+    images : list
+        A list of PIL.Image.Image objects, satisfying the necessary
+        height and width conditions (see explanation above).
+    tile : tuple
+        A tuple ``(m, n)`` indicating `m` columns and `n` rows. The
+        product of `m` and `n` should be the length of `images`, or a
+        `ValueError` will arise.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is ``None``.
+        See the "Other Parameters" section for understood key/value
+        pairs.
+
+    Returns
+    -------
+    PIL.Image.Image
+        The composite image.
+
+    Raises
+    ------
+    ValueError
+        If the length of `images` does not match the product of columns
+        and rows (as defined in `tile`), or the widths and heights of
+        the images do not satisfy the necessary consistency conditions.
+
+    Other Parameters
+    ----------------
+    tile_size : tuple, optional
+        A tuple ``(width, height)``. If this parameter is specified,
+        width and height consistency conditions won't be checked, and
+        every image will be resized to (width, height) when
+        combined. Default is ``None``.
+    tile_spacing : tuple, optional
+        A tuple ``(hor, ver)`` specifying the horizontal and vertical
+        spacing between adjacent tiles. Default is ``(0, 0)``.
+    margins : tuple, optional
+        A tuple ``(hor, ver)`` specifying the horizontal and vertical
+        margins (padding) around the combined image. Default is ``(0,
+        0)``.
+    canvas_color : color, optional
+        A color in any format recognized by Pillow. This is only
+        relevant if you have nonzero tile spacing or margins, when the
+        background shines through the spacing or margins. Default is
+        ``'white'``.
+    close_separate_images : bool
+        Whether to close the separate after combining. Closing the
+        images will release the corresponding resources. Default is
+        ``False``.
+
+    """
+
+    # pylint: disable=too-many-branches
+
+    if params is None:
+        params = {}
+    cols, rows = tile
+    if len(images) != cols * rows:
+        msg = "{} images cannot fit into a {}x{}={} array".format(
+            len(images), cols, rows, cols * rows)
+        raise ValueError(msg)
+    hor_spacing, ver_spacing = _read_param(params, 'tile_spacing', (0, 0))
+    hor_margin, ver_margin = _read_param(params, 'margins', (0, 0))
+    canvas_color = _read_param(params, 'canvas_color', 'white')
+    close_separate_images = _read_param(params, 'close_separate_images', False)
+    if 'tile_size' in params and params['tile_size'] is not None:
+        tile_size = params['tile_size']
+        tile_width, tile_height = tile_size
+        canvas_width = (tile_width * cols + hor_spacing * (cols - 1) +
+                        hor_margin * 2)
+        canvas_height = (tile_height * rows + ver_spacing * (rows - 1) +
+                         ver_margin * 2)
+        resize = True
+    else:
+        # check column width consistency, bark if not
+        # calculate total width along the way
+        canvas_width = hor_spacing * (cols - 1) + hor_margin * 2
+        for col in range(0, cols):
+            # reference width set by the first image in the column
+            ref_index = 0 * cols + col
+            ref_width, ref_height = images[ref_index].size
+            canvas_width += ref_width
+            for row in range(1, rows):
+                index = row * cols + col
+                width, height = images[index].size
+                if width != ref_width:
+                    msg = ("the width of image #{} "
+                           "(row #{}, col #{}, {}x{}) "
+                           "does not agree with that of image #{} "
+                           "(row #{}, col #{}, {}x{})".format(
+                               index, row, col, width, height,
+                               ref_index, 0, col, ref_width, ref_height,
+                           ))
+                    raise ValueError(msg)
+        # check row height consistency, bark if not
+        # calculate total height along the way
+        canvas_height = ver_spacing * (rows - 1) + ver_margin * 2
+        for row in range(0, rows):
+            # reference width set by the first image in the column
+            ref_index = row * cols + 0
+            ref_width, ref_height = images[ref_index].size
+            canvas_height += ref_height
+            for col in range(1, cols):
+                index = row * cols + col
+                width, height = images[index].size
+                if height != ref_height:
+                    msg = ("the height of image #{} "
+                           "(row #{}, col #{}, {}x{}) "
+                           "does not agree with that of image #{} "
+                           "(row #{}, col #{}, {}x{})".format(
+                               index, row, col, width, height,
+                               ref_index, 0, col, ref_width, ref_height,
+                           ))
+                    raise ValueError(msg)
+        # passed tests, will assemble as is
+        resize = False
+
+    # start assembling images
+    canvas = Image.new('RGBA', (canvas_width, canvas_height), canvas_color)
+    y = ver_margin
+    for row in range(0, rows):
+        x = hor_margin
+        for col in range(0, cols):
+            image = images[row * cols + col]
+
+            if resize:
+                canvas.paste(image.resize(tile_size, Image.LANCZOS), (x, y))
+            else:
+                canvas.paste(image, (x, y))
+
+            # accumulate width of this column, as well as horizontal spacing
+            x += image.size[0] + hor_spacing
+        # accumulate height of this row, as well as vertical spacing
+        y += images[row * cols + 0].size[1] + ver_spacing
+
+    if close_separate_images:
+        for image in images:
+            image.close()
+
+    return canvas
+
+
+class StoryBoard(object):
+    """Class for creating video storyboard.
+
+    Parameters
+    ----------
+    video
+        Either a string specifying the path to the video file, or a
+        ``storyboard.metadata.Video`` object.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is
+        ``None``. See the "Other Parameters" section for understood
+        key/value pairs.
+
+    Raises
+    ------
+    OSError
+        If ffmpeg and ffprobe binaries do not exist or seem corrupted,
+        or if the video does not exist or cannot be recognized by
+        FFprobe.
+
+    Other Parameters
+    ----------------
+    bins : tuple, optional
+        A tuple (ffmpeg_bin, ffprobe_bin), specifying the name of path
+        of FFmpeg and FFprobe's binaries on your system. If ``None``,
+        the bins are guessed according to type of OS, using
+        ``storyboard.fflocate.guess_bins`` (e.g., on OS X and Linux
+        systems, the natural names are ``'ffmpeg'`` and ``'ffprobe'``;
+        on Windows, the names have ``'.exe'`` suffixes). Default is
+        ``None``.
+    frame_codec : str, optional
+        Image codec to use when extracting frames using FFmpeg. Default
+        is ``'png'``. Use this option with caution only if your FFmpeg
+        cannot encode PNG, which is unlikely.
+    print_progress : bool, optional
+        Whether to print progress information (to stderr). Default is
+        ``False``.
+
+    Attributes
+    ----------
+    video : storyboard.metadata.Video
+    frames : list
+        List of equally spaced frames in the video, as
+        ``storyboard.frame.Frame`` objects. The list is empty after
+        `__init__`. See the `gen_frames` method.
+
+    Notes
+    -----
+    For developers: there are two private attributes. ``_bins`` is a
+    tuple of two strs holding the name or path of the ffmpeg and ffprobe
+    binaries; ``_frame_codec`` is a str holding the image codec used by
+    FFmpeg when generating frames (usually no one needs to touch this).
+
+    """
+
+    def __init__(self, video, params=None):
+        """Initialize the StoryBoard class.
+
+        See the module docstring for parameters and exceptions.
+
+        """
+
+        if params is None:
+            params = {}
+        if 'bins' in params and params['bins'] is not None:
+            bins = params['bins']
+            assert isinstance(bins, tuple) and len(bins) == 2
+        else:
+            bins = fflocate.guess_bins()
+        frame_codec = _read_param(params, 'frame_codec', 'png')
+        print_progress = _read_param(params, 'print_progress', False)
+
+        fflocate.check_bins(bins)
+
+        self._bins = bins
+        if isinstance(video, metadata.Video):
+            self.video = video
+        elif isinstance(video, str):
+            self.video = metadata.Video(video, params={
+                'ffprobe_bin': bins[1],
+                'print_progress': print_progress,
+            })
+        else:
+            raise ValueError("expected str or storyboard.metadata.Video "
+                             "for the video argument, got %s" %
+                             type(video).__name__)
         self.frames = []
+        self._frame_codec = frame_codec
+
+    def gen_storyboard(self, params=None):
+        """Generate full storyboard.
+
+        A full storyboard has three sections, arranged vertically in the
+        order listed: a metadata sheet, a bare storyboard, and a
+        promotional banner.
+
+        The metadata sheet consists of formatted metadata generated by
+        ``storyboard.metadata.Video.format_metadata``; you may choose
+        whether to include the SHA-1 hex digest of the video file (see
+        `include_sha1sum` in "Other Parameters"). The bare storyboard is
+        an array (usually 4x4) of thumbnails, generated from equally
+        spaced frames from the video. The promotional banner briefly
+        promotes this package (storyboard).
+
+        The metadata sheet and promotional banner are optional and can
+        be turned off individually. See `include_metadata_sheet` and
+        `include_promotional_banner` in "Other Parameters".
+
+        See https://i.imgur.com/9T2zM8R.jpg for a basic example of a
+        full storyboard.
+
+        Parameters
+        ----------
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        full_storyboard : PIL.Image.Image
+
+        Other Parameters
+        ----------------
+        include_metadata_sheet: bool, optional
+            Whether to include a video metadata sheet in the
+            storyboard. Default is ``True``.
+        include_promotional_banner: bool, optional
+            Whether to include a short promotional banner about this
+            package (storyboard) at the bottom of the
+            storyboard. Default is ``True``.
+
+        background_color : color, optional
+            Background color of the storyboard, in any color format
+            recognized by Pillow. Default is ``'white'``.
+        section_spacing : int, optional
+            Vertical spacing between adjacent sections (metadata sheet
+            and bare storyboard, bare storyboard and promotional
+            banner). If ``None``, use the vertical tile spacing (see
+            `tile_spacing`). Default is ``None``.
+        margins : tuple, optional
+            A tuple ``(hor, ver)`` specifying the horizontal and
+            vertical margins (padding) around the entire storyboard (all
+            sections included). Default is ``(10, 10)``.
+
+        tile : tuple, optional
+            A tuple ``(cols, rows)`` specifying the number of columns
+            and rows for the array of thumbnails in the
+            storyboard. Default is ``(4, 4)``.
+        tile_spacing : tuple, optional
+            A tuple ``(hor, ver)`` specifying the horizontal and
+            vertical spacing between adjacent thumbnails. Default is
+            ``(8, 6)``.
+
+        thumbnail_width : int, optional
+            Width of each thumbnail. Default is 480 (as in 480x270 for a
+            16:9 video).
+        thumbnail_aspect_ratio : float, optional
+            Aspect ratio of generated thumbnails. If ``None``, first try
+            to use the display aspect ratio of the video
+            (``self.video.dar``), then the aspect ratio of the frames if
+            ``self.video.dar`` is not available. Default is ``None``.
+
+        draw_timestamp : bool, optional
+            Whether to draw frame timestamps on top of thumbnails (as an
+            overlay).  Default is ``True``.
+        timestamp_font : Font, optional
+            Font used for timestamps, if `draw_timestamp` is
+            ``True``. Default is the font constructed by ``Font()``
+            without arguments.
+        timestamp_align : {'right', 'center', 'left'}, optional
+            Horizontal alignment of timestamps over the thumbnails, if
+            `draw_timestamp` is ``True``. Default is ``'right'``. Note
+            that timestamps are always vertically aligned to the bottom.
+
+        text_font: Font, optional
+            Font used for metadata sheet and promotional banner. Default
+            is the font constructed by ``Font()`` without arguments.
+        text_color: color, optional
+            Color of metadata and promotional text, in any format
+            recognized by Pillow. Default is ``'black'``.
+        line_spacing: float, optional
+            Line spacing of metadata text as a float, e.g., 1.0 for
+            single spacing, 1.5 for one-and-a-half spacing, and 2.0 for
+            double spacing. Default is 1.2.
+
+        include_sha1sum: bool, optional
+            Whether to include the SHA-1 hex digest of the video file in
+            the metadata fields. Default is ``False``. Be aware that
+            computing SHA-1 digest is an expensive operation.
+
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is ``False``.
+
+        """
+
+        # process parameters -- a ton of them
+        if params is None:
+            params = {}
+        include_metadata_sheet = _read_param(
+            params, 'include_metadata_sheet', True)
+        include_promotional_banner = _read_param(
+            params, 'include_promotional_banner', True)
+        background_color = _read_param(params, 'background_color', 'white')
+        margins = _read_param(params, 'margins', (10, 10))
+        tile = _read_param(params, 'tile', (4, 4))
+        tile_spacing = _read_param(params, 'tile_spacing', (8, 6))
+        if (('section_spacing' in params and
+             params['section_spacing'] is not None)):
+            section_spacing = params['section_spacing']
+        else:
+            section_spacing = tile_spacing[1]
+        thumbnail_width = _read_param(params, 'thumbnail_width', 480)
+        thumbnail_aspect_ratio = _read_param(
+            params, 'thumbnail_aspect_ratio', None)
+        draw_timestamp = _read_param(params, 'draw_timestamp', True)
+        timestamp_font = _read_param(params, 'timestamp_font', DEFAULT_FONT)
+        timestamp_align = _read_param(params, 'timestamp_align', 'right')
+        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_color = _read_param(params, 'text_color', 'black')
+        line_spacing = _read_param(params, 'line_spacing', 1.2)
+        include_sha1sum = _read_param(params, 'include_sha1sum', False)
+        print_progress = _read_param(params, 'print_progress', False)
+
+        # draw bare storyboard, metadata sheet, and promotional banner
+        if print_progress:
+            sys.stderr.write("Generating main storyboard...\n")
+        bare_storyboard = self._gen_bare_storyboard(
+            tile, thumbnail_width,
+            params={
+                'tile_spacing': tile_spacing,
+                'background_color': background_color,
+                'thumbnail_aspect_ratio': thumbnail_aspect_ratio,
+                'draw_timestamp': draw_timestamp,
+                'timestamp_font': timestamp_font,
+                'timestamp_align': timestamp_align,
+                'print_progress': print_progress,
+            }
+        )
+        total_width, _ = bare_storyboard.size
+
+        if include_metadata_sheet:
+            if print_progress:
+                sys.stderr.write("Generating metadata sheet...\n")
+            metadata_sheet = self._gen_metadata_sheet(total_width, params={
+                'text_font': text_font,
+                'text_color': text_color,
+                'line_spacing': line_spacing,
+                'background_color': background_color,
+                'include_sha1sum': include_sha1sum,
+                'print_progress': print_progress,
+            })
+
+        if include_promotional_banner:
+            if print_progress:
+                sys.stderr.write("Generating promotional banner...\n")
+            banner = self._gen_promotional_banner(total_width, params={
+                'text_font': text_font,
+                'text_color': text_color,
+                'background_color': background_color,
+            })
+
+        # combine different sections
+        if print_progress:
+            sys.stderr.write("Assembling pieces...\n")
+        sections = []
+        if include_metadata_sheet:
+            sections.append(metadata_sheet)
+        sections.append(bare_storyboard)
+        if include_promotional_banner:
+            sections.append(banner)
+        storyboard = tile_images(sections, (1, len(sections)), params={
+            'tile_spacing': (0, section_spacing),
+            'margins': margins,
+            'canvas_color': background_color,
+            'close_separate_images': True,
+        })
+
+        return storyboard
+
+    def gen_frames(self, count, params=None):
+        """Extract equally spaced frames from the video.
+
+        When tasked with extracting N frames, this method extracts them
+        at positions 1/2N, 3/2N, 5/2N, ... , (2N-1)/2N of the video. The
+        extracted frames are stored in the `frames` attribute.
+
+        Note that new frames are extracted only if the number of
+        existing frames in the `frames` attribute doesn't match the
+        specified `count` (0 at instantiation), in which case new frames
+        are extracted to match the specification, and the `frames`
+        attribute is overwritten.
+
+        Paramters
+        ----------
+        count : int
+            Number of (equally-spaced) frames to generate.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        None
+            Access the generated frames through the `frames` attribute.
+
+        RAISES
+        ------
+        OSError
+            If frame extraction with FFmpeg fails.
+
+        Other Parameters
+        ----------------
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is False.
+
+        """
+
+        if params is None:
+            params = {}
+        print_progress = _read_param(params, 'print_progress', False)
+
+        if len(self.frames) == count:
+            return
+
         duration = self.video.duration
-
-        # generate equally spaced timestamps at 1/2N, 3/2N, ... (2N-1)/2N of
-        # the video, where N is the number of thumbnails
-        interval = duration / num_thumbnails
-        timestamps = [interval/2]
-        for _ in range(1, num_thumbnails):
-            timestamps.append(timestamps[-1] + interval)
-
-        # generate frames accordingly
+        interval = duration / count
+        timestamps = [interval * (i + 1/2) for i in range(0, count)]
         counter = 0
         for timestamp in timestamps:
             counter += 1
             if print_progress:
-                sys.stderr.write("\rCreating thumbnail %d/%d..." %
-                                 (counter, num_thumbnails))
+                sys.stderr.write("\rExtracting frame %d/%d..." %
+                                 (counter, count))
             try:
-                self.frames.append(Frame.extract_frame(video, timestamp,
-                                                       ffmpeg_bin, codec))
+                frame = _extract_frame(self.video.path, timestamp, params={
+                    'ffmpeg_bin': self._bins[0],
+                    'codec': self._frame_codec,
+                })
+                self.frames.append(frame)
             except:
-                # \rCreating thumbnail %d/%d... isn't terminated by newline yet
+                # \rExtracting frame %d/%d... isn't terminated by
+                # newline yet
                 if print_progress:
                     sys.stderr.write("\n")
                 raise
         if print_progress:
             sys.stderr.write("\n")
 
-    def storyboard(self,
-                   padding=(10, 10), include_banner=True, print_progress=False,
-                   font=None, font_size=16, text_spacing=1.2,
-                   text_color='black',
-                   include_sha1sum=True,
-                   tiling=(4, 4), tile_width=480, tile_aspect_ratio=None,
-                   tile_spacing=(4, 3),
-                   draw_timestamp=True):
-        """Create storyboard.
+    def _gen_bare_storyboard(self, tile, thumbnail_width, params=None):
+        """Generate bare storyboard (thumbnails only).
 
-        Keyword arguments:
+        Paramters
+        ----------
+        tile : tuple
+            A tuple ``(cols, rows)`` specifying the number of columns
+            and rows for the array of thumbnails.
+        thumbnail_width : int
+            Width of each thumbnail.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
 
-        General options:
-        padding        -- (horizontal, vertical) padding to the entire
-                          storyboard; default is (10, 10)
-        include_banner -- boolean, whether or not to include a promotional
-                          banner for this tool at the bottom; default is True
-        print_progress -- boolean, whether or not to print progress
-                          information; default is False
+        Returns
+        -------
+        base_storyboard : PIL.Image.Image
 
-        Text options:
-        font         -- a font object loaded from PIL.ImageFont; default is
-                        SourceCodePro-Regular (included) at 16px
-        font_size    -- font size in pixels, default is 16 (should match font)
-        text_spacing -- line spacing as a float (text line height will be
-                        calculated from round(font_size * text_spacing));
-                        default is 1.2
-        text_color   -- text color, either as RGBA 4-tuple or color name
-                        string recognized by ImageColor; default is 'black'
+        Other Parameters
+        ----------------
+        tile_spacing : tuple, optional
+            See the `tile_spacing` parameter of the `tile_images`
+            function. Default is ``(0, 0)``.
 
-        Metadata options:
-        include_sha1sum -- boolean, whether or not to include SHA-1 checksum as
-                           a printed metadata field; keep in mind that SHA-1
-                           calculation is slow for large videos
+        background_color : color, optional
+            See the `canvas_color` paramter of the `tile_images`
+            function. Default is ``'white'``.
 
-        Tile options:
-        tiling            -- (m, n) means m tiles horizontally and n tiles
-                             vertically; m and n must satisfy m * n =
-                             num_thumbnails (specified in __init__); default is
-                             (4, 4)
-        tile_width        -- width of each tile (int), default is 480
-        tile_aspect_ratio -- aspect ratio of each tile; by default it is
-                             determined first from the display aspect ratio
-                             (DAR) of the video and then from the pixel
-                             dimensions, but in case the result is wrong, you
-                             can still specify the aspect ratio this way
-        tile_spacing      -- (horizontal_spaing, vertical_spacing), default is
-                             (4, 3), which means (before applying the global
-                             padding), the tiles will be spaced from the left
-                             and right edges by 4 pixels, and will have a
-                             4 * 2 = 8 pixel horizontal spacing between two
-                             adjacent tiles; same goes for vertical spacing;
+        thumbnail_aspect_ratio : float, optional
+            Aspect ratio of generated thumbnails. If ``None``, first try
+            to use the display aspect ratio of the video
+            (``self.video.dar``), then the aspect ratio of the frames if
+            ``self.video.dar`` is not available. Default is ``None``.
 
-        Timestamp options:
-        draw_timestamp  -- boolean, whether or not to draw timestamps on the
-                           thumbnails (lower-right corner); default is True
+        draw_timestamp : bool, optional
+            See the `draw_timestamp` parameter of the `create_thumbnail`
+            function. Default is ``False``.
+        timestamp_font : Font, optional
+            See the `timestamp_font` parameter of the `create_thumbnail`
+            function. Default is the font constructed by ``Font()``
+            without arguments.
+        timestamp_align : {'right', 'center', 'left'}, optional
+            See the `timestamp_align` parameter of the
+            `create_thumbnail` function. Default is ``'right'``.
 
-        Return value:
-        Storyboard as a PIL.Image.Image image.
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is False.
+
         """
-        # !TO DO: check argument types and n * m = num_thumbnails
-        if font is None:
-            font_file = pkg_resources.resource_filename(
-                __name__,
-                'SourceCodePro-Regular.otf'
-            )
-            font = ImageFont.truetype(font_file, size=16)
-        if tile_aspect_ratio is None:
-            tile_aspect_ratio = self.video.dar
 
-        # draw storyboard, meta sheet, and banner
-        if print_progress:
-            sys.stderr.write("Drawing main storyboard...\n")
-        storyboard = self._draw_storyboard(tiling, tile_width,
-                                           tile_aspect_ratio, tile_spacing,
-                                           draw_timestamp,
-                                           font)
-        total_width = storyboard.size[0]
-        if print_progress:
-            sys.stderr.write("Generating metadata sheet...\n")
-        meta_sheet = self._draw_meta_sheet(total_width, tile_spacing, font,
-                                           font_size, text_spacing, text_color,
-                                           include_sha1sum, print_progress)
-
-        # assemble the parts
-        if include_banner:
-            if print_progress:
-                sys.stderr.write("Drawing the bottom banner...\n")
-            banner = self._draw_banner(total_width,
-                                       font, font_size, text_color)
-            total_height = (storyboard.size[1] + meta_sheet.size[1] +
-                            banner.size[1])
-            # add padding
-            hp = padding[0]  # horizontal padding
-            vp = padding[1]  # vertical padding
-            total_width += 2 * hp
-            total_height += 2 * vp
-            assembled = Image.new('RGBA', (total_width, total_height), 'white')
-            if print_progress:
-                sys.stderr.write("Assembling parts...\n")
-            assembled.paste(meta_sheet, (hp, vp))
-            assembled.paste(storyboard, (hp, vp + meta_sheet.size[1]))
-            assembled.paste(banner,
-                            (hp, vp + meta_sheet.size[1] + storyboard.size[1]))
+        if params is None:
+            params = {}
+        tile_spacing = _read_param(params, 'tile_spacing', (0, 0))
+        background_color = _read_param(params, 'background_color', 'white')
+        if (('thumbnail_aspect_ratio' in params and
+             params['thumbnail_aspect_ratio'] is not None)):
+            thumbnail_aspect_ratio = params['thumbnail_aspect_ratio']
+        elif self.video.dar is not None:
+            thumbnail_aspect_ratio = self.video.dar
         else:
-            total_height = storyboard.size[1] + meta_sheet.size[1]
-            # add padding
-            hp = padding[0]  # horizontal padding
-            vp = padding[1]  # vertical padding
-            total_width += 2 * hp
-            total_height += 2 * vp
-            assembled = Image.new('RGBA', (total_width, total_height), 'white')
-            assembled.paste(meta_sheet, (hp, vp))
-            assembled.paste(storyboard, (hp, vp + meta_sheet.size[1]))
-
-        return assembled
-
-    def _draw_storyboard(self, tiling, tile_width, tile_aspect_ratio,
-                         tile_spacing,
-                         draw_timestamp,
-                         font):
-        """Draw the storyboard (thumbnails only)."""
-        horz_tiles = tiling[0]
-        vert_tiles = tiling[1]
-        tile_height = int(tile_width / tile_aspect_ratio)
-        tile_size = (tile_width, tile_height)
-        horz_spacing = tile_spacing[0]
-        vert_spacing = tile_spacing[1]
-        total_width = horz_tiles * (tile_width + 2 * horz_spacing)
-        total_height = vert_tiles * (tile_height + 2 * vert_spacing)
-        storyboard = Image.new('RGBA', (total_width, total_height), 'white')
+            # defer calculation to after generating frames
+            thumbnail_aspect_ratio = None
+        draw_timestamp = _read_param(params, 'draw_timestamp', False)
         if draw_timestamp:
-            draw = ImageDraw.Draw(storyboard)
-        for i in range(0, horz_tiles):
-            for j in range(0, vert_tiles):
-                index = j * vert_tiles + i
-                frame = self.frames[index]
-                upperleft = (tile_width * i + horz_spacing * (2 * i + 1),
-                             tile_height * j + vert_spacing * (2 * j + 1))
-                storyboard.paste(frame.image.resize(tile_size, Image.LANCZOS),
-                                 upperleft)
-                # timestamp
-                if draw_timestamp:
-                    lowerright = (upperleft[0] + tile_width,
-                                  upperleft[1] + tile_height)
-                    ts = util.humantime(frame.timestamp, ndigits=0)
-                    ts_size = draw.textsize(ts, font)
-                    ts_upperleft = (lowerright[0] - ts_size[0] - 5,
-                                    lowerright[1] - ts_size[1] - 5)
-                    (x, y) = ts_upperleft
-                    for x_offset in range(-1, 2):
-                        for y_offset in range(-1, 2):
-                            draw.text((x + x_offset, y + y_offset),
-                                      ts, fill='black', font=font)
-                    draw.text((x, y), ts, fill='white', font=font)
-        return storyboard
+            timestamp_font = _read_param(params, 'timestamp_font',
+                                         DEFAULT_FONT)
+            timestamp_align = _read_param(params, 'timestamp_align', 'right')
+        print_progress = _read_param(params, 'print_progress', False)
 
-    def _draw_meta_sheet(self, total_width, tile_spacing,
-                         font, font_size, text_spacing, text_color,
-                         include_sha1sum, print_progress):
-        """Draw the metadata sheet."""
-        horz_spacing = tile_spacing[0]
-        vert_spacing = tile_spacing[1]
+        cols, rows = tile
+        if (not(isinstance(cols, int) and isinstance(rows, int) and
+                cols > 0 and rows > 0)):
+            raise ValueError('tile is not a tuple of positive integers')
+        thumbnail_count = cols * rows
+        self.gen_frames(cols * rows, params={
+            'print_progress': print_progress,
+        })
+        if thumbnail_aspect_ratio is None:
+            frame_size = self.frames[0].image.size
+            thumbnail_aspect_ratio = frame_size[0] / frame_size[1]
+
+        thumbnails = []
+        counter = 0
+        for frame in self.frames:
+            counter += 1
+            if print_progress:
+                sys.stderr.write("\rGenerating thumbnail %d/%d..." %
+                                 (counter, thumbnail_count))
+            thumbnails.append(create_thumbnail(frame, thumbnail_width, params={
+                'aspect_ratio': thumbnail_aspect_ratio,
+                'draw_timestamp': draw_timestamp,
+                'timestamp_font': timestamp_font,
+                'timestamp_align': timestamp_align,
+            }))
+        if print_progress:
+            sys.stderr.write("\n")
+
+        if print_progress:
+            sys.stderr.write("Tiling thumbnails...\n")
+        return tile_images(thumbnails, tile, params={
+            'tile_spacing': tile_spacing,
+            'canvas_color': background_color,
+            'close_separate_images': True,
+        })
+
+    def _gen_metadata_sheet(self, total_width, params=None):
+        """Generate metadata sheet.
+
+        Parameters
+        ----------
+        total_width : int
+            Total width of the metadata sheet. Usually determined by the
+            width of the bare storyboard.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        metadata_sheet : PIL.Image.Image
+
+        Other Parameters
+        ----------------
+        text_font : Font, optional
+            Default is the font constructed by ``Font()`` without
+            arguments.
+        text_color: color, optional
+            Default is 'black'.
+        line_spacing : float, optional
+            Line spacing as a float. Default is 1.2.
+        background_color: color, optional
+            Default is 'white'.
+        include_sha1sum: bool, optional
+            See the `include_sha1sum` option of
+            `storyboard.metadata.Video.format_metadata`. Beware that
+            computing SHA-1 digest is an expensive operation.
+        print_progress : bool, optional
+            Whether to print progress information (to stderr). Default
+            is False.
+
+        """
+
+        if params is None:
+            params = {}
+        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_color = _read_param(params, 'text_color', 'black')
+        line_spacing = _read_param(params, 'line_spacing', 1.2)
+        background_color = _read_param(params, 'background_color', 'white')
+        include_sha1sum = _read_param(params, 'include_sha1sum', False)
+        print_progress = _read_param(params, 'print_progress', False)
+
         text = self.video.format_metadata(params={
             'include_sha1sum': include_sha1sum,
             'print_progress': print_progress,
         })
-        num_lines = len(text.splitlines())
-        total_height = (int(round(font_size * text_spacing)) * num_lines +
-                        vert_spacing * 3)  # double vert spacing at the bottom
-        upperleft = (horz_spacing, vert_spacing)
-        meta_sheet = Image.new('RGBA', (total_width, total_height), 'white')
-        draw = ImageDraw.Draw(meta_sheet)
-        _draw_text_block(text, draw, upperleft,
-                         text_color, font, font_size, text_spacing)
-        return meta_sheet
 
-    def _draw_banner(self, total_width, font, font_size, text_color):
-        """Draw the promotion banner."""
-        # pylint: disable=no-self-use
-        # This function is an integral part of the class.
-        text = ("Generated by storyboard version %s. " % __version__ +
-                "Fork me on GitHub: github.com/zmwangx/storyboard")
-        total_height = font_size + 3 * 2  # hard code vert spacing in banner
-        banner = Image.new('RGBA', (total_width, total_height), 'white')
-        draw = ImageDraw.Draw(banner)
-        text_width = draw.textsize(text, font=font)[0]
-        horz_spacing = (total_width - text_width) // 2
-        draw.text((horz_spacing, 3), text, fill=text_color, font=font)
+        _, total_height = draw_text_block(None, (0, 0), text, params={
+            'font': text_font,
+            'spacing': line_spacing,
+            'dry_run': True,
+        })
+
+        metadata_sheet = Image.new('RGBA', (total_width, total_height),
+                                   background_color)
+        draw_text_block(metadata_sheet, (0, 0), text, params={
+            'font': text_font,
+            'color': text_color,
+            'spacing': line_spacing,
+        })
+
+        return metadata_sheet
+
+    @staticmethod
+    def _gen_promotional_banner(total_width, params=None):
+        """Generate promotion banner.
+
+        This is the promotional banner for the storyboard package.
+
+        Parameters
+        ----------
+        total_width : int
+            Total width of the metadata sheet. Usually determined by the
+            width of the bare storyboard.
+        params : dict, optional
+            Optional parameters enclosed in a dict. Default is
+            ``None``. See the "Other Parameters" section for understood
+            key/value pairs.
+
+        Returns
+        -------
+        banner : PIL.Image.Image
+
+        Other Parameters
+        ----------------
+        text_font : Font, optional
+            Default is the font constructed by ``Font()`` without
+            arguments.
+        text_color: color, optional
+            Default is 'black'.
+        background_color: color, optional
+            Default is 'white'.
+
+        """
+
+        if params is None:
+            params = {}
+        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_color = _read_param(params, 'text_color', 'black')
+        background_color = _read_param(params, 'background_color', 'white')
+
+        text = ("Generated by storyboard version %s. "
+                "Fork me on GitHub: github.com/zmwangx/storyboard"
+                % __version__)
+        text_width, total_height = draw_text_block(None, (0, 0), text, params={
+            'font': text_font,
+            'dry_run': True,
+        })
+
+        banner = Image.new('RGBA', (total_width, total_height),
+                           background_color)
+        # center the text -- calculate the x coordinate of its topleft
+        # corner
+        text_x = int((total_width - text_width) / 2)
+        draw_text_block(banner, (text_x, 0), text, params={
+            'font': text_font,
+            'color': text_color,
+        })
+
         return banner
 
 
@@ -311,21 +1029,19 @@ def main():
     returncode = 0
     for video in args.videos:
         try:
-            sb = StoryBoard(
-                video,
-                ffmpeg_bin=ffmpeg_bin,
-                ffprobe_bin=ffprobe_bin,
-                print_progress=print_progress,
-            )
+            sb = StoryBoard(video, params={
+                'bins': (ffmpeg_bin, ffprobe_bin),
+                'print_progress': print_progress,
+            })
         except OSError as err:
             sys.stderr.write("error: %s\n\n" % str(err))
             returncode = 1
             continue
 
-        storyboard = sb.storyboard(
-            include_sha1sum=include_sha1sum,
-            print_progress=print_progress,
-        )
+        storyboard = sb.gen_storyboard(params={
+            'include_sha1sum': include_sha1sum,
+            'print_progress': print_progress,
+        })
 
         _, path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')
         # ! will have output format and quality options
