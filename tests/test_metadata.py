@@ -105,7 +105,14 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(sstream.type, 'subtitle')
         print('')
         print(vid.format_metadata(params={'include_sha1sum': True}))
-
+        # specifically test the video_duration option
+        vid = Video(self.videofile, params={
+            'ffprobe_bin': self.ffprobe_bin,
+            'video_duration': 10.0,
+            'print_progress': False,
+        })
+        self.assertAlmostEqual(vid.duration, 10.0)
+        self.assertEqual(humantime(vid.duration), vid.duration_text)
 
 if __name__ == '__main__':
     unittest.main()

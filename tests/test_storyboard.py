@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import unittest
 
-from PIL import Image, ImageFont, ImageFont
+from PIL import Image, ImageFont
 
 from storyboard import fflocate
 from storyboard.frame import Frame

@@ -22,14 +22,14 @@ from storyboard.util import read_param as _read_param
 
 
 _FORMAT_MAP = {
-    'aac': 'raw ADTS AAC',
+    'aac': 'Raw ADTS AAC',
     'asf': 'Advanced Systems Format',
     'avi': 'Audio Video Interleaved',
     'flv': 'Flash video',
     'matroska,webm': 'Matroska',
     'mpeg': 'MPEG program stream',
     'mpegts': 'MPEG transport stream',
-    'mpegvideo': 'raw MPEG video',
+    'mpegvideo': 'Raw MPEG video',
     'mov,mp4,m4a,3gp,3g2,mj2': 'MPEG-4 Part 14',
     'ogg': 'Ogg',
 }
@@ -173,6 +173,13 @@ class Video(object):
         Name/path of the ffprobe binary (should be callable). By default
         the name is guessed based on OS type. (See the
         storyboard.fflocate module.)
+    video_duration : float, optional
+        Duration of the video in seconds. If ``None``, extract the
+        duration from container metadata. Default is ``None``. This is
+        only needed in edge cases where the duration of the video cannot
+        be read off from container metadata, or the duration extracted
+        is wrong. See `#3
+        <https://github.com/zmwangx/storyboard/issues/3>`_ for details.
     print_progress : bool, optional
         Whether to print progress information (to stderr). Default is
         False.
@@ -252,6 +259,7 @@ class Video(object):
             ffprobe_bin = params['ffprobe_bin']
         else:
             _, ffprobe_bin = fflocate.guess_bins()
+        video_duration = _read_param(params, 'video_duration', None)
         print_progress = _read_param(params, 'print_progress', False)
 
         self.path = os.path.abspath(video)
@@ -272,7 +280,11 @@ class Video(object):
         self.title = self._get_title()
         self.format = self._get_format()
         self.size, self.size_text = self._get_size()
-        self.duration, self.duration_text = self._get_duration()
+        if video_duration is None:
+            self.duration, self.duration_text = self._get_duration()
+        else:
+            self.duration = video_duration
+            self.duration_text = util.humantime(video_duration)
         self.sha1sum = None  # SHA-1 digest is generated upon request
 
         # the remaining attributes will be dynamically set when parsing
@@ -374,7 +386,10 @@ class Video(object):
         # container format
         lines.append("Container format:       %s" % self.format)
         # duration
-        lines.append("Duration:               %s" % self.duration_text)
+        if self.duration_text:
+            lines.append("Duration:               %s" % self.duration_text)
+        else:
+            lines.append("Duration:               Not available")
         # dimension
         if self.dimension_text:
             lines.append("Pixel dimensions:       %s" % self.dimension_text)
@@ -563,15 +578,19 @@ class Video(object):
         Returns
         -------
         duration : float
-            Duration in seconds.
+            Duration in seconds. ``None`` if duration is not available.
         duration_text : str
-            Duration as a human readable string, e.g., ``'00:02:53.33'``
+            Duration as a human readable string, e.g.,
+            ``'00:02:53.33'``. ``None`` if duration is not available.
 
         """
 
-        duration = float(self._ffprobe['format']['duration'])
-        duration_text = util.humantime(duration)
-        return (duration, duration_text)
+        if 'duration' in self._ffprobe['format']:
+            duration = float(self._ffprobe['format']['duration'])
+            duration_text = util.humantime(duration)
+            return (duration, duration_text)
+        else:
+            return (None, None)
 
     _SHA_CHUNK_SIZE = 65536
     """Chunk size used when computing the SHA-1 digest."""

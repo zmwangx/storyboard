@@ -453,6 +453,16 @@ class StoryBoard(object):
         Image codec to use when extracting frames using FFmpeg. Default
         is ``'png'``. Use this option with caution only if your FFmpeg
         cannot encode PNG, which is unlikely.
+    video_duration : float, optional
+        Duration of the video in seconds, passed to the
+        ``storyboard.metadata.Video`` constructor. If ``None``, extract
+        the duration from video container metadata. Default is
+        ``None``. You should rarely need this option, unless the
+        duration of the video cannot be extracted from video container
+        metadata, or the duration extracted is wrong. Either case is
+        fatal to the storyboard (since the frames extracted depend on
+        the duration), and this option provides a fallback. See `#3
+        <https://github.com/zmwangx/storyboard/issues/3>`_ for details.
     print_progress : bool, optional
         Whether to print progress information (to stderr). Default is
         ``False``.
@@ -489,6 +499,7 @@ class StoryBoard(object):
         else:
             bins = fflocate.guess_bins()
         frame_codec = _read_param(params, 'frame_codec', 'png')
+        video_duration = _read_param(params, 'video_duration', None)
         print_progress = _read_param(params, 'print_progress', False)
 
         fflocate.check_bins(bins)
@@ -499,6 +510,7 @@ class StoryBoard(object):
         elif isinstance(video, str):
             self.video = metadata.Video(video, params={
                 'ffprobe_bin': bins[1],
+                'video_duration': video_duration,
                 'print_progress': print_progress,
             })
         else:
@@ -527,8 +539,8 @@ class StoryBoard(object):
         be turned off individually. See `include_metadata_sheet` and
         `include_promotional_banner` in "Other Parameters".
 
-        See https://i.imgur.com/9T2zM8R.jpg for a basic example of a
-        full storyboard.
+        `Here <https://i.imgur.com/9T2zM8R.jpg>`_ is a basic example of
+        a full storyboard.
 
         Parameters
         ----------
