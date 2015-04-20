@@ -1,0 +1,13 @@
+Filename:               h264.ass.mkv
+File size:              3243 (3.17KiB)
+SHA-1 digest:           09f0017f73988a11834c3c81b251d64d5a58dab0
+Container format:       Matroska
+Duration:               00:00:02.08
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps
+    #1: Subtitle, SubStation Alpha
+

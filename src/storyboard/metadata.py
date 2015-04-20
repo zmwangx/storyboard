@@ -23,21 +23,25 @@ from storyboard.util import read_param as _read_param
 
 _FORMAT_MAP = {
     'aac': 'Raw ADTS AAC',
+    'ac3': 'Raw AC-3',
     'asf': 'Advanced Systems Format',
     'avi': 'Audio Video Interleaved',
     'flv': 'Flash video',
+    'jpeg_pipe': 'JPEG',
     'matroska,webm': 'Matroska',
+    'mp3': 'MP3',
     'mpeg': 'MPEG program stream',
     'mpegts': 'MPEG transport stream',
     'mpegvideo': 'Raw MPEG video',
     'mov,mp4,m4a,3gp,3g2,mj2': 'MPEG-4 Part 14',
+    'png_pipe': 'PNG',
     'ogg': 'Ogg',
 }
 
 _VCODEC_MAP = {
     'h264': 'H.264',
     'hevc': 'HEVC',
-    'mjpeg': 'MJPEG',
+    'mjpeg': 'Motion JPEG',
     'mpeg1video': 'MPEG-1 Part 2',
     'mpeg2video': 'MPEG-2 Part 2',
     'mpeg4': 'MPEG-4 Part 2',
@@ -92,8 +96,8 @@ class Stream(object):
 
     height : int
 
-    dimension : (width, height)
-        E.g., ``(1920, 1080)``.
+    dimension : tuple
+        ``(width, height)``, e.g., ``(1920, 1080)``.
 
     dimension_text : str
         Dimension as a human readable string, e.g. ``'1920x1080'``.

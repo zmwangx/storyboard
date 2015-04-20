@@ -13,9 +13,11 @@ before_install:
   - export PATH=$PWD/ffmpeg:$PATH
 install:
   - pip install -r requirements.txt
+  - pip install -r tests/requirements.txt
+  - pip install -r docs/requirements.txt
   - pip install .
 script:
-  - coverage run --source=storyboard setup.py test
+  - nosetests --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
   - cd docs && make html
 after_success:
   - coveralls

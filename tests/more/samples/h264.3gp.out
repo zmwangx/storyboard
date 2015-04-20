@@ -1,0 +1,12 @@
+Filename:               h264.3gp
+File size:              2794 (2.73KiB)
+SHA-1 digest:           52c6eb8c4ce8d674315c78bd657e27c5ee3e406b
+Container format:       3GPP
+Duration:               00:00:02.00
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps, 6 kb/s
+

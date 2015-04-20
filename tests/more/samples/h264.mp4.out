@@ -1,0 +1,12 @@
+Filename:               h264.mp4
+File size:              2892 (2.83KiB)
+SHA-1 digest:           a905ded6c60c68efca4bb91c58e4e6d0ff94f16a
+Container format:       MPEG-4 Part 14 (MP4)
+Duration:               00:00:02.00
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps, 6 kb/s
+

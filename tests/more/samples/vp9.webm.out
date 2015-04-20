@@ -1,0 +1,12 @@
+Filename:               vp9.webm
+File size:              1686 (1.65KiB)
+SHA-1 digest:           40cd4b4f425a2d4d95c1f818e31c66b22773ce99
+Container format:       WebM
+Duration:               00:00:02.00
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, VP9, 128x72 (DAR 16:9), 25 fps
+

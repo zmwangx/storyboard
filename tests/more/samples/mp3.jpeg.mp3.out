@@ -1,0 +1,12 @@
+Filename:               mp3.jpeg.mp3
+File size:              1851 (1.81KiB)
+SHA-1 digest:           7d9b27c1ff8f85d884c9a19b51911fe20db3c9af
+Container format:       MP3
+Duration:               00:00:00.18
+Pixel dimensions:       100x100
+Display aspect ratio:   1:1
+Frame rate:             90000 fps
+Streams:
+    #0: Audio, MP3, 64 kb/s
+    #1: Video, PNG, 100x100 (DAR 1:1), 90000 fps
+

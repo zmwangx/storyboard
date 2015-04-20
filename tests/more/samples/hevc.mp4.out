@@ -1,0 +1,12 @@
+Filename:               hevc.mp4
+File size:              3157 (3.09KiB)
+SHA-1 digest:           f95799c2204136ae95607279070666cf320a177d
+Container format:       MPEG-4 Part 14 (MP4)
+Duration:               00:00:02.00
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, HEVC (Main Profile level 3.0), 128x72 (DAR 16:9), 25 fps, 4 kb/s
+

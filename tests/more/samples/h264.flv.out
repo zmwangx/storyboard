@@ -1,0 +1,12 @@
+Filename:               h264.flv
+File size:              2830 (2.77KiB)
+SHA-1 digest:           9023e79a0a76f82bac5527c06ad221cc8d7145e0
+Container format:       Flash video
+Duration:               00:00:02.08
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps
+

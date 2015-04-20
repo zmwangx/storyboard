@@ -1,0 +1,12 @@
+Filename:               mpeg4.mp4
+File size:              3063 (3.00KiB)
+SHA-1 digest:           a40f7adf50099513cdf1a74eb3e1bc1a2988a93f
+Container format:       MPEG-4 Part 14 (MP4)
+Duration:               00:00:02.00
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, MPEG-4 Part 2 (Simple Profile), 128x72 (DAR 16:9), 25 fps, 8 kb/s
+

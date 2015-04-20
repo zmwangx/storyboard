@@ -1,0 +1,12 @@
+Filename:               mpeg2video.mpg
+File size:              4096 (4.00KiB)
+SHA-1 digest:           c6eb2a5b1f00b541598c614e13c861ef96f857fb
+Container format:       MPEG program stream
+Duration:               00:00:01.16
+Pixel dimensions:       128x72
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, MPEG-2 Part 2 (Main Profile), 128x72 (DAR 16:9), 25 fps
+
