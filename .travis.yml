@@ -12,9 +12,10 @@ before_install:
   - mv ffmpeg-git-*/ ffmpeg/
   - export PATH=$PWD/ffmpeg:$PATH
 install:
-  - pip install Pillow
-  - pip install coveralls
+  - pip install -r requirements.txt
+  - pip install .
 script:
   - coverage run --source=storyboard setup.py test
+  - cd docs && make html
 after_success:
   - coveralls

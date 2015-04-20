@@ -725,7 +725,7 @@ class StoryBoard(object):
         are extracted to match the specification, and the `frames`
         attribute is overwritten.
 
-        Paramters
+        Parameters
         ----------
         count : int
             Number of (equally-spaced) frames to generate.

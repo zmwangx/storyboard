@@ -1,0 +1,4 @@
+Pillow>=2.7
+Pygments==1.6
+Sphinx==1.2.2
+coveralls
