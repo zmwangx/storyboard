@@ -121,7 +121,7 @@ class Video(object):
 
     Raises
     ------
-    OSError:
+    OSError
         If fails to extract metadata with ffprobe, e.g., if the file is
         not present, or in a format that is not recognized by ffprobe,
         or if ffprobe cannot be called, etc.

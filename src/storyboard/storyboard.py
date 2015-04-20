@@ -54,7 +54,7 @@ class Font(object):
 
     Raises
     ------
-    OSError:
+    OSError
         If the font cannot be loaded (by ``PIL.ImageFont.truetype``).
 
     Attributes
@@ -434,7 +434,7 @@ class StoryBoard(object):
 
     Raises
     ------
-    OSError:
+    OSError
         If ffmpeg and ffprobe binaries do not exist or seem corrupted,
         or if the video does not exist or cannot be recognized by
         FFprobe.
@@ -557,8 +557,8 @@ class StoryBoard(object):
         section_spacing : int, optional
             Vertical spacing between adjacent sections (metadata sheet
             and bare storyboard, bare storyboard and promotional
-            banner). If ``None``, use twice the vertical tile spacing
-            (see `tile_spacing`). Default is ``None``.
+            banner). If ``None``, use the vertical tile spacing (see
+            `tile_spacing`). Default is ``None``.
         margins : tuple, optional
             A tuple ``(hor, ver)`` specifying the horizontal and
             vertical margins (padding) around the entire storyboard (all
@@ -571,7 +571,7 @@ class StoryBoard(object):
         tile_spacing : tuple, optional
             A tuple ``(hor, ver)`` specifying the horizontal and
             vertical spacing between adjacent thumbnails. Default is
-            ``(4, 3)``.
+            ``(8, 6)``.
 
         thumbnail_width : int, optional
             Width of each thumbnail. Default is 480 (as in 480x270 for a
@@ -626,12 +626,12 @@ class StoryBoard(object):
         background_color = _read_param(params, 'background_color', 'white')
         margins = _read_param(params, 'margins', (10, 10))
         tile = _read_param(params, 'tile', (4, 4))
-        tile_spacing = _read_param(params, 'tile_spacing', (4, 3))
+        tile_spacing = _read_param(params, 'tile_spacing', (8, 6))
         if (('section_spacing' in params and
              params['section_spacing'] is not None)):
             section_spacing = params['section_spacing']
         else:
-            section_spacing = 2 * tile_spacing[1]
+            section_spacing = tile_spacing[1]
         thumbnail_width = _read_param(params, 'thumbnail_width', 480)
         thumbnail_aspect_ratio = _read_param(
             params, 'thumbnail_aspect_ratio', None)
@@ -757,9 +757,9 @@ class StoryBoard(object):
                 sys.stderr.write("\rExtracting frame %d/%d..." %
                                  (counter, count))
             try:
-                frame = _extract_frame(self.video, timestamp, params={
+                frame = _extract_frame(self.video.path, timestamp, params={
                     'ffmpeg_bin': self._bins[0],
-                    'codec' : self._frame_codec,
+                    'codec': self._frame_codec,
                 })
                 self.frames.append(frame)
             except:
@@ -827,8 +827,8 @@ class StoryBoard(object):
             params = {}
         tile_spacing = _read_param(params, 'tile_spacing', (0, 0))
         background_color = _read_param(params, 'background_color', 'white')
-        if (('thumbnail_aspect_ratio' in params
-             and params['thumbnail_aspect_ratio'] is not None)):
+        if (('thumbnail_aspect_ratio' in params and
+             params['thumbnail_aspect_ratio'] is not None)):
             thumbnail_aspect_ratio = params['thumbnail_aspect_ratio']
         elif self.video.dar is not None:
             thumbnail_aspect_ratio = self.video.dar

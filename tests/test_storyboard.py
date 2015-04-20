@@ -149,7 +149,9 @@ class TestStoryBoard(unittest.TestCase):
             'include_sha1sum': True,
             'print_progress': True,
         })
-        self.assertEqual(board.size[0], 1952)
+        # 480 * 4 (thumbnails) + 8 * 3 (tile spacing) + 10 * 2 (margins)
+        # = 1964
+        self.assertEqual(board.size[0], 1964)
         board.close()
 
 
