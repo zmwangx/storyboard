@@ -187,9 +187,12 @@ class ProgressBar(object):
         # calculate bar length
         try:
             ncol, _ = os.get_terminal_size()
-        except AttributeError:
-            # python2 do not have os.get_terminal_size
-            # assume a minimum of 80 columns
+        except (AttributeError, OSError):
+            # Python2 do not have os.get_terminal_size.  Also,
+            # os.get_terminal_size fails if stdout is redirected to a
+            # pipe (pretty stupid -- should check stderr; relevant
+            # Python bug: https://bugs.python.org/issue14841). In either
+            # case, Assume a minimum of 80 columns.
             ncol = 80
         self._barlen = (ncol - 48) if ncol >= 58 else 10
 
