@@ -54,7 +54,7 @@ class TestUtil(unittest.TestCase):
         nchunks = 16
         totalsize = chunksize * nchunks
         sha1 = hashlib.sha1()
-        pbar = ProgressBar(totalsize)
+        pbar = ProgressBar(totalsize, interval=0.001)
         for _ in range(0, nchunks):
             sha1.update(chunk)
             pbar.update(chunksize)

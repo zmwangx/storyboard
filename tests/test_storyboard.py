@@ -12,9 +12,6 @@ from PIL import Image, ImageFont, ImageFont
 from storyboard import fflocate
 from storyboard.frame import Frame
 from storyboard.storyboard import *
-from storyboard.storyboard import _draw_text_block
-from storyboard.storyboard import _create_thumbnail
-from storyboard.storyboard import _tile_images
 
 
 class TestStoryBoard(unittest.TestCase):
@@ -74,7 +71,7 @@ class TestStoryBoard(unittest.TestCase):
     def test_draw_text_block(self):
         canvas = Image.new('RGBA', (100, 100), 'white')
         text = "hello,\nworld!\n"
-        text_block_size = _draw_text_block(canvas, (10, 10), text)
+        text_block_size = draw_text_block(canvas, (10, 10), text)
         # the following test is based on the current DEFAULT_FONT_FILE
         # and DEFAULT_FONT_SIZE (SourceCodePro-Regular at size 16)
         self.assertEqual(text_block_size, (60, 38))
@@ -83,11 +80,11 @@ class TestStoryBoard(unittest.TestCase):
     def test_create_thumbnail(self):
         frame = Frame(15.50, Image.new('RGBA', (320, 180), 'pink'))
         # default aspect ratio
-        thumbnail = _create_thumbnail(frame, 180)
+        thumbnail = create_thumbnail(frame, 180)
         self.assertEqual(thumbnail.size, (180, 101))
         thumbnail.close()
         # custom aspect ratio with timestamp overlay
-        thumbnail = _create_thumbnail(
+        thumbnail = create_thumbnail(
             frame, 180,
             params={
                 'aspect_ratio': 1/1,
@@ -102,23 +99,23 @@ class TestStoryBoard(unittest.TestCase):
         standard = Image.new('RGBA', (50, 50))
         larger = Image.new('RGBA', (60, 60))
         # default, consistent
-        combined = _tile_images(
+        combined = tile_images(
             [standard, standard, standard, standard], (2, 2)
         )
         self.assertEqual(combined.size, (100, 100))
         combined.close()
         # default, wrong number of images
         with self.assertRaises(ValueError):
-            combined = _tile_images(
+            combined = tile_images(
                 [standard, standard, standard], (2, 2)
             )
         # default, inconsistent
         with self.assertRaises(ValueError):
-            combined = _tile_images(
+            combined = tile_images(
                 [standard, standard, standard, larger], (2, 2)
             )
         # inconsistent but work around with tile_size
-        combined = _tile_images(
+        combined = tile_images(
             [standard, standard, standard, larger], (2, 2), params={
                 'tile_size': (40, 40)
             }
@@ -126,7 +123,7 @@ class TestStoryBoard(unittest.TestCase):
         self.assertEqual(combined.size, (80, 80))
         combined.close()
         # with all other options
-        combined = _tile_images(
+        combined = tile_images(
             [standard, standard, standard, standard, standard, standard],
             (2, 3),
             params={
@@ -144,16 +141,15 @@ class TestStoryBoard(unittest.TestCase):
         larger.close()
 
     def test_storyboard(self):
-        sb = StoryBoard(
-            self.videofile,
-            ffmpeg_bin=self.ffmpeg_bin,
-            ffprobe_bin=self.ffprobe_bin,
-            print_progress=False,
-        )
-        board = sb.storyboard(
-            include_sha1sum=True,
-            print_progress=False,
-        )
+        sb = StoryBoard(self.videofile, params={
+            'bins': (self.ffmpeg_bin, self.ffprobe_bin),
+            'print_progress': True,
+        })
+        board = sb.gen_storyboard(params={
+            'include_sha1sum': True,
+            'print_progress': True,
+        })
+        self.assertEqual(board.size[0], 1952)
         board.close()
 
 

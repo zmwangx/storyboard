@@ -36,7 +36,7 @@ def read_param(params, key, default):
 
     """
 
-    if not isinstance(key, 'str'):
+    if not isinstance(key, str):
         raise ValueError('invalid parameter name %s' % str(key))
 
     return params[key] if key in params else default

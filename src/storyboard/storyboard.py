@@ -2,6 +2,8 @@
 
 """Generate video storyboards with metadata reports."""
 
+# pylint: disable=too-many-lines
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -157,7 +159,7 @@ def draw_text_block(canvas, xy, text, params=None):
     width = 0
     height = 0
     for line in text.splitlines():
-        w, _ = draw.textsize(line, font=font.obj)
+        w, _ = font.obj.getsize(line)
         if not dry_run:
             draw.text((x, y), line, fill=color, font=font.obj)
         if w > width:
@@ -418,19 +420,93 @@ def tile_images(images, tile, params=None):
 
 
 class StoryBoard(object):
-    """Class for storing video thumbnails and metadata, and creating storyboard
-    on request.
-    """
-    # pylint: too-few-public-methods
+    """Class for creating video storyboard.
 
-    def __init__(self, video, num_thumbnails=16,
-                 ffmpeg_bin='ffmpeg', ffprobe_bin='ffprobe', codec='png',
-                 print_progress=False):
-        self.video = metadata.Video(video, params={
-            'ffprobe_bin': ffprobe_bin,
-            'print_progress': print_progress,
-        })
+    Parameters
+    ----------
+    video
+        Either a string specifying the path to the video file, or a
+        ``storyboard.metadata.Video`` object.
+    params : dict, optional
+        Optional parameters enclosed in a dict. Default is
+        ``None``. See the "Other Parameters" section for understood
+        key/value pairs.
+
+    Raises
+    ------
+    OSError:
+        If ffmpeg and ffprobe binaries do not exist or seem corrupted,
+        or if the video does not exist or cannot be recognized by
+        FFprobe.
+
+    Other Parameters
+    ----------------
+    bins : tuple, optional
+        A tuple (ffmpeg_bin, ffprobe_bin), specifying the name of path
+        of FFmpeg and FFprobe's binaries on your system. If ``None``,
+        the bins are guessed according to type of OS, using
+        ``storyboard.fflocate.guess_bins`` (e.g., on OS X and Linux
+        systems, the natural names are ``'ffmpeg'`` and ``'ffprobe'``;
+        on Windows, the names have ``'.exe'`` suffixes). Default is
+        ``None``.
+    frame_codec : str, optional
+        Image codec to use when extracting frames using FFmpeg. Default
+        is ``'png'``. Use this option with caution only if your FFmpeg
+        cannot encode PNG, which is unlikely.
+    print_progress : bool, optional
+        Whether to print progress information (to stderr). Default is
+        ``False``.
+
+    Attributes
+    ----------
+    video : storyboard.metadata.Video
+    frames : list
+        List of equally spaced frames in the video, as
+        ``storyboard.frame.Frame`` objects. The list is empty after
+        `__init__`. See the `gen_frames` method.
+
+    Notes
+    -----
+    For developers: there are two private attributes. ``_bins`` is a
+    tuple of two strs holding the name or path of the ffmpeg and ffprobe
+    binaries; ``_frame_codec`` is a str holding the image codec used by
+    FFmpeg when generating frames (usually no one needs to touch this).
+
+    """
+
+    def __init__(self, video, params=None):
+        """Initialize the StoryBoard class.
+
+        See the module docstring for parameters and exceptions.
+
+        """
+
+        if params is None:
+            params = {}
+        if 'bins' in params and params['bins'] is not None:
+            bins = params['bins']
+            assert isinstance(bins, tuple) and len(bins) == 2
+        else:
+            bins = fflocate.guess_bins()
+        frame_codec = _read_param(params, 'frame_codec', 'png')
+        print_progress = _read_param(params, 'print_progress', False)
+
+        fflocate.check_bins(bins)
+
+        self._bins = bins
+        if isinstance(video, metadata.Video):
+            self.video = video
+        elif isinstance(video, str):
+            self.video = metadata.Video(video, params={
+                'ffprobe_bin': bins[1],
+                'print_progress': print_progress,
+            })
+        else:
+            raise ValueError("expected str or storyboard.metadata.Video "
+                             "for the video argument, got %s" %
+                             type(video).__name__)
         self.frames = []
+        self._frame_codec = frame_codec
 
     def gen_storyboard(self, params=None):
         """Generate full storyboard.
@@ -495,7 +571,7 @@ class StoryBoard(object):
         tile_spacing : tuple, optional
             A tuple ``(hor, ver)`` specifying the horizontal and
             vertical spacing between adjacent thumbnails. Default is
-            ``(0, 0)``.
+            ``(4, 3)``.
 
         thumbnail_width : int, optional
             Width of each thumbnail. Default is 480 (as in 480x270 for a
@@ -550,7 +626,7 @@ class StoryBoard(object):
         background_color = _read_param(params, 'background_color', 'white')
         margins = _read_param(params, 'margins', (10, 10))
         tile = _read_param(params, 'tile', (4, 4))
-        tile_spacing = _read_param(params, 'tile_spacing', (0, 0))
+        tile_spacing = _read_param(params, 'tile_spacing', (4, 3))
         if (('section_spacing' in params and
              params['section_spacing'] is not None)):
             section_spacing = params['section_spacing']
@@ -953,21 +1029,19 @@ def main():
     returncode = 0
     for video in args.videos:
         try:
-            sb = StoryBoard(
-                video,
-                ffmpeg_bin=ffmpeg_bin,
-                ffprobe_bin=ffprobe_bin,
-                print_progress=print_progress,
-            )
+            sb = StoryBoard(video, params={
+                'bins': (ffmpeg_bin, ffprobe_bin),
+                'print_progress': print_progress,
+            })
         except OSError as err:
             sys.stderr.write("error: %s\n\n" % str(err))
             returncode = 1
             continue
 
-        storyboard = sb.storyboard(
-            include_sha1sum=include_sha1sum,
-            print_progress=print_progress,
-        )
+        storyboard = sb.gen_storyboard(params={
+            'include_sha1sum': include_sha1sum,
+            'print_progress': print_progress,
+        })
 
         _, path = tempfile.mkstemp(suffix='.jpg', prefix='storyboard-')
         # ! will have output format and quality options
