@@ -299,3 +299,69 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# -- Source code links ----------------------------------------------------
+
+# Adapted from https://github.com/numpy/numpy/blob/8ddb0ce0acafe75d78df528b4d2540dfbf4b364d/doc/source/conf.py#L269-L331
+
+import inspect
+from os.path import relpath, dirname
+
+import storyboard
+
+for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
+    try:
+        __import__(name)
+        extensions.append(name)
+        break
+    except ImportError:
+        pass
+else:
+    print("NOTE: linkcode extension not found -- no links to source generated")
+
+def linkcode_resolve(domain, info):
+    """
+    Determine the URL corresponding to Python object
+    """
+    if domain != 'py':
+        return None
+
+    modname = info['module']
+    fullname = info['fullname']
+
+    submod = sys.modules.get(modname)
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in fullname.split('.'):
+        try:
+            obj = getattr(obj, part)
+        except:
+            return None
+
+    try:
+        fn = inspect.getsourcefile(obj)
+    except:
+        fn = None
+    if not fn:
+        return None
+
+    try:
+        source, lineno = inspect.findsource(obj)
+    except:
+        lineno = None
+
+    if lineno:
+        linespec = "#L%d" % (lineno + 1)
+    else:
+        linespec = ""
+
+    fn = relpath(fn, start=dirname(storyboard.__file__))
+
+    if 'dev' in STORYBOARD_VERSION:
+        return "http://github.com/zmwangx/storyboard/blob/master/src/storyboard/%s%s" % (
+           fn, linespec)
+    else:
+        return "http://github.com/zmwangx/storyboard/blob/%s/src/storyboard/%s%s" % (
+           STORYBOARD_VERSION, fn, linespec)
