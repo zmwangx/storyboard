@@ -617,7 +617,7 @@ class StoryBoard(object):
         """
 
         # process parameters -- a ton of them
-        if params is not None:
+        if params is None:
             params = {}
         include_metadata_sheet = _read_param(
             params, 'include_metadata_sheet', True)

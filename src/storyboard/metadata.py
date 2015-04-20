@@ -568,6 +568,8 @@ class Video(object):
         if self.sha1sum is not None:
             return self.sha1sum
 
+        if print_progress:
+            sys.stderr.write("Computing SHA-1 digest...\n")
         with open(self.path, 'rb') as video:
             sha1 = hashlib.sha1()
             totalsize = os.path.getsize(self.path)
