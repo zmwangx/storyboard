@@ -34,6 +34,9 @@ function DownloadPython ($python_version, $platform_suffix) {
             Start-Sleep 1
         }
    }
+   If (!$(Test-Path $filepath)) {
+       throw "$filepath does not exist!"
+   }
    Write-Host "File saved at" $filepath
    return $filepath
 }
@@ -55,6 +58,9 @@ function InstallPython ($python_version, $architecture, $python_home) {
     $args = "/qn /i $filepath TARGETDIR=$python_home"
     Write-Host "msiexec.exe" $args
     Start-Process -FilePath "msiexec.exe" -ArgumentList $args -Wait -Passthru
+    If (!$(Test-Path "$python_home/python.exe")) {
+       throw "$filepath does not exist!"
+    }
     Write-Host "Python $python_version ($architecture) installation complete"
     return $true
 }

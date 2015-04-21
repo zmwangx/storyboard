@@ -9,44 +9,26 @@ environment:
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python32"
-      PYTHON_VERSION: "3.2.6"
+      PYTHON_VERSION: "3.2.5"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python33"
-      PYTHON_VERSION: "3.3.6"
+      PYTHON_VERSION: "3.3.5"
       PYTHON_ARCH: "32"
 
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.9"
-      PYTHON_ARCH: "64"
-      WINDOWS_SDK_VERSION: "v7.0"
-
-    - PYTHON: "C:\\Python32-x64"
-      PYTHON_VERSION: "3.2.6"
-      PYTHON_ARCH: "64"
-      WINDOWS_SDK_VERSION: "v7.1"
-
-    - PYTHON: "C:\\Python33-x64"
-      PYTHON_VERSION: "3.3.6"
-      PYTHON_ARCH: "64"
-      WINDOWS_SDK_VERSION: "v7.1"
-
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.3"
-      PYTHON_ARCH: "64"
-      WINDOWS_SDK_VERSION: "v7.1"
-
 init:
   - git config --global core.autocrlf input
   - ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
 
 install:
+  - git submodule update --init --recursive
   - cinst ffmpeg
   - powershell .appveyor\install.ps1
+  - set PATH=%PYTHON%\Scripts;%PYTHON%;%PATH%
   - pip install -r requirements.txt
   - pip install -r tests\requirements.txt
   - pip install -r docs\requirements.txt
@@ -57,5 +39,5 @@ build: off
 test_script:
   - nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
   - cd docs
-  - .\make.bat html
+  - make.bat html
   - cd ..
