@@ -4,6 +4,7 @@
 [![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)<br>
 [![Build Status](https://travis-ci.org/zmwangx/storyboard.svg?branch=master)](https://travis-ci.org/zmwangx/storyboard)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true)](https://ci.appveyor.com/project/zmwangx/storyboard)
 [![Coverage Status](https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/r/zmwangx/storyboard?branch=master)
 [![Code Health](https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat)](https://landscape.io/github/zmwangx/storyboard/master)
 
@@ -48,7 +49,7 @@ brew install ffmpeg
 
     Be sure to review the list of options in `brew info ffmpeg` first. `storyboard` should not depend on any of the options to function, but FFmpeg is a great tool in its own right (several orders of magnitude greater than `storyboard`), so you might want to link against optional libraries to your own benefit.
 
-    Unfortunately, `avconv` and `avprobe` have incompatible interfaces with their FFmpeg counterparts, so there is no plan to support Libav. Fortunately, FFmpeg is making its come back to Ubuntu in [15.04 vivid](http://packages.ubuntu.com/vivid/ffmpeg).
+    Unfortunately, `avconv` and `avprobe` have incompatible interfaces with their FFmpeg counterparts, so there is no plan to support Libav (see [#16](https://github.com/zmwangx/storyboard/issues/16) for details). Fortunately, FFmpeg is making its come back to Ubuntu in [15.04 vivid](http://packages.ubuntu.com/vivid/ffmpeg), after several years of unfair treatment.
 
 * [Pillow](https://python-pillow.github.io/). Python wheels of Pillow are provided for OS X and Windows on [PyPI](https://pypi.python.org/pypi/Pillow/), so it is usually enough to simply
 
