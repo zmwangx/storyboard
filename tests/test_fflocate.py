@@ -16,6 +16,7 @@ class TestFFlocate(unittest.TestCase):
         # insist that ffmpeg and ffprobe are installed in PATH in the testing
         # system
         self.assertTrue(check_bins(guess_bins()))
+        self.assertTrue(check_bins((None, None)))
         with self.assertRaises(OSError):
             check_bins(('', ''))
 

@@ -19,10 +19,15 @@ import subprocess
 def guess_bins():
     """Guess ffmpeg and ffprobe binary names based on OS.
 
-    Returns a tuple (ffmpeg_bin, ffprobe_bin) of two strings, where ffmpeg_bin
-    is the guessed ffmpeg binary, and ffprobe_bin is the guessed ffprobe
-    binary.
+    Returns
+    -------
+    bins : tuple
+        A tuple ``(ffmpeg_bin, ffprobe_bin)`` of two strings, where
+        `ffmpeg_bin` is the guessed ffmpeg binary, and `ffprobe_bin` is
+        the guessed ffprobe binary.
+
     """
+
     if os.name == 'nt':
         return ('ffmpeg.exe', 'ffprobe.exe')
     else:
@@ -32,14 +37,29 @@ def guess_bins():
 def check_bins(bins):
     """Check existance of ffmpeg and ffprobe binaries.
 
-    Keyboard arguments:
-    bins - a tuple (ffmpeg_bin, ffprobe_bin) of the binary names/paths
+    Parameters
+    ----------
+    bins : tuple
+        A tuple `(ffmpeg_bin, ffprobe_bin)`` of the binary
+        names/paths. Either of the two can be ``None``, in which case
+        the corresponding binary is not checked.
 
-    Returns:
-    True if check is successful, raises OSError if check fails
+    Returns
+    -------
+    True
+        If check is successful.
+
+    Raises
+    ------
+    OSError
+        If check fails.
+
     """
+
     with open(os.devnull, 'wb') as devnull:
         for binary in bins:
+            if binary is None:
+                continue
             try:
                 subprocess.check_call([binary, '-version'],
                                       stdout=devnull, stderr=devnull)
