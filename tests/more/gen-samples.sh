@@ -75,14 +75,13 @@ cat >srt.srt <<EOF
 SubRip is the way to go
 EOF
 
-# ASS
-ffmpeg -i srt.srt -c:s ass ass.ass
-
 # H.264 + SubRip in Matroska container
 ffmpeg -i h264.mp4 -i srt.srt -map 0 -map 1 -metadata:s:2 language=en -c copy h264.srt.mkv
 
 # H.264 + ASS in Matroska container
+ffmpeg -i srt.srt -c:s ass ass.ass
 ffmpeg -i h264.mp4 -i ass.ass -map 0 -map 1 -metadata:s:2 language=en -c copy h264.ass.mkv
+rm ass.ass
 
 # Interlaced H.264 in MP4 container
 ffmpeg -i h264.mp4 -c:v h264 -flags +ildct+ilme h264_interlaced.mp4
