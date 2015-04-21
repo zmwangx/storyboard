@@ -1,5 +1,6 @@
 |Latest Version| |Supported Python versions| |Download format| |License|
-|Development Status| |Code Health|
+|Development Status|\  |Build Status| |Windows Build Status| |Coverage
+Status| |Code Health|
 
 ``storyboard`` is a customizable video storyboard generator with
 metadata reporting directly embedded in the generated images, based on
@@ -31,15 +32,15 @@ Sample storyboards
 ------------------
 
 Generated from
-`58ba702 <https://github.com/zmwangx/storyboard/commit/58ba702>`__ with
-default settings (click for full resolution):
+`0.1b1 <https://github.com/zmwangx/storyboard/releases/tag/0.1b1>`__
+with default settings (click for full resolution):
 
-|image6|
+|image9|
 
 (Proprietary video by Apple, available from
 http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v.)
 
-|image7|
+|image10|
 
 (CC0 video by FSF, available from
 https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv.)
@@ -76,8 +77,11 @@ Dependencies
 
    Unfortunately, ``avconv`` and ``avprobe`` have incompatible
    interfaces with their FFmpeg counterparts, so there is no plan to
-   support Libav. Fortunately, FFmpeg is making its come back to Ubuntu
-   in `15.04 vivid <http://packages.ubuntu.com/vivid/ffmpeg>`__.
+   support Libav (see
+   `#16 <https://github.com/zmwangx/storyboard/issues/16>`__ for
+   details). Fortunately, FFmpeg is making its come back to Ubuntu in
+   `15.04 vivid <http://packages.ubuntu.com/vivid/ffmpeg>`__, after
+   several years of unfair treatment.
 
 -  `Pillow <https://python-pillow.github.io/>`__. Python wheels of
    Pillow are provided for OS X and Windows on
@@ -136,7 +140,7 @@ video <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>
     Scan type:              Progressive scan
     Frame rate:             29.97 fps
     Streams:
-        #0: Audio (eng), AAC (Low Complexity), 99 kb/s
+        #0: Audio (eng), AAC (Low-Complexity), 99 kb/s
         #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
         #2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
 
@@ -194,8 +198,11 @@ Known issues
    with FFmpeg if possible) so that I can inspect and test.**
 
 -  ``ffprobe`` might report the wrong duration for certain VOB or other
-   videos, which screws up the whole thing. This will be addressed
-   later. See `#3 <https://github.com/zmwangx/storyboard/issues/3>`__.
+   videos, which screws up the whole thing. See
+   `#3 <https://github.com/zmwangx/storyboard/issues/3>`__. As a
+   fallback, you can use the optional parameter ``video_duration`` to
+   ``storyboard.storyboard.StoryBoard`` or ``storyboard.metadata.Video``
+   (see source files for extensive API doc).
 
 License
 -------
@@ -218,15 +225,44 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Development Status| image:: https://pypip.in/status/storyboard/badge.svg
    :target: https://pypi.python.org/pypi/storyboard/
+.. |Build Status| image:: https://travis-ci.org/zmwangx/storyboard.svg?branch=master
+   :target: https://travis-ci.org/zmwangx/storyboard
+.. |Windows Build Status| image:: https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true
+   :target: https://ci.appveyor.com/project/zmwangx/storyboard
+.. |Coverage Status| image:: https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master
+   :target: https://coveralls.io/r/zmwangx/storyboard?branch=master
 .. |Code Health| image:: https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat
    :target: https://landscape.io/github/zmwangx/storyboard/master
-.. |image6| image:: https://i.imgur.com/FEB56cq.jpg
-   :target: http://i.imgur.com/9T2zM8R.jpg
-.. |image7| image:: http://i.imgur.com/f8J5ZRJ.jpg
-   :target: http://i.imgur.com/l5nrxKD.jpg
+.. |image9| image:: http://i.imgur.com/mZYZ46c.jpg
+   :target: http://i.imgur.com/CSZ1x5t.jpg
+.. |image10| image:: http://i.imgur.com/3uoMQzY.jpg
+   :target: http://i.imgur.com/yUE4BhJ.jpg
 
 Changelog
 ---------
+
+0.1b1
+~~~~~
+
+*Date: 2015-04-21*
+
+* Completely refactored API (API is much more extensible now, and
+  should be relatively stable from this point onward, at least until
+  0.1 stable)
+* Almost complete rewrite under the hood -- everything should be much
+  more robust now
+* Support more formats and codecs, improve handling of existing
+  formats and codecs
+* Much better error handling in many places (e.g., when duration is
+  unavailable, it is just marked as unavailable in the output, rather
+  than throws)
+* Upped the game for several orders of maginitude on the doc side --
+  now you can build beautiful autodocs (I've yet to construct the
+  manual part of the docs, so I won't release the docs to RTD or
+  pythonhosted.org just yet)
+* Integrated with Travis (Ubuntu), AppVeyor (Windows), Coveralls.io
+  (web interface for coverage), and Landscape.io (Python code quality
+  check -- basically linter as a CI) to ensure code quality
 
 0.1a4
 ~~~~~

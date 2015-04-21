@@ -23,7 +23,7 @@ setup(
     author_email='zmwangx@gmail.com',
     license='MIT',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: MIT License',
@@ -38,7 +38,7 @@ setup(
     ],
     keywords='video storyboard metadata thumbnail ffmpeg',
     packages=['storyboard'],
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     install_requires=[
         'Pillow>=2.7',
     ],

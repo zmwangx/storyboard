@@ -25,13 +25,13 @@
 
 ## Sample storyboards
 
-Generated from [58ba702](https://github.com/zmwangx/storyboard/commit/58ba702) with default settings (click for full resolution):
+Generated from [0.1b1](https://github.com/zmwangx/storyboard/releases/tag/0.1b1) with default settings (click for full resolution):
 
-[![](https://i.imgur.com/FEB56cq.jpg)](http://i.imgur.com/9T2zM8R.jpg)
+[![](http://i.imgur.com/mZYZ46c.jpg)](http://i.imgur.com/CSZ1x5t.jpg)
 
 (Proprietary video by Apple, available from <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>.)
 
-[![](http://i.imgur.com/f8J5ZRJ.jpg)](http://i.imgur.com/l5nrxKD.jpg)
+[![](http://i.imgur.com/3uoMQzY.jpg)](http://i.imgur.com/yUE4BhJ.jpg)
 
 (CC0 video by FSF, available from <https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv>.)
 
@@ -87,7 +87,7 @@ Display aspect ratio:   16:9
 Scan type:              Progressive scan
 Frame rate:             29.97 fps
 Streams:
-    #0: Audio (eng), AAC (Low Complexity), 99 kb/s
+    #0: Audio (eng), AAC (Low-Complexity), 99 kb/s
     #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
     #2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
 ```
@@ -112,7 +112,7 @@ Please report issues or browse a list of known issues at <https://github.com/zmw
 
 * `metadata.py` treats each codec separately, and the list of supported codecs is far from complete. If you encounter an audio/video/subtitle codec that triggers stupid output, please report an issue or open a pull request. **If it's not a commonly seen codec, please link to a sample video with the relevant codec (cut it short with FFmpeg if possible) so that I can inspect and test.**
 
-* `ffprobe` might report the wrong duration for certain VOB or other videos, which screws up the whole thing. This will be addressed later. See [#3](https://github.com/zmwangx/storyboard/issues/3).
+* `ffprobe` might report the wrong duration for certain VOB or other videos, which screws up the whole thing. See [#3](https://github.com/zmwangx/storyboard/issues/3). As a fallback, you can use the optional parameter `video_duration` to `storyboard.storyboard.StoryBoard` or `storyboard.metadata.Video` (see source files for extensive API doc).
 
 ## License
 
