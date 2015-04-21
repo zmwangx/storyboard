@@ -55,12 +55,30 @@ class TestUtil(unittest.TestCase):
         totalsize = chunksize * nchunks
         sha1 = hashlib.sha1()
         pbar = ProgressBar(totalsize, interval=0.001)
+        pbar.force_update(totalsize)
+        self.assertEqual(pbar.processed, totalsize)
+        pbar.force_update(0)
+        self.assertEqual(pbar.processed, 0)
+        processed = 0
         for _ in range(0, nchunks):
             sha1.update(chunk)
+            processed += chunksize
             pbar.update(chunksize)
+            self.assertEqual(pbar.processed, processed)
         pbar.finish()
         self.assertEqual(sha1.hexdigest(),
                          '3b71f43ff30f4b15b5cd85dd9e95ebc7e84eb5a3')
+        self.assertEqual(pbar.totalsize, totalsize)
+        with self.assertRaises(AttributeError):
+            pbar.processed
+        with self.assertRaises(AttributeError):
+            pbar.interval
+        with self.assertRaises(RuntimeError):
+            pbar.update(chunksize)
+        with self.assertRaises(RuntimeError):
+            pbar.force_update(0)
+        with self.assertRaises(RuntimeError):
+            pbar.finish()
 
 
 if __name__ == '__main__':

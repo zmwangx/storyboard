@@ -99,7 +99,7 @@ class Font(object):
     def __init__(self, font_file=None, font_size=None):
         """Initialize the Font class.
 
-        See module docstring for parameters of the constructor.
+        See class docstring for parameters of the constructor.
 
         """
 

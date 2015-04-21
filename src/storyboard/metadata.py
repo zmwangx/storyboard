@@ -268,7 +268,7 @@ class Video(object):
     def __init__(self, video, params=None):
         """Initialize the Video class.
 
-        See module docstring for parameters of the constructor.
+        See class docstring for parameters of the constructor.
 
         """
 
