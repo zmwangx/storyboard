@@ -18,6 +18,6 @@ install:
   - pip install .
 script:
   - nosetests --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
-  - cd docs && make html
+  - cd docs && make html && cd ..
 after_success:
   - coveralls
