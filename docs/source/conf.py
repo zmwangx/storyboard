@@ -131,6 +131,7 @@ html_theme_options = {
         ('https://pypi.python.org/pypi/storyboard/', 'PyPI'),
     ]
 }
+numpydoc_show_class_members = False
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['../scipy-sphinx-theme/_theme']
