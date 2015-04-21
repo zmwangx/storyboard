@@ -1,6 +1,24 @@
 #!/usr/bin/env python3
 
-"""Supporting utilities."""
+"""Supporting utilities.
+
+Classes
+-------
+.. autosummary::
+    ProgressBar
+
+Routines
+--------
+.. autosummary::
+    read_param
+    round_up
+    evaluate_ratio
+    humansize
+    humantime
+
+----
+
+"""
 
 from __future__ import absolute_import
 from __future__ import division

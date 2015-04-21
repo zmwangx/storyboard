@@ -9,9 +9,9 @@ Welcome to storyboard's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-
+   storyboard
 
 Indices and tables
 ==================

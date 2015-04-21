@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 
-"""Extract video frames."""
+"""Extract video frames.
+
+Classes
+-------
+.. autosummary::
+    Frame
+
+Routines
+--------
+.. autosummary::
+    extract_frame
+
+----
+
+"""
 
 from __future__ import absolute_import
 from __future__ import print_function

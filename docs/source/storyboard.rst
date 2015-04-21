@@ -5,6 +5,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 1
 
    storyboard.fflocate
    storyboard.frame

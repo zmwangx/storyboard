@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 
-"""Extract video metadata with FFprobe."""
+"""Extract video metadata with FFprobe.
+
+Classes
+-------
+.. autosummary::
+    Stream
+    Video
+
+Routines
+--------
+.. autosummary::
+    main
+
+----
+
+"""
 
 # pylint: disable=too-many-lines
 

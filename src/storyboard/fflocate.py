@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
-"""Check existence of ffmpeg and ffprobe."""
+"""Check existence of ffmpeg and ffprobe.
+
+Routines
+--------
+.. autosummary::
+    guess_bins
+    check_bins
+
+----
+
+"""
 
 import os
 import subprocess

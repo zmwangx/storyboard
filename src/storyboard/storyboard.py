@@ -1,6 +1,24 @@
 #!/usr/bin/env python3
 
-"""Generate video storyboards with metadata reports."""
+"""Generate video storyboards with metadata reports.
+
+Classes
+-------
+.. autosummary::
+    Font
+    StoryBoard
+
+Routines
+--------
+.. autosummary::
+    create_thumbnail
+    draw_text_block
+    tile_images
+    main
+
+----
+
+"""
 
 # pylint: disable=too-many-lines
 
