@@ -16,16 +16,18 @@ class TestMetadata(unittest.TestCase):
 
     def setUp(self):
         # create a mock srt subtitle file
-        _, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
-                                           suffix='.srt')
+        fd, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
+                                            suffix='.srt')
+        os.close(fd)
         with open(self.srtfile, 'w') as fd:
             fd.write("1\n"
                      "00:00:01,000 --> 00:00:02,000\n"
                      "SubRip is the way to go\n")
 
         # create video file
-        _, self.videofile = tempfile.mkstemp(prefix='storyboard-test-',
-                                             suffix='.mkv')
+        fd, self.videofile = tempfile.mkstemp(prefix='storyboard-test-',
+                                              suffix='.mkv')
+        os.close(fd)
         bins = fflocate.guess_bins()
         fflocate.check_bins(bins)  # error if bins do not exist
         self.ffmpeg_bin, self.ffprobe_bin = bins

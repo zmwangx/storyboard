@@ -242,6 +242,8 @@ class ProgressBar(object):
         # pylint: disable=attribute-defined-outside-init
         # new attribute elapsed created on the fly after processing finishes
         self.elapsed = time.time() - self.start
+        if self.elapsed < 0.001:
+            self.elapsed = 0.001  # avoid division by zero
         del self.processed
         del self.interval
         del self._last

@@ -4,4 +4,4 @@ The basic tests (`test_*.py` in `tests/`) can be run by
 
 The complete test suite (including `doctest` and more tests in `tests/more`) can be run by
 
-    nosetests --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
+    nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest

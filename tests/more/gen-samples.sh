@@ -68,15 +68,14 @@ ffmpeg -i h264.mp4 -c:v vp8 vp8.webm
 # VP9 in WebM container
 ffmpeg -i h264.mp4 -c:v vp9 vp9.webm
 
-# SubRip
+# H.264 + SubRip in Matroska container
 cat >srt.srt <<EOF
 1
 00:00:01,000 --> 00:00:02,000
 SubRip is the way to go
 EOF
-
-# H.264 + SubRip in Matroska container
 ffmpeg -i h264.mp4 -i srt.srt -map 0 -map 1 -metadata:s:2 language=en -c copy h264.srt.mkv
+rm srt.srt
 
 # H.264 + ASS in Matroska container
 ffmpeg -i srt.srt -c:s ass ass.ass
