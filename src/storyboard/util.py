@@ -264,8 +264,8 @@ class ProgressBar(object):
 
     The progress bar format is inspired by ``pv(1)`` (pipe viewer).
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     totalsize : int
         Total size, in bytes, of the file/stream to be processed.
     interval : float, optional

@@ -346,7 +346,7 @@ class Video(object):
             section for a printed example.
 
         Other Parameters
-        ________________
+        ----------------
         include_sha1sum : bool, optional
             Whether to include the SHA-1 hex digest. Default is
             False. Keep in mind that computing SHA-1 digest is an
@@ -444,7 +444,7 @@ class Video(object):
             hexadecimal string).
 
         Other Parameters
-        ________________
+        ----------------
         print_progress : bool, optional
             Whether to print progress information (to stderr). Default
             is False.

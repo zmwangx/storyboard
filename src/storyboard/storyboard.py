@@ -804,7 +804,7 @@ class StoryBoard(object):
     def _gen_bare_storyboard(self, tile, thumbnail_width, params=None):
         """Generate bare storyboard (thumbnails only).
 
-        Paramters
+        Parameters
         ----------
         tile : tuple
             A tuple ``(cols, rows)`` specifying the number of columns
