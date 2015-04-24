@@ -2,4 +2,4 @@
 
 """Version information for the storyboard package."""
 
-__version__ = "0.1b1"
+__version__ = "0.1b2dev"
