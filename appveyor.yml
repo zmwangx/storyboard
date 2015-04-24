@@ -29,10 +29,7 @@ install:
   - cinst ffmpeg
   - powershell .appveyor\install.ps1
   - set PATH=%PYTHON%\Scripts;%PYTHON%;%PATH%
-  - pip install -r requirements.txt
-  - pip install -r tests\requirements.txt
-  - pip install -r docs\requirements.txt
-  - pip install .
+  - pip install -r requirements.txt -r tests\requirements.txt -r docs\requirements.txt .
 
 build: off
 

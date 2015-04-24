@@ -6,6 +6,7 @@ Classes
 -------
 .. autosummary::
     ProgressBar
+    OptionReader
 
 Routines
 --------
@@ -24,6 +25,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 import math
 import os
 import re
@@ -202,7 +207,7 @@ def humantime(seconds, ndigits=2, one_hour_digit=False):
     >>> humantime(10.55, one_hour_digit=True)
     '0:00:10.55'
     >>> # two hours digits for >= 10 hours, even if one_hour_digit is
-    >>> # True
+    >>> # set to True
     >>> humantime(86400, one_hour_digit=True)
     '24:00:00.00'
     >>> humantime(-1)
@@ -304,6 +309,8 @@ class ProgressBar(object):
     underscores since no one should ever tamper with this.)
 
     """
+
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, totalsize, interval=_PROGRESS_UPDATE_INTERVAL):
         """Initialize the ProgressBar class.
@@ -495,3 +502,213 @@ class ProgressBar(object):
     def _humantime(seconds):
         """Customized humantime for ProgressBar."""
         return humantime(seconds, ndigits=0, one_hour_digit=True)
+
+
+class OptionReader(object):
+    """Class for reading options from a list of fallbacks.
+
+    OptionReader optionally takes command line arguments parsed by
+    argparse, a list of possible configuration files, and a dictionary
+    of default values. Then one can query the class for the value of an
+    option using the ``opt(name)`` method. The value is determined in
+    the order of CLI argument, value specified in config files, default
+    value, and at last ``None`` if none of the above is available.
+
+    Parameters
+    ----------
+    cli_args : argparse.Namespace, optional
+        CLI arguments returned by
+        ``argparse.ArgumentParser.parse_args()``. If ``None``, do not
+        consider CLI arguments. Default is ``None``.
+    config_files : str or list, optional
+        Path(s) to the expected configuration file(s). If ``None``,
+        do not read from config files. Default is ``None``.
+    section : str, optional
+        Name of the config file section to read from. Do not use
+        ``DEFAULT``, as it is the reserved name for a special
+        section. If ``None``, do not read from config files. Default is
+        ``None``.
+    defaults : dict, optional
+        A dict containing default values of one or more options. If
+        ``None``, do not consider default values. Default is ``None``.
+
+    Raises
+    ------
+    configparser.Error:
+        If some of the supplied configuration files are malformed.
+
+    Notes
+    -----
+    For developers: there are three private attributes, ``_cli_opts``,
+    ``_cfg_opts`` and ``_default_opts``, which are dicts containing CLI,
+    config file, and default options, respectively.
+
+    """
+
+    def __init__(self, cli_args=None, config_files=None, section=None,
+                 defaults=None):
+        """
+        Initialize the OptionReader class.
+
+        See class docstring for parameters.
+
+        """
+
+        if section == 'DEFAULT':
+            raise ValueError("section name DEFAULT is not allowed")
+
+        # parse CLI arguments
+        if cli_args is not None:
+            self._cli_opts = cli_args.__dict__
+        else:
+            self._cli_opts = {}
+
+        # parse config files
+        if config_files is not None and section is not None:
+            config = configparser.ConfigParser()
+            config.read(config_files)
+            if config.has_section(section):
+                self._cfg_opts = dict(config.items(section))
+            else:
+                self._cfg_opts = {}
+        else:
+            self._cfg_opts = {}
+
+        # default options
+        if defaults is not None:
+            self._default_opts = defaults
+        else:
+            self._default_opts = {}
+
+    def cli_opt(self, name):
+        """
+        Read the value of an option from the corresponding CLI argument.
+
+        Parameters
+        ----------
+        name : str
+            Name of the option.
+
+        Returns
+        -------
+        value
+            Value of the corresponding CLI argument if available, and
+            ``None`` otherwise.
+
+        """
+
+        return self._cli_opts[name] if name in self._cli_opts else None
+
+    def cfg_opt(self, name, opttype=None):
+        """
+        Read the value of an option from config files.
+
+        Parameters
+        ----------
+        name : str
+            Name of the option.
+        opttype : {None, str, int, float, bool}
+            Type of the option. The value of the option is converted to
+            the corresponding type. If ``None``, no conversion is done
+            (so the return type will actually be ``str``). If ``bool``,
+            the returned value will be ``True`` if the default value is
+            ``'yes'``, ``'on'``, or ``'1'``, and ``False`` if the
+            default value is ``'no'``, ``'off'``, or ``'0'`` (case
+            insensitive), just like
+            ``configparser.ConfigParser.getboolean``.
+
+        Returns
+        -------
+        value
+            Value of the option in config files if available, and
+            ``None`` otherwise.
+
+        Raises
+        ------
+        ValueError:
+            If the raw value of the option in config files (if
+            available) cannot be converted to `opttype`, or if `opttype`
+            is not one of the supported types.
+
+        """
+
+        # pylint: disable=too-many-return-statements
+
+        if name not in self._cfg_opts:
+            return None
+
+        rawopt = self._cfg_opts[name]
+        if opttype is None:
+            return rawopt
+        elif opttype is str:
+            return rawopt
+        elif opttype is int:
+            return int(rawopt)
+        elif opttype is float:
+            return float(rawopt)
+        elif opttype is bool:
+            rawopt_lower = rawopt.lower()
+            if rawopt_lower in {'yes', 'on', '1'}:
+                return True
+            elif rawopt_lower in {'no', 'off', '0'}:
+                return False
+            else:
+                raise ValueError("not a boolean: %s" % rawopt)
+        else:
+            raise ValueError("unrecognized opttype %s" % str(opttype))
+
+    def default_opt(self, name):
+        """
+        Read the default value of an option.
+
+        Parameters
+        ----------
+        name : str
+            Name of the option.
+
+        Returns
+        -------
+        value
+            Default value of the option if available, and ``None`` otherwise.
+
+        """
+
+        return self._default_opts[name] if name in self._default_opts else None
+
+    def opt(self, name, opttype=None):
+        """
+        Read the value of an option.
+
+        The value is determined in the following order: CLI argument,
+        config files, default value, and at last ``None``.
+
+        Parameters
+        ----------
+        name : str
+            Name of the option.
+        opttype : {None, str, int, float, bool}
+            Type of the option, only useful for config files. See the
+            `opttype` parameter of the `cfg_opt` method.
+
+        Returns
+        -------
+        value
+            Value of the option.
+
+        Raises
+        ------
+        ValueError:
+            If the raw value of the option in config files (if
+            available) cannot be converted to `opttype`, or if `opttype`
+            is not one of the supported types.
+
+        """
+
+        if name in self._cli_opts:
+            return self._cli_opts[name]
+        elif name in self._cfg_opts:
+            return self.cfg_opt(name, opttype)
+        elif name in self._default_opts:
+            return self._default_opts[name]
+        else:
+            return None

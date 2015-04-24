@@ -12,10 +12,7 @@ before_install:
   - mv ffmpeg-git-*/ ffmpeg/
   - export PATH=$PWD/ffmpeg:$PATH
 install:
-  - pip install -r requirements.txt
-  - pip install -r tests/requirements.txt
-  - pip install -r docs/requirements.txt
-  - pip install .
+  - pip install -r requirements.txt -r tests/requirements.txt -r docs/requirements.txt .
 script:
   - nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
   - cd docs && make html && cd ..

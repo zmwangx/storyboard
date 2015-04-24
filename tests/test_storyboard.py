@@ -19,7 +19,7 @@ class TestStoryBoard(unittest.TestCase):
     def setUp(self):
         # create a mock srt subtitle file
         fd, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
-											suffix='.srt')
+                                            suffix='.srt')
         os.close(fd)
         with open(self.srtfile, 'w') as fd:
             fd.write("1\n"
