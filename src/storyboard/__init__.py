@@ -1,11 +1,8 @@
 """The storyboard package.
 
-Console scripts
----------------
-.. toctree::
-    :maxdepth: 2
+There are two console scripts:
 
-    metadata-cli
-    storyboard-cli
+* :doc:`metadata <metadata-cli>`
+* :doc:`storyboard <storyboard-cli>`
 
 """

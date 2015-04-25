@@ -1,5 +1,5 @@
-storyboard.util module
-======================
+``storyboard.util`` module
+==========================
 
 .. automodule:: storyboard.util
     :members:

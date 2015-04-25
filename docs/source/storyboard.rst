@@ -1,5 +1,13 @@
-storyboard package
-==================
+storyboard
+==========
+
+Package overview
+----------------
+
+.. automodule:: storyboard
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Submodules
 ----------
@@ -13,11 +21,3 @@ Submodules
    storyboard.storyboard
    storyboard.util
    storyboard.version
-
-Module contents
----------------
-
-.. automodule:: storyboard
-    :members:
-    :undoc-members:
-    :show-inheritance:

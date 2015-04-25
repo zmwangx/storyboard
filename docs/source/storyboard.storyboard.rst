@@ -1,5 +1,5 @@
-storyboard.storyboard module
-============================
+``storyboard.storyboard`` module
+================================
 
 .. automodule:: storyboard.storyboard
     :members:

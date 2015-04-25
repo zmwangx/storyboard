@@ -1,5 +1,5 @@
-storyboard.frame module
-=======================
+``storyboard.frame`` module
+===========================
 
 .. automodule:: storyboard.frame
     :members:

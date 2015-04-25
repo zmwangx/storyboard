@@ -1,5 +1,5 @@
-storyboard.version module
-=========================
+``storyboard.version`` module
+=============================
 
 .. automodule:: storyboard.version
     :members:

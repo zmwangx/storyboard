@@ -1,5 +1,5 @@
-storyboard.metadata module
-==========================
+``storyboard.metadata`` module
+==============================
 
 .. automodule:: storyboard.metadata
     :members:

@@ -1,5 +1,5 @@
-storyboard.fflocate module
-==========================
+``storyboard.fflocate`` module
+==============================
 
 .. automodule:: storyboard.fflocate
     :members:
