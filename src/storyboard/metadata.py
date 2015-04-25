@@ -1113,6 +1113,9 @@ class Video(object):
 
 def main():
     """CLI interface."""
+
+    # pylint: disable=too-many-locals
+
     description = """Print video metadata.
 
     You may supply a list of videos, and the output for each video will

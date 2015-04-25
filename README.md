@@ -2,7 +2,8 @@
 [![Supported Python versions](https://pypip.in/py_versions/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Download format](https://pypip.in/format/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
 [![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)<br>
+[![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Docs](https://readthedocs.org/projects/storyboard/badge/?version=latest)](https://storyboard.readthedocs.org/)<br>
 [![Build Status](https://travis-ci.org/zmwangx/storyboard.svg?branch=master)](https://travis-ci.org/zmwangx/storyboard)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true)](https://ci.appveyor.com/project/zmwangx/storyboard)
 [![Coverage Status](https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/r/zmwangx/storyboard?branch=master)
