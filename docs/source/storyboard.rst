@@ -1,5 +1,5 @@
-storyboard
-==========
+``storyboard`` package
+======================
 
 Package overview
 ----------------

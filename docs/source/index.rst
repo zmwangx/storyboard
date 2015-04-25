@@ -1,9 +1,37 @@
 storyboard
 ==========
 
-|Latest Version| |Supported Python versions| |Download format| |License|
-|Development Status| |Docs| |Build Status| |Windows Build Status|
-|Coverage Status| |Code Health|
+.. raw:: html
+
+   <p>
+   <a href="https://pypi.python.org/pypi/storyboard/">
+     <img src="https://pypip.in/version/storyboard/badge.svg" alt="Latest Version" />
+   </a>
+   <a href="https://pypi.python.org/pypi/storyboard/">
+     <img src="https://pypip.in/py_versions/storyboard/badge.svg" alt="Supported Python versions" />
+   </a>
+   <a href="https://pypi.python.org/pypi/storyboard/">
+     <img src="https://pypip.in/format/storyboard/badge.svg" alt="Download format" />
+   </a>
+   <a href="https://pypi.python.org/pypi/storyboard/">
+     <img src="https://pypip.in/license/storyboard/badge.svg" alt="License" />
+   </a>
+   <a href="https://pypi.python.org/pypi/storyboard/">
+     <img src="https://pypip.in/status/storyboard/badge.svg" alt="Development Status" />
+   </a>
+   <a href="https://storyboard.readthedocs.org/">
+     <img src="https://readthedocs.org/projects/storyboard/badge/?version=latest" alt="Docs" />
+   </a>
+   <a href="https://travis-ci.org/zmwangx/storyboard">
+     <img src="https://travis-ci.org/zmwangx/storyboard.svg?branch=master" alt="Build Status" />
+   </a>
+   <a href="https://ci.appveyor.com/project/zmwangx/storyboard">
+     <img src="https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true" alt="Windows Build Status" />
+   </a>
+   <a href="https://coveralls.io/r/zmwangx/storyboard?branch=master">
+     <img src="https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master" alt="Coverage Status" />
+   </a>
+   </p>
 
 ``storyboard`` is a customizable video storyboard generator with
 metadata reporting directly embedded in the generated images, based on
@@ -21,6 +49,7 @@ Contents
    :maxdepth: 3
 
    install
+   cli
    API reference <storyboard>
 
 Indices and tables
@@ -29,24 +58,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-.. |Latest Version| image:: https://pypip.in/version/storyboard/badge.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Supported Python versions| image:: https://pypip.in/py_versions/storyboard/badge.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Download format| image:: https://pypip.in/format/storyboard/badge.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |License| image:: https://pypip.in/license/storyboard/badge.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Development Status| image:: https://pypip.in/status/storyboard/badge.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Docs| image:: https://readthedocs.org/projects/storyboard/badge/?version=latest
-   :target: https://storyboard.readthedocs.org/
-.. |Build Status| image:: https://travis-ci.org/zmwangx/storyboard.svg?branch=master
-   :target: https://travis-ci.org/zmwangx/storyboard
-.. |Windows Build Status| image:: https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true
-   :target: https://ci.appveyor.com/project/zmwangx/storyboard
-.. |Coverage Status| image:: https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master
-   :target: https://coveralls.io/r/zmwangx/storyboard?branch=master
-.. |Code Health| image:: https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/zmwangx/storyboard/master
