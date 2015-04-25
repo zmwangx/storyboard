@@ -1139,7 +1139,7 @@ def main():
         help="""The name/path of the ffprobe binary. The binay is
         guessed from OS type if this option is not specified.""")
     parser.add_argument(
-        '--include-sha1sum', '-s', action='store_true',
+        '--include-sha1sum', '-s', action='store_const', const=True,
         help="Include SHA-1 digest of the video(s).")
     parser.add_argument(
         '--verbose', '-v', choices=['auto', 'on', 'off'],
@@ -1165,7 +1165,7 @@ def main():
         defaults=defaults,
     )
     ffprobe_bin = optreader.opt('ffprobe_bin')
-    include_sha1sum = optreader.opt('include_sha1sum')
+    include_sha1sum = optreader.opt('include_sha1sum', opttype=bool)
     verbose = optreader.opt('verbose')
     if verbose == 'on':
         print_progress = True
