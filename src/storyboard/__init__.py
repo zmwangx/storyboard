@@ -2,9 +2,10 @@
 
 Console scripts
 ---------------
-metadata
-    CLI interface to the metadata module.
-storyboard
-    CLI interface to the storyboard module.
+.. toctree::
+    :maxdepth: 2
+
+    metadata-cli
+    storyboard-cli
 
 """
