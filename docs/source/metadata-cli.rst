@@ -60,6 +60,10 @@ Options
             is printed if and only if the ``--include-sha1sum`` option
             is also supplied *and* stderr is connected to a tty.
 
+            This option can be stored in the config file as::
+
+              verbose = (auto|on|off)
+
 --version   Print version number (e.g., `0.1`) and exit.
 
 .. _sample-config-file:
