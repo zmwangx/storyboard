@@ -4,6 +4,7 @@ from __future__ import division
 
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -11,10 +12,17 @@ from storyboard import fflocate
 from storyboard.metadata import *
 from storyboard.util import humansize, humantime
 
+from .testing_infrastructure import capture_stdout, capture_stderr, tee_stderr
+from .testing_infrastructure import change_home
+
 
 class TestMetadata(unittest.TestCase):
 
     def setUp(self):
+        if not hasattr(self, 'assertRegex'):
+            self.assertRegex = self.assertRegexpMatches
+            self.assertNotRegex = self.assertNotRegexpMatches
+
         # create a mock srt subtitle file
         fd, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
                                             suffix='.srt')
@@ -51,7 +59,7 @@ class TestMetadata(unittest.TestCase):
         os.remove(self.srtfile)
         os.remove(self.videofile)
 
-    def test_metadata(self):
+    def test_video(self):
         vid = Video(self.videofile, params={
             'ffprobe_bin': self.ffprobe_bin,
             'print_progress': False,
@@ -115,6 +123,134 @@ class TestMetadata(unittest.TestCase):
         })
         self.assertAlmostEqual(vid.duration, 10.0)
         self.assertEqual(humantime(vid.duration), vid.duration_text)
+
+    def assertSha1sumIncluded(self):
+        # sys.stdout has to support getvalue (e.g., through
+        # capture_stdout)
+        self.assertRegex(sys.stdout.getvalue(), 'SHA-1 digest:')
+
+    def assertSha1sumNotIncluded(self):
+        self.assertNotRegex(sys.stdout.getvalue(), 'SHA-1 digest:')
+
+    def assertProgressPrinted(self):
+        # sys.stderr is not empty
+        self.assertNotEqual(sys.stderr.getvalue(), '')
+
+    def assertProgressNotPrinted(self):
+        # sys.stderr is not empty
+        self.assertEqual(sys.stderr.getvalue(), '')
+
+    def test_main(self):
+        # TODO: version
+        with change_home() as home:
+            config_dir = os.path.join(home, '.config')
+            os.mkdir(config_dir)
+            config_file = os.path.join(config_dir, 'storyboard.conf')
+
+            # default
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = [self.videofile]
+                    main()
+                    self.assertSha1sumNotIncluded()
+                    self.assertProgressNotPrinted()
+
+            # wrong ffprobe
+            with capture_stdout():
+                with capture_stderr():
+                    with self.assertRaises(SystemExit):
+                        sys.argv[1:] = ['--ffprobe-bin', '', self.videofile]
+                        main()
+
+            # include sha1sum through CLI argument, but stderr is not a tty
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--include-sha1sum', self.videofile]
+                    main()
+                    self.assertSha1sumIncluded()
+                    self.assertProgressNotPrinted()
+
+            # include sha1sum through CLI argument, and stderr is a tty
+            with capture_stdout():
+                with tee_stderr():
+                    sys.argv[1:] = ['--include-sha1sum', self.videofile]
+                    main()
+                    self.assertSha1sumIncluded()
+                    self.assertProgressPrinted()
+
+            # include sha1sum, stderr is not tty, force verbose on
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--include-sha1sum', '-v', 'on',
+                                    self.videofile]
+                    main()
+                    self.assertSha1sumIncluded()
+                    self.assertProgressPrinted()
+
+            # include sha1sum, stderr is a tty, force verbose off
+            with capture_stdout():
+                with tee_stderr():
+                    sys.argv[1:] = ['--include-sha1sum', '-v', 'off',
+                                    self.videofile]
+                    main()
+                    self.assertSha1sumIncluded()
+                    self.assertProgressNotPrinted()
+
+            # write a config file
+            with open(config_file, 'w') as f:
+                f.write("[metadata-cli]\n"
+                        "include_sha1sum = on\n"
+                        "verbose = on\n")
+
+            # config file only
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = [self.videofile]
+                    main()
+                    self.assertSha1sumIncluded()
+                    self.assertProgressPrinted()
+
+            # overwrite include_sha1sum with --exclude-sha1sum
+            with capture_stdout():
+                with tee_stderr():
+                    sys.argv[1:] = ['--exclude-sha1sum', self.videofile]
+                    main()
+                    self.assertSha1sumNotIncluded()
+                    self.assertProgressPrinted()
+
+            # overwrite both
+            with capture_stdout():
+                with tee_stderr():
+                    sys.argv[1:] = ['--exclude-sha1sum', '-v', 'auto',
+                                    self.videofile]
+                    main()
+                    self.assertSha1sumNotIncluded()
+                    self.assertProgressNotPrinted()
+
+            # bogus config file
+            with open(config_file, 'w') as f:
+                f.write("[metadata-cli]\n"
+                        "verbose = unrecognizable\n")
+
+            # verbose not in on, off, auto leads to warning
+            with capture_stdout():
+                with tee_stderr():
+                    sys.argv[1:] = [self.videofile]
+                    main()
+                    self.assertSha1sumNotIncluded()
+                    self.assertRegex(sys.stderr.getvalue(), 'warning')
+
+            # another bogus config file
+            with open(config_file, 'w') as f:
+                f.write("[metadata-cli]\n"
+                        "include_sha1sum = unrecognizable\n\n")
+
+            with capture_stdout():
+                with capture_stderr():
+                    with self.assertRaises(ValueError):
+                        sys.argv[1:] = [self.videofile]
+                        main()
+
 
 if __name__ == '__main__':
     unittest.main()

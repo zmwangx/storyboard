@@ -74,6 +74,12 @@ Options
 
               include_sha1sum = (on|off)
 
+--exclude-sha1sum
+            Exclude SHA-1 digest in the output. This option always
+            overwrites ``--include-sha1sum``. This option is only
+            useful when ``include_sha1sum`` is turned on by default in
+            the config file.
+
 -v, --verbose=STATE
             Whether to print progress information to stderr (actual
             output metadata is printed to stdout and not
