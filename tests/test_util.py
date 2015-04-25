@@ -232,6 +232,7 @@ class TestUtil(unittest.TestCase):
             )
 
         os.remove(conf_file)
+        os.remove(malformed_conf_file)
 
 
 if __name__ == '__main__':
