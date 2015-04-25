@@ -5,12 +5,35 @@ The module :doc:`storyboard.metadata <storyboard.metadata>` comes with
 a console script, which is essentially an entry point to its
 ``main()`` function. It extracts video metadata (container-level and
 per-stream) using FFprobe, and prints them in a human readable manner
-(more so than FFprobe). See `this gist
+(more so than FFprobe). An example output is::
+
+  Filename:               2015_mar_1080_cc.m4v
+  File size:              6083965352 (5.67GiB)
+  Container format:       MPEG-4 Part 14 (M4V)
+  Duration:               01:34:45.27
+  Pixel dimensions:       1920x1080
+  Display aspect ratio:   16:9
+  Scan type:              Progressive scan
+  Frame rate:             29.97 fps
+  Streams:
+      #0: Audio (eng), AAC (Low-Complexity), 99 kb/s
+      #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
+      #2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
+
+See `this gist
 <https://gist.github.com/zmwangx/ee8986c2f0596f1ebbb0>`_ for a direct
-comparison of ``metadata`` and ``ffprobe``'s human readability. The
-basic invocation is::
+comparison of ``metadata`` and ``ffprobe``'s human readability.
+
+Synopsis
+--------
+
+The basic invocation is::
 
   metadata [OPTIONS] VIDEO [VIDEO...]
+
+As can be seen from the invocation, one can specify multiple video
+files, and the outputs for two adjacent files will be separated by a
+blank line.
 
 See the section :ref:`options` for the list of command line options
 and their detailed explanations. Some of them can also be stored in a
@@ -20,8 +43,8 @@ documented. Note that an option specified on the command line always
 overwrites those in config files.
 
 See `configparser's doc
-<https://docs.python.org/3/library/configparser.html>`_ for format of
-a valid configuration file, or learn from the :ref:`sample
+<https://docs.python.org/3/library/configparser.html>`_ for the format
+of a valid configuration file, or learn from the :ref:`sample
 configuration file <sample-config-file>`.
 
 .. _options:
