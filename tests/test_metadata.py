@@ -11,6 +11,7 @@ import unittest
 from storyboard import fflocate
 from storyboard.metadata import *
 from storyboard.util import humansize, humantime
+from storyboard import version
 
 from .testing_infrastructure import capture_stdout, capture_stderr, tee_stderr
 from .testing_infrastructure import change_home
@@ -141,11 +142,22 @@ class TestMetadata(unittest.TestCase):
         self.assertEqual(sys.stderr.getvalue(), '')
 
     def test_main(self):
-        # TODO: version
         with change_home() as home:
             config_dir = os.path.join(home, '.config')
             os.mkdir(config_dir)
             config_file = os.path.join(config_dir, 'storyboard.conf')
+
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--version']
+                    with self.assertRaises(SystemExit):
+                        main()
+                    # cat output of stdout and stderr, since Python2
+                    # prints version to stderr while Python3 prints
+                    # version to stdout
+                    output = (sys.stdout.getvalue().strip() +
+                              sys.stderr.getvalue().strip())
+                    self.assertEqual(output, version.__version__)
 
             # default
             with capture_stdout():

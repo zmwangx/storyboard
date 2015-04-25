@@ -7,11 +7,40 @@ import io
 try:
     from io import StringIO
 except ImportError:
-    import StringIO
+    from StringIO import StringIO
 import os
 import shutil
 import sys
 import tempfile
+
+
+class NormalizedStringIO(StringIO):
+    """StringIO, with write operations normalized to unicode."""
+
+    def __init__(self, buffer=None):
+        super(NormalizedStringIO, self).__init__(buffer)
+
+    @staticmethod
+    def normalized(s):
+        # s is Python2 str or unicode, or Python3 str or bytes
+        # goal is to convert to Python2 unicode, or Python3 str
+        try:
+            if type(s) is not unicode:
+                return s.decode('utf-8')
+            else:
+                return s
+        except NameError:
+            if type(s) is not str:
+                return s.decode('utf-8')
+            else:
+                return s
+
+    def write(self, s):
+        super(NormalizedStringIO, self).write(self.normalized(s))
+
+    def writelines(self,lines):
+        lines = [self.normalized(line) for line in lines]
+        super(NormalizedStringIO, self).writelines(lines)
 
 
 class Tee(io.TextIOBase):
@@ -27,13 +56,17 @@ class Tee(io.TextIOBase):
     """
 
     def __init__(self, textio):
-        if not textio.writable():
-            raise io.UnsupportedOperation("not writable")
+        try:
+            if not textio.writable():
+                raise io.UnsupportedOperation("not writable")
+        except AttributeError:
+            # somehow Python2 sys.stderr, a file object, does not have
+            # the writable method of io.IOBase
+            pass
         self._textio = textio
-        self._stringio = StringIO()
+        self._stringio = NormalizedStringIO()
 
     def close(self):
-        self._textio.close()
         self._stringio.close()
 
     @property
@@ -109,9 +142,6 @@ class Tee(io.TextIOBase):
         self._textio.writelines(lines)
         self._stringio.writelines(lines)
 
-    def __del__(self):
-        self._stringio.close()
-
 
 @contextmanager
 def capture_stdout():
@@ -123,7 +153,7 @@ def capture_stdout():
     """
 
     saved_stdout = sys.stdout
-    sys.stdout = StringIO()
+    sys.stdout = NormalizedStringIO()
     yield
     sys.stdout = saved_stdout
 
@@ -137,7 +167,7 @@ def capture_stderr():
     """
 
     saved_stderr = sys.stderr
-    sys.stderr = StringIO()
+    sys.stderr = NormalizedStringIO()
     yield
     sys.stderr = saved_stderr
 
@@ -155,9 +185,13 @@ def tee_stderr():
 def change_home():
     """Single use context manager for changing HOME to temp directory.
     """
-    saved_home = os.environ['HOME']
+    if 'HOME' in os.environ:
+        saved_home = os.environ['HOME']
+    else:
+        saved_home = None
     tmp_home = tempfile.mkdtemp()
     os.environ['HOME'] = tmp_home
     yield tmp_home
     shutil.rmtree(tmp_home)
-    os.environ['HOME'] = saved_home
+    if saved_home is not None:
+        os.environ['HOME'] = saved_home
