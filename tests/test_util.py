@@ -94,6 +94,12 @@ class TestUtil(unittest.TestCase):
         parser.add_argument('--float', type=float)
         parser.add_argument('--true', action='store_true')
         parser.add_argument('--false', action='store_false')
+        parser.add_argument('--confonly_str')
+        parser.add_argument('--confonly_int', type=int)
+        parser.add_argument('--confonly_float', type=float)
+        parser.add_argument('--defaultonly_str')
+        parser.add_argument('--defaultonly_int', type=int)
+        parser.add_argument('--defaultonly_float', type=float)
         cli_arg_string = "--str from-cli --int 0 --float 0.5 --true --false"
         cli_args = parser.parse_args(cli_arg_string.split())
 
@@ -104,11 +110,11 @@ class TestUtil(unittest.TestCase):
         config.set('sec', 'float', '1.5')
         config.set('sec', 'true', 'no')
         config.set('sec', 'false', 'yes')
-        config.set('sec', 'confonly-str', 'from-config-file')
-        config.set('sec', 'confonly-int', '1')
-        config.set('sec', 'confonly-float', '1.5')
-        config.set('sec', 'confonly-true', 'no')  # note the twist here
-        config.set('sec', 'confonly-false', 'yes')
+        config.set('sec', 'confonly_str', 'from-config-file')
+        config.set('sec', 'confonly_int', '1')
+        config.set('sec', 'confonly_float', '1.5')
+        config.set('sec', 'confonly_true', 'no')  # note the twist here
+        config.set('sec', 'confonly_false', 'yes')
         config.add_section('dummysec')
         fd, conf_file = tempfile.mkstemp(prefix='storyboard-test-',
                                          suffix='.conf')
@@ -128,16 +134,16 @@ class TestUtil(unittest.TestCase):
             'float': 2.5,
             'true': True,
             'false': False,
-            'confonly-str': 'from-defaults',
-            'confonly-int': 2,
-            'confonly-float': 2.5,
-            'confonly-true': True,
-            'confonly-false': False,
-            'defaultonly-str': 'from-defaults',
-            'defaultonly-int': 2,
-            'defaultonly-float': 2.5,
-            'defaultonly-true': True,
-            'defaultonly-false': False,
+            'confonly_str': 'from-defaults',
+            'confonly_int': 2,
+            'confonly_float': 2.5,
+            'confonly_true': True,
+            'confonly_false': False,
+            'defaultonly_str': 'from-defaults',
+            'defaultonly_int': 2,
+            'defaultonly_float': 2.5,
+            'defaultonly_true': True,
+            'defaultonly_false': False,
         }
 
         or1 = OptionReader(
@@ -151,34 +157,34 @@ class TestUtil(unittest.TestCase):
         self.assertAlmostEqual(or1.opt('float', opttype=float), 0.5)
         self.assertTrue(or1.opt('true', opttype=bool))
         self.assertFalse(or1.opt('false', opttype=bool))
-        self.assertEqual(or1.opt('confonly-str'), 'from-config-file')
-        self.assertEqual(or1.opt('confonly-int', opttype=int), 1)
-        self.assertAlmostEqual(or1.opt('confonly-float', opttype=float), 1.5)
-        self.assertFalse(or1.opt('confonly-true', opttype=bool))
-        self.assertTrue(or1.opt('confonly-false', opttype=bool))
-        self.assertEqual(or1.opt('defaultonly-str'), 'from-defaults')
-        self.assertEqual(or1.opt('defaultonly-int', opttype=int), 2)
-        self.assertAlmostEqual(or1.opt('defaultonly-float', opttype=float),
+        self.assertEqual(or1.opt('confonly_str'), 'from-config-file')
+        self.assertEqual(or1.opt('confonly_int', opttype=int), 1)
+        self.assertAlmostEqual(or1.opt('confonly_float', opttype=float), 1.5)
+        self.assertFalse(or1.opt('confonly_true', opttype=bool))
+        self.assertTrue(or1.opt('confonly_false', opttype=bool))
+        self.assertEqual(or1.opt('defaultonly_str'), 'from-defaults')
+        self.assertEqual(or1.opt('defaultonly_int', opttype=int), 2)
+        self.assertAlmostEqual(or1.opt('defaultonly_float', opttype=float),
                                2.5)
-        self.assertTrue(or1.opt('defaultonly-true', opttype=bool))
-        self.assertFalse(or1.opt('defaultonly-false', opttype=bool))
+        self.assertTrue(or1.opt('defaultonly_true', opttype=bool))
+        self.assertFalse(or1.opt('defaultonly_false', opttype=bool))
         self.assertIsNone(or1.opt('non-existent-opt'))
         with self.assertRaises(ValueError):
-            or1.opt('confonly-str', opttype=bool)
+            or1.opt('confonly_str', opttype=bool)
         with self.assertRaises(ValueError):
-            or1.opt('confonly-str', opttype=tuple)
+            or1.opt('confonly_str', opttype=tuple)
         self.assertEqual(or1.cli_opt('str'), 'from-cli')
-        self.assertIsNone(or1.cli_opt('confonly-str'))
-        self.assertEqual(or1.cfg_opt('confonly-str'), 'from-config-file')
-        self.assertEqual(or1.cfg_opt('confonly-str', opttype=str),
+        self.assertIsNone(or1.cli_opt('confonly_str'))
+        self.assertEqual(or1.cfg_opt('confonly_str'), 'from-config-file')
+        self.assertEqual(or1.cfg_opt('confonly_str', opttype=str),
                          'from-config-file')
-        self.assertIsNone(or1.cfg_opt('defaultonly-str'))
-        self.assertEqual(or1.default_opt('defaultonly-str'), 'from-defaults')
+        self.assertIsNone(or1.cfg_opt('defaultonly_str'))
+        self.assertEqual(or1.default_opt('defaultonly_str'), 'from-defaults')
         self.assertIsNone(or1.default_opt('non-existent-opt'))
         with self.assertRaises(ValueError):
-            or1.cfg_opt('confonly-str', opttype=bool)
+            or1.cfg_opt('confonly_str', opttype=bool)
         with self.assertRaises(ValueError):
-            or1.cfg_opt('confonly-str', opttype=tuple)
+            or1.cfg_opt('confonly_str', opttype=tuple)
 
         or2 = OptionReader(
             cli_args=None,
@@ -198,11 +204,11 @@ class TestUtil(unittest.TestCase):
             section='dummysec',
             defaults=defaults,
         )
-        self.assertEqual(or3.opt('confonly-str'), 'from-defaults')
-        self.assertEqual(or3.opt('confonly-int', opttype=int), 2)
-        self.assertAlmostEqual(or3.opt('confonly-float', opttype=float), 2.5)
-        self.assertTrue(or3.opt('confonly-true', opttype=bool))
-        self.assertFalse(or3.opt('confonly-false', opttype=bool))
+        self.assertEqual(or3.opt('confonly_str'), 'from-defaults')
+        self.assertEqual(or3.opt('confonly_int', opttype=int), 2)
+        self.assertAlmostEqual(or3.opt('confonly_float', opttype=float), 2.5)
+        self.assertTrue(or3.opt('confonly_true', opttype=bool))
+        self.assertFalse(or3.opt('confonly_false', opttype=bool))
 
         or4 = OptionReader(
             cli_args=None,
@@ -210,11 +216,11 @@ class TestUtil(unittest.TestCase):
             section='nonexistent-sec',
             defaults=defaults,
         )
-        self.assertEqual(or4.opt('confonly-str'), 'from-defaults')
-        self.assertEqual(or4.opt('confonly-int', opttype=int), 2)
-        self.assertAlmostEqual(or4.opt('confonly-float', opttype=float), 2.5)
-        self.assertTrue(or4.opt('confonly-true', opttype=bool))
-        self.assertFalse(or4.opt('confonly-false', opttype=bool))
+        self.assertEqual(or4.opt('confonly_str'), 'from-defaults')
+        self.assertEqual(or4.opt('confonly_int', opttype=int), 2)
+        self.assertAlmostEqual(or4.opt('confonly_float', opttype=float), 2.5)
+        self.assertTrue(or4.opt('confonly_true', opttype=bool))
+        self.assertFalse(or4.opt('confonly_false', opttype=bool))
 
         or5 = OptionReader()
         self.assertIsNone(or5.opt('str'))

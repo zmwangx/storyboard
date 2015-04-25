@@ -559,7 +559,9 @@ class OptionReader(object):
 
         # parse CLI arguments
         if cli_args is not None:
-            self._cli_opts = cli_args.__dict__
+            # only include values that are not None
+            self._cli_opts = dict((k,v) for k,v in cli_args.__dict__.items()
+                                  if v is not None)
         else:
             self._cli_opts = {}
 
