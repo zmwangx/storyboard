@@ -115,9 +115,6 @@ class Font(object):
         self.size = font_size
 
 
-DEFAULT_FONT = Font()
-
-
 def draw_text_block(canvas, xy, text, params=None):
     """Draw a block of text.
 
@@ -165,7 +162,7 @@ def draw_text_block(canvas, xy, text, params=None):
     if params is None:
         params = {}
     x, y = xy
-    font = _read_param(params, 'font', DEFAULT_FONT)
+    font = _read_param(params, 'font', Font())
     color = _read_param(params, 'color', 'black')
     spacing = _read_param(params, 'spacing', 1.2)
     dry_run = _read_param(params, 'dry_run', False)
@@ -240,7 +237,7 @@ def create_thumbnail(frame, width, params=None):
     size = (width, height)
     draw_timestamp = _read_param(params, 'draw_timestamp', False)
     if draw_timestamp:
-        timestamp_font = _read_param(params, 'timestamp_font', DEFAULT_FONT)
+        timestamp_font = _read_param(params, 'timestamp_font', Font())
         timestamp_align = _read_param(params, 'timestamp_align', 'right')
 
     thumbnail = frame.image.resize(size, Image.LANCZOS)
@@ -666,9 +663,9 @@ class StoryBoard(object):
         thumbnail_aspect_ratio = _read_param(
             params, 'thumbnail_aspect_ratio', None)
         draw_timestamp = _read_param(params, 'draw_timestamp', True)
-        timestamp_font = _read_param(params, 'timestamp_font', DEFAULT_FONT)
+        timestamp_font = _read_param(params, 'timestamp_font', Font())
         timestamp_align = _read_param(params, 'timestamp_align', 'right')
-        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_font = _read_param(params, 'text_font', Font())
         text_color = _read_param(params, 'text_color', 'black')
         line_spacing = _read_param(params, 'line_spacing', 1.2)
         include_sha1sum = _read_param(params, 'include_sha1sum', False)
@@ -867,8 +864,7 @@ class StoryBoard(object):
             thumbnail_aspect_ratio = None
         draw_timestamp = _read_param(params, 'draw_timestamp', False)
         if draw_timestamp:
-            timestamp_font = _read_param(params, 'timestamp_font',
-                                         DEFAULT_FONT)
+            timestamp_font = _read_param(params, 'timestamp_font', Font())
             timestamp_align = _read_param(params, 'timestamp_align', 'right')
         print_progress = _read_param(params, 'print_progress', False)
 
@@ -948,7 +944,7 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_font = _read_param(params, 'text_font', Font())
         text_color = _read_param(params, 'text_color', 'black')
         line_spacing = _read_param(params, 'line_spacing', 1.2)
         background_color = _read_param(params, 'background_color', 'white')
@@ -1010,7 +1006,7 @@ class StoryBoard(object):
 
         if params is None:
             params = {}
-        text_font = _read_param(params, 'text_font', DEFAULT_FONT)
+        text_font = _read_param(params, 'text_font', Font())
         text_color = _read_param(params, 'text_color', 'black')
         background_color = _read_param(params, 'background_color', 'white')
 
