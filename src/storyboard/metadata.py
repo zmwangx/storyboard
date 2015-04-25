@@ -34,6 +34,7 @@ import sys
 from storyboard import fflocate
 from storyboard import util
 from storyboard.util import read_param as _read_param
+from storyboard import version
 
 
 _FORMAT_MAP = {
@@ -1112,24 +1113,82 @@ class Video(object):
 
 def main():
     """CLI interface."""
-    parser = argparse.ArgumentParser(description="Print video metadata.")
-    parser.add_argument('videos', nargs='+', metavar='VIDEO',
-                        help="path(s) to the video file(s)")
-    parser.add_argument('--include-sha1sum', '-s', action='store_true',
-                        help="print SHA-1 digest of video(s); slow")
-    parser.add_argument('--ffprobe-binary', '-f', default='ffprobe',
-                        help="""the name/path of the ffprobe binary; default is
-                        'ffprobe'""")
-    parser.add_argument('--quiet', '-q', action='store_true',
-                        help="""when enabled, suppress progress information and
-                        only print the metadata you ask for""")
-    args = parser.parse_args()
-    ffprobe_bin = args.ffprobe_binary
-    include_sha1sum = args.include_sha1sum
-    print_progress = not args.quiet
+    description = """Print video metadata.
+
+    You may supply a list of videos, and the output for each video will
+    be followed by a blank line to distinguish it from others. Below is
+    the list of available options and their brief explanations. The
+    options can also be stored in a configuration file,
+    ~/.config/storyboard.conf, in the "metadata-cli" section (the conf
+    file format follows that described in
+    https://docs.python.org/3/library/configparser.html).
+
+    For more detailed explanations, see
+    http://storyboard.rtfd.org/en/stable/metadata-cli.html (or replace
+    "stable" with the version you are using).
+    """
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        'videos', nargs='+', metavar='VIDEO',
+        help="Path(s) to the video file(s).")
+    parser.add_argument(
+        '--ffprobe-bin', metavar='NAME',
+        help="""The name/path of the ffprobe binary. The binay is
+        guessed from OS type if this option is not specified.""")
+    parser.add_argument(
+        '--include-sha1sum', '-s', action='store_true',
+        help="Include SHA-1 digest of the video(s).")
+    parser.add_argument(
+        '--verbose', '-v', choices=['auto', 'on', 'off'],
+        nargs='?', const='auto',
+        help="""Whether to print progress information to stderr. Default
+        is 'auto'.""")
+    parser.add_argument(
+        '--version', action='version', version=version.__version__)
+    cli_args = parser.parse_args()
+
+    config_file = os.path.expanduser('~/.config/storyboard.conf')
+
+    defaults = {
+        'ffprobe_bin': fflocate.guess_bins()[1],
+        'include_sha1sum': False,
+        'verbose': 'auto',
+    }
+
+    optreader = util.OptionReader(
+        cli_args=cli_args,
+        config_files=config_file,
+        section='metadata-cli',
+        defaults=defaults,
+    )
+    ffprobe_bin = optreader.opt('ffprobe_bin')
+    include_sha1sum = optreader.opt('include_sha1sum')
+    verbose = optreader.opt('verbose')
+    if verbose == 'on':
+        print_progress = True
+    elif verbose == 'off':
+        print_progress = False
+    else:
+        if verbose != 'auto':
+            msg = ("warning: '%s' is a not a valid argument to --verbose; "
+                   "ignoring and using 'auto' instead\n" % verbose)
+            sys.stderr.write(msg)
+        if include_sha1sum and sys.stderr.isatty():
+            print_progress = True
+        else:
+            print_progress = False
+
+    # test ffprobe_bin
+    try:
+        fflocate.check_bins((None, ffprobe_bin))
+    except OSError:
+        msg = ("fatal error: '%s' does not exist on PATH or is corrupted "
+               "(expected FFprobe)\n" % ffprobe_bin)
+        sys.stderr.write(msg)
+        exit(1)
 
     returncode = 0
-    for video in args.videos:
+    for video in cli_args.videos:
         # pylint: disable=invalid-name
         try:
             v = Video(video, params={
