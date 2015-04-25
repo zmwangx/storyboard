@@ -183,12 +183,13 @@ class TestMetadata(unittest.TestCase):
                     self.assertProgressNotPrinted()
 
             # include sha1sum through CLI argument, and stderr is a tty
-            with capture_stdout():
-                with tee_stderr():
-                    sys.argv[1:] = ['--include-sha1sum', self.videofile]
-                    main()
-                    self.assertSha1sumIncluded()
-                    self.assertProgressPrinted()
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = ['--include-sha1sum', self.videofile]
+                        main()
+                        self.assertSha1sumIncluded()
+                        self.assertProgressPrinted()
 
             # include sha1sum, stderr is not tty, force verbose on
             with capture_stdout():
@@ -200,13 +201,14 @@ class TestMetadata(unittest.TestCase):
                     self.assertProgressPrinted()
 
             # include sha1sum, stderr is a tty, force verbose off
-            with capture_stdout():
-                with tee_stderr():
-                    sys.argv[1:] = ['--include-sha1sum', '-v', 'off',
-                                    self.videofile]
-                    main()
-                    self.assertSha1sumIncluded()
-                    self.assertProgressNotPrinted()
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = ['--include-sha1sum', '-v', 'off',
+                                        self.videofile]
+                        main()
+                        self.assertSha1sumIncluded()
+                        self.assertProgressNotPrinted()
 
             # write a config file
             with open(config_file, 'w') as f:
@@ -223,21 +225,23 @@ class TestMetadata(unittest.TestCase):
                     self.assertProgressPrinted()
 
             # overwrite include_sha1sum with --exclude-sha1sum
-            with capture_stdout():
-                with tee_stderr():
-                    sys.argv[1:] = ['--exclude-sha1sum', self.videofile]
-                    main()
-                    self.assertSha1sumNotIncluded()
-                    self.assertProgressPrinted()
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = ['--exclude-sha1sum', self.videofile]
+                        main()
+                        self.assertSha1sumNotIncluded()
+                        self.assertProgressPrinted()
 
             # overwrite both
-            with capture_stdout():
-                with tee_stderr():
-                    sys.argv[1:] = ['--exclude-sha1sum', '-v', 'auto',
-                                    self.videofile]
-                    main()
-                    self.assertSha1sumNotIncluded()
-                    self.assertProgressNotPrinted()
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = ['--exclude-sha1sum', '-v', 'auto',
+                                        self.videofile]
+                        main()
+                        self.assertSha1sumNotIncluded()
+                        self.assertProgressNotPrinted()
 
             # bogus config file
             with open(config_file, 'w') as f:
@@ -245,12 +249,13 @@ class TestMetadata(unittest.TestCase):
                         "verbose = unrecognizable\n")
 
             # verbose not in on, off, auto leads to warning
-            with capture_stdout():
-                with tee_stderr():
-                    sys.argv[1:] = [self.videofile]
-                    main()
-                    self.assertSha1sumNotIncluded()
-                    self.assertRegex(sys.stderr.getvalue(), 'warning')
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = [self.videofile]
+                        main()
+                        self.assertSha1sumNotIncluded()
+                        self.assertRegex(sys.stderr.getvalue(), 'warning')
 
             # another bogus config file
             with open(config_file, 'w') as f:
