@@ -234,7 +234,10 @@ class TestUtil(unittest.TestCase):
 
         os.remove(conf_file)
         # http://stackoverflow.com/a/29882766/1944784
-        sys.exc_clear()
+        try:
+            sys.exc_clear()
+        except AttributeError:
+            pass
         os.remove(malformed_conf_file)
 
 
