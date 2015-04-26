@@ -9,6 +9,7 @@ except ImportError:
     import ConfigParser as configparser
 import hashlib
 import os
+import sys
 import tempfile
 import unittest
 
@@ -232,14 +233,9 @@ class TestUtil(unittest.TestCase):
             )
 
         os.remove(conf_file)
-        try:
-            os.remove(malformed_conf_file)
-        except OSError:
-            # There seems to be a defect (or not?) in Python 2.7
-            # ConfigParser that prevents the file from being closed when
-            # an exception is raised during parsing of a malformed
-            # config file. See http://stackoverflow.com/q/29882077/
-            pass
+        # http://stackoverflow.com/a/29882766/1944784
+        sys.exc_clear()
+        os.remove(malformed_conf_file)
 
 
 if __name__ == '__main__':
