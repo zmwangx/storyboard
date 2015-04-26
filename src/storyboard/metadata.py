@@ -732,14 +732,8 @@ class Video(object):
         # skip two lines:
         # {
         #     "frames" : [
-        if hasattr(lines, '__next__'):
-            # py3k iterator has __next__
-            lines.__next__()
-            lines.__next__()
-        else:
-            # python2 iterator has next
-            lines.next()
-            lines.next()
+        next(lines)
+        next(lines)
 
         # empty string for incremental storage of json object
         obj_str = ''
