@@ -362,25 +362,28 @@ class Video(object):
         >>> import os
         >>> import tempfile
         >>> import requests
-        >>> video_uri = 'https://static.fsf.org/nosvn/FSF30-video/FSF_30_240p.webm'
+        >>> video_uri = 'https://dl.bintray.com/zmwangx/pypi/sample-h264-aac-srt.mkv'
         >>> tempdir = tempfile.mkdtemp()
-        >>> video_file = os.path.join(tempdir, 'FSF_30_240p.webm')
+        >>> video_file = os.path.join(tempdir, 'sample-h264-aac-srt.mkv')
         >>> r = requests.get(video_uri, stream=True)
         >>> with open(video_file, 'wb') as fd:
         ...     for chunk in r.iter_content(65536):
         ...         bytes_written = fd.write(chunk)
-        >>> print(Video(video_file).format_metadata())
-        Filename:               FSF_30_240p.webm
-        File size:              8687494 (8.29MiB)
-        Container format:       WebM
-        Duration:               00:02:53.82
-        Pixel dimensions:       428x240
-        Display aspect ratio:   107:60
+        >>> print(Video(video_file).format_metadata({'include_sha1sum': True}))
+        Title:                  Example video: H.264 + AAC + SRT in Matroska container
+        Filename:               sample-h264-aac-srt.mkv
+        File size:              4842 (4.73KiB)
+        SHA-1 digest:           95e7d9f9359d8d7ba4ec441bc8cb3830a58ee102
+        Container format:       Matroska
+        Duration:               00:00:02.08
+        Pixel dimensions:       128x72
+        Display aspect ratio:   16:9
         Scan type:              Progressive scan
-        Frame rate:             120 fps
+        Frame rate:             25 fps
         Streams:
-            #0: Video, VP8, 428x240 (DAR 107:60), 120 fps
-            #1: Audio (eng), Vorbis
+            #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps
+            #1: Audio (und), AAC (Low-Complexity)
+            #2: Subtitle, SubRip
         >>> os.remove(video_file)
         >>> os.rmdir(tempdir)
         """

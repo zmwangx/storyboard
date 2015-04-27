@@ -116,3 +116,10 @@ ffmpeg -i mp3.mp3 -i png.png -map 0 -map 1 mp3.png.mp3
 for f in *; do
     metadata --include-sha1sum "${f}" >"${f}.out"
 done
+
+
+# H.264 + AAC + SRT in Matroska container with title
+# mux AAC into temp MP4 first since ADTS AAC cannot be muxed into Matroska directly
+ffmpeg -i h264.mp4 -i aac.aac -c copy -bsf:a aac_adtstoasc -map 0 -map 1 h264.aac.mp4
+ffmpeg -i h264.srt.mkv -i h264.aac.mp4 -c copy -map 0:0 -map 1:1 -map 0:1 -metadata title="Example video: H.264 + AAC + SRT in Matroska container" h264.aac.srt.mkv
+rm h264.aac.mp4
