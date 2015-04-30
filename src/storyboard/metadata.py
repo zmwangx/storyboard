@@ -40,8 +40,10 @@ from storyboard import version
 _FORMAT_MAP = {
     'aac': 'Raw ADTS AAC',
     'ac3': 'Raw AC-3',
+    'aiff': 'Audio Interchange File Format (AIFF)',
     'asf': 'Advanced Systems Format',
     'avi': 'Audio Video Interleaved',
+    'flac': 'Native FLAC',
     'flv': 'Flash video',
     'jpeg_pipe': 'JPEG',
     'matroska,webm': 'Matroska',
@@ -50,8 +52,9 @@ _FORMAT_MAP = {
     'mpegts': 'MPEG transport stream',
     'mpegvideo': 'Raw MPEG video',
     'mov,mp4,m4a,3gp,3g2,mj2': 'MPEG-4 Part 14',
-    'png_pipe': 'PNG',
     'ogg': 'Ogg',
+    'rm': 'RealMedia',
+    'png_pipe': 'PNG',
 }
 
 _VCODEC_MAP = {
@@ -62,6 +65,10 @@ _VCODEC_MAP = {
     'mpeg2video': 'MPEG-2 Part 2',
     'mpeg4': 'MPEG-4 Part 2',
     'png': 'PNG',
+    'rv10': 'RealVideo 1.0',
+    'rv20': 'RealVideo 2.0',
+    'rv30': 'RealVideo 3.0',
+    'rv40': 'RealVideo 4.0',
     'theora': 'Theora',
     'vp8': 'VP8',
     'vp9': 'VP9',
@@ -70,7 +77,12 @@ _VCODEC_MAP = {
 _ACODEC_MAP = {
     'aac': 'AAC',
     'ac3': 'Dolby AC-3',
+    'cook': 'Cook (RealAudio G2)',
+    'flac': 'FLAC (Free Lossless Audio Codec)',
     'mp3': 'MP3',
+    'real_144': 'RealAudio 1.0',
+    'real_288': 'RealAudio 2.0',
+    'ralf': 'RealAudio Lossless',
     'vorbis': 'Vorbis',
 }
 
@@ -574,6 +586,11 @@ class Video(object):
                     fmt = "WebM"
                 else:
                     fmt = "Matroska"
+            elif format_name == 'rm':
+                if extension in ['rmvb']:
+                    fmt = "RealMedia Variable Bitrate (RMVB)"
+                else:
+                    fmt = "RealMedia"
         else:
             fmt = extension.upper()
 

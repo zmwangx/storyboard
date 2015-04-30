@@ -91,6 +91,12 @@ ffmpeg -f lavfi -i aevalsrc=0:d=0.1 -c:a libfdk_aac aac.aac
 # Dolby AC-3 in raw AC-3 container
 ffmpeg -f lavfi -i aevalsrc=0:d=0.1 -c:a ac3 ac3.ac3
 
+# FLAC in Native FLAC container
+ffmpeg -f lavfi -i aevalsrc=0:d=0.1 -c:a flac flac.flac
+
+# PCM in AIFF container
+ffmpeg -f lavfi -i aevalsrc=0:d=0.1 aiff.aiff
+
 # HE-AAC in raw ADTS AAC container
 ffmpeg -f lavfi -i aevalsrc=0:d=0.1 -c:a libfdk_aac -profile:a aac_he aac_he.aac
 
@@ -112,14 +118,16 @@ ffmpeg -i mp3.mp3 -i jpeg.jpeg -map 0 -map 1 mp3.jpeg.mp3
 # MP3 + PNG in MP3 container
 ffmpeg -i mp3.mp3 -i png.png -map 0 -map 1 mp3.png.mp3
 
+# H.264 + AAC in MP4 container
+ffmpeg -i h264.mp4 -i aac.aac -c copy -bsf:a aac_adtstoasc -map 0 -map 1 h264.aac.mp4
+
+# RealVideo 1.0 + RealAudio 1.0 in RealMedia container (requires width and height be multiples of 16)
+ffmpeg -i h264.aac.mp4 -vf scale=256/144 -c:v rv10 -c:a real_144 realvideo1.realaudio1.rm
+
+# H.264 + AAC + SRT in Matroska container with title
+ffmpeg -i h264.srt.mkv -i h264.aac.mp4 -c copy -map 0:0 -map 1:1 -map 0:1 -metadata title="Example video: H.264 + AAC + SRT in Matroska container" h264.aac.srt.mkv
+
 # generate metadata outputs
 for f in *; do
     metadata --include-sha1sum "${f}" >"${f}.out"
 done
-
-
-# H.264 + AAC + SRT in Matroska container with title
-# mux AAC into temp MP4 first since ADTS AAC cannot be muxed into Matroska directly
-ffmpeg -i h264.mp4 -i aac.aac -c copy -bsf:a aac_adtstoasc -map 0 -map 1 h264.aac.mp4
-ffmpeg -i h264.srt.mkv -i h264.aac.mp4 -c copy -map 0:0 -map 1:1 -map 0:1 -metadata title="Example video: H.264 + AAC + SRT in Matroska container" h264.aac.srt.mkv
-rm h264.aac.mp4

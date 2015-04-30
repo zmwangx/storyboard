@@ -1,0 +1,13 @@
+Filename:               realvideo1.realaudio1.rm
+File size:              7483 (7.31KiB)
+SHA-1 digest:           a2c2ee6e85f2f0e89f41f4a0fb5f8fdf9c524c09
+Container format:       RealMedia
+Duration:               00:00:02.00
+Pixel dimensions:       256x144
+Display aspect ratio:   16:9
+Scan type:              Progressive scan
+Frame rate:             25 fps
+Streams:
+    #0: Video, RealVideo 1.0, 256x144 (DAR 16:9), 25 fps, 200 kb/s
+    #1: Audio, RealAudio 1.0, 8 kb/s
+
