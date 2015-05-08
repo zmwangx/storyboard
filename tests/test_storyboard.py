@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+import imghdr
 import os
 import subprocess
 import tempfile
@@ -13,10 +14,17 @@ from storyboard import fflocate
 from storyboard.frame import Frame
 from storyboard.storyboard import *
 
+from .testing_infrastructure import capture_stdout, capture_stderr, tee_stderr
+from .testing_infrastructure import change_home
+
 
 class TestStoryBoard(unittest.TestCase):
 
     def setUp(self):
+        if not hasattr(self, 'assertRegex'):
+            self.assertRegex = self.assertRegexpMatches
+            self.assertNotRegex = self.assertNotRegexpMatches
+
         # create a mock srt subtitle file
         fd, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
                                             suffix='.srt')
@@ -155,6 +163,98 @@ class TestStoryBoard(unittest.TestCase):
         # = 1964
         self.assertEqual(board.size[0], 1964)
         board.close()
+
+    def assertImageFormat(self, image_format):
+        image = sys.stdout.getvalue().strip()
+        self.assertEqual(imghdr.what(image), image_format)
+        # clean up
+        os.remove(image)
+
+    def assertProgressPrinted(self):
+        # sys.stderr is not empty
+        self.assertNotEqual(sys.stderr.getvalue(), '')
+
+    def assertProgressNotPrinted(self):
+        # sys.stderr is not empty
+        self.assertEqual(sys.stderr.getvalue(), '')
+
+    def test_main(self):
+        with change_home() as home:
+            config_dir = os.path.join(home, '.config')
+            os.mkdir(config_dir)
+            config_file = os.path.join(config_dir, 'storyboard.conf')
+
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--version']
+                    with self.assertRaises(SystemExit):
+                        main()
+                    # cat output of stdout and stderr, since Python2
+                    # prints version to stderr while Python3 prints
+                    # version to stdout
+                    output = (sys.stdout.getvalue().strip() +
+                              sys.stderr.getvalue().strip())
+                    self.assertEqual(output, version.__version__)
+
+            # default
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = [self.videofile]
+                    main()
+                    self.assertImageFormat('jpeg')
+                    self.assertProgressNotPrinted()
+
+            # default, stderr is a tty
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = [self.videofile]
+                        main()
+                        self.assertImageFormat('jpeg')
+                        self.assertProgressPrinted()
+
+            # PNG via CLI argument
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--output-format', 'png', self.videofile]
+                    main()
+                    self.assertImageFormat('png')
+                    self.assertProgressNotPrinted()
+
+            # PNG and verbose via config file
+            with open(config_file, 'w') as f:
+                f.write("[storyboard-cli]\n"
+                        "output_format = png\n"
+                        "verbose = on\n")
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = [self.videofile]
+                    main()
+                    self.assertImageFormat('png')
+                    self.assertProgressPrinted()
+
+            # bogus config file leads to warning
+            with open(config_file, 'w') as f:
+                f.write("[storyboard-cli]\n"
+                        "verbose = unrecognizable\n")
+            if sys.stderr.isatty():
+                with capture_stdout():
+                    with tee_stderr():
+                        sys.argv[1:] = [self.videofile]
+                        main()
+                        self.assertImageFormat('jpeg')
+                        self.assertRegex(sys.stderr.getvalue(), 'warning')
+
+            # another bogus config file
+            with open(config_file, 'w') as f:
+                f.write("[storyboard-cli]\n"
+                        "output_format = no_such_format\n\n")
+            with capture_stdout():
+                with capture_stderr():
+                    with self.assertRaises(SystemExit):
+                        sys.argv[1:] = [self.videofile]
+                        main()
+                    self.assertRegex(sys.stderr.getvalue(), 'error')
 
 
 if __name__ == '__main__':

@@ -105,8 +105,6 @@ Please report issues or browse a list of known issues at <https://github.com/zmw
 
 ## Known issues
 
-* Windows support is planned and already tested to some extent, but testing is limited since unlike OS X, Windows is not my primary platform. Please report any issue in the issue tracker — that's very much appreciated.
-
 * `storyboard` uses `PIL.ImageFont` from Pillow to draw text, which is rather primitive and only allows one font at a time (no fallback). The default font packaged is Source Code Pro Regular, which only draws its supported code points, and leave unknown code points as boxes. In particular, there is no CJK support, so CJK characters in video filenames won't come out very nice.
 
     You can specify your own font file that covers (part of) CJK code points, but the catch is that you should really use fixed-width fonts (unless you want to blow up the beautiful formatting, in which case you might as well use a proprietary player to generate a storyboard that's bad-looking inside out). It's basically impossible to have a truly fixed-width font that mixes CJK glyphs with Latin glyths, since they are so different — CJK glyphs are intrinsically square-shaped. This is just a sad fact of life and there's nothing we can do about it. Therefore, **there's no CJK support in `storyboard`** (CJK characters won't break `storyboard` — they just come out as boxes). Hopefully you're using ASCII filenames anyway; if you're not, you really should.

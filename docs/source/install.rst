@@ -68,10 +68,10 @@ GitHub: ::
   git clone --recurse-submodules git@github.com:zmwangx/storyboard.git
 
 There are some additional Python dependencies for testing and building
-the documentations, which are listed in `tests/requirements.txt` and
-`docs/requirements`. ``virtualenv`` is highly recommended (since the
-doc building environment is rather picky about versions — blame NumPy
-on this). Therefore, to fully setup the development and build
+the documentations, which are listed in ``tests/requirements.txt`` and
+``docs/requirements.txt``. ``virtualenv`` is highly recommended (since
+the doc building environment is rather picky about versions — blame
+NumPy on this). Therefore, to fully setup the development and build
 environment, one would do
 
 .. code-block:: bash

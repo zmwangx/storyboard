@@ -1134,10 +1134,10 @@ def main():
 
     You may supply a list of videos, and the output for each video will
     be followed by a blank line to distinguish it from others. Below is
-    the list of available options and their brief explanations. The
-    options can also be stored in a configuration file,
-    ~/.config/storyboard.conf, in the "metadata-cli" section (the conf
-    file format follows that described in
+    the list of available options and their brief explanations. Some of
+    the options can also be stored in a configuration file,
+    ~/.config/storyboard.conf, under the "metadata-cli" section (the
+    conf file format follows that described in
     https://docs.python.org/3/library/configparser.html).
 
     For more detailed explanations, see
@@ -1212,6 +1212,7 @@ def main():
         sys.stderr.write(msg)
         exit(1)
 
+    # real stuff happens from here
     returncode = 0
     for video in cli_args.videos:
         # pylint: disable=invalid-name
@@ -1231,7 +1232,8 @@ def main():
         })
 
         if print_progress:
-            # print one empty line to separate progress info and output content
+            # print one empty line to separate progress info and output
+            # content
             sys.stderr.write("\n")
         print(metadata_string)
         print('')
