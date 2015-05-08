@@ -26,10 +26,18 @@ init:
 
 install:
   - git submodule update --init --recursive
-  - cinst ffmpeg
+  - cinst -y ffmpeg
   - powershell .appveyor\install.ps1
   - set PATH=%PYTHON%\Scripts;%PYTHON%;%PATH%
   - pip install -r requirements.txt -r tests\requirements.txt -r docs\requirements.txt .
+  # There seems to be a bug in the ffprobe installed by AppVeyor
+  # (using cinst) that always run into an infinite loop when
+  # processing vp9.webm with -show_frames.  See
+  # https://ci.appveyor.com/project/zmwangx/storyboard/build/1.0.50,
+  # and especially the log file
+  # https://ci.appveyor.com/api/buildjobs/n7e9dakb5ivsaxee/log for the
+  # presence of the infinite loop.
+  - del .\tests\more\samples\vp9.webm .\tests\more\samples\vp9.webm.out
 
 build: off
 

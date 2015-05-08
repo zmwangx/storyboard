@@ -215,6 +215,8 @@ class Video(object):
     print_progress : bool, optional
         Whether to print progress information (to stderr). Default is
         False.
+    debug : bool, optional
+        Print extra debug information. Default is False.
 
     Attributes
     ----------
@@ -287,6 +289,9 @@ class Video(object):
 
         if params is None:
             params = {}
+        if 'debug' in params and params['debug']:
+            self.__debug = True
+        self.__dp("entered StoryBoard.__init__")
         if 'ffprobe_bin' in params:
             ffprobe_bin = params['ffprobe_bin']
         else:
@@ -338,8 +343,10 @@ class Video(object):
         else:
             # no video stream
             self.scan_type = None
+            self.__dp("left StoryBoard.__init__")
             return
         self.scan_type = self._get_scan_type(ffprobe_bin, print_progress)
+        self.__dp("left StoryBoard.__init__")
 
     def format_metadata(self, params=None):
         """Return video metadata in one formatted string.
@@ -400,6 +407,7 @@ class Video(object):
         >>> os.rmdir(tempdir)
         """
 
+        self.__dp("entered StoryBoard.format_metadata")
         if params is None:
             params = {}
         include_sha1sum = _read_param(params, 'include_sha1sum', False)
@@ -441,6 +449,7 @@ class Video(object):
         lines.append("Streams:")
         for stream in self.streams:
             lines.append("    #%d: %s" % (stream.index, stream.info_string))
+        self.__dp("left StoryBoard.format_metadata")
         return '\n'.join(lines).strip()
 
     def compute_sha1sum(self, params=None):
@@ -475,10 +484,12 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard.compute_sha1sum")
         if params is None:
             params = {}
         print_progress = _read_param(params, 'print_progress', False)
 
+        self.__dp("left StoryBoard.compute_sha1sum")
         return self._get_sha1sum(print_progress=print_progress)
 
     def _call_ffprobe(self, ffprobe_bin):
@@ -500,6 +511,7 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._call_ffprobe")
         ffprobe_args = [
             ffprobe_bin,
             '-print_format', 'json',
@@ -510,11 +522,16 @@ class Video(object):
         proc = subprocess.Popen(ffprobe_args,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ffprobe_out, ffprobe_err = proc.communicate()
+        self.__dp("ffprobe stdout:")
+        self.__dp(ffprobe_out.decode('utf-8'))
+        self.__dp("ffprobe stderr:")
+        self.__dp(ffprobe_err.decode('utf-8'))
         if proc.returncode != 0:
             msg = ("ffprobe failed on '%s'\nffprobe error message:\n%s"
                    % (self.path, ffprobe_err.strip().decode('utf-8')))
             raise OSError(msg)
         self._ffprobe = json.loads(ffprobe_out.decode('utf-8'))
+        self.__dp("left StoryBoard._call_ffprobe")
 
     def _get_title(self):
         """Get title of video (if any).
@@ -531,12 +548,15 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._get_title")
         video_container_metadata = self._ffprobe['format']
         if (('tags' in video_container_metadata and
              'title' in video_container_metadata['tags'])):
             title = video_container_metadata['tags']['title']
         else:
+            self.__dp("left StoryBoard._get_title")
             return None
+        self.__dp("left StoryBoard._get_title")
         return title
 
     def _get_format(self):
@@ -559,6 +579,7 @@ class Video(object):
 
         # pylint: disable=too-many-branches
 
+        self.__dp("entered StoryBoard._get_format")
         format_name = self._ffprobe['format']['format_name']
         # lowercase extension without period
         extension = os.path.splitext(self.path)[1].lower()[1:]
@@ -594,6 +615,7 @@ class Video(object):
         else:
             fmt = extension.upper()
 
+        self.__dp("left StoryBoard._get_format")
         return fmt
 
     def _get_size(self):
@@ -608,8 +630,10 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._get_size")
         size = int(self._ffprobe['format']['size'])
         size_text = util.humansize(size)
+        self.__dp("left StoryBoard._get_size")
         return (size, size_text)
 
     def _get_duration(self):
@@ -625,11 +649,14 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._get_duration")
         if 'duration' in self._ffprobe['format']:
             duration = float(self._ffprobe['format']['duration'])
             duration_text = util.humantime(duration)
+            self.__dp("left StoryBoard._get_duration")
             return (duration, duration_text)
         else:
+            self.__dp("left StoryBoard._get_duration")
             return (None, None)
 
     _SHA_CHUNK_SIZE = 65536
@@ -655,8 +682,10 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._get_sha1sum")
         # directly return if already computed
         if self.sha1sum is not None:
+            self.__dp("left StoryBoard._get_sha1sum")
             return self.sha1sum
 
         if print_progress:
@@ -676,6 +705,7 @@ class Video(object):
                 pbar.finish()
 
             self.sha1sum = sha1.hexdigest()
+            self.__dp("left StoryBoard._get_sha1sum")
             return self.sha1sum
 
     def _get_scan_type(self, ffprobe_bin, print_progress=False):
@@ -735,6 +765,7 @@ class Video(object):
 
         # pylint: disable=too-many-branches
 
+        self.__dp("entered StoryBoard._get_scan_type")
         if print_progress:
             sys.stderr.write("Trying to determine scan type...\n")
 
@@ -752,14 +783,15 @@ class Video(object):
         # skip two lines:
         # {
         #     "frames" : [
-        next(lines)
-        next(lines)
+        self.__dp(next(lines).decode('utf-8'), newline=False)
+        self.__dp(next(lines).decode('utf-8'), newline=False)
 
         # empty string for incremental storage of json object
         obj_str = ''
         objs = []
         counter = 0
         for line in lines:
+            self.__dp(line.decode('utf-8'), newline=False)
             obj_str += line.decode('utf-8').strip()
             try:
                 # a complete frame object might be followed by a comma
@@ -786,6 +818,7 @@ class Video(object):
         if len(objs) < 40:
             # frame count less than 40, either file is audio or file is
             # video but too short
+            self.__dp("left StoryBoard._get_scan_type")
             return None
 
         # drop the first half of the frame objects
@@ -796,6 +829,7 @@ class Video(object):
             if 'interlaced_frame' in frame:
                 num_interlaced += frame['interlaced_frame']
 
+        self.__dp("left StoryBoard._get_scan_type")
         if num_interlaced == 0:
             return "Progressive scan"
         elif num_interlaced == 20:
@@ -813,9 +847,11 @@ class Video(object):
         Extracted metadata are saved to the `streams` attribute.
 
         """
+        self.__dp("entered StoryBoard._process_streams")
         self.streams = []
         for stream in self._ffprobe['streams']:
             self.streams.append(self._process_stream(stream))
+        self.__dp("left StoryBoard._process_streams")
 
     def _process_stream(self, stream_dict):
         """Process a single stream object returned by FFprobe.
@@ -845,6 +881,7 @@ class Video(object):
 
         """
 
+        self.__dp("entered StoryBoard._process_stream")
         if 'codec_type' not in stream_dict:
             stream = Stream()
             stream.type = 'unknown'
@@ -864,6 +901,7 @@ class Video(object):
 
         stream.index = stream_dict['index']
 
+        self.__dp("left StoryBoard._process_stream")
         return stream
 
     def _process_video_stream(self, stream_dict):
@@ -889,6 +927,7 @@ class Video(object):
 
         # pylint: disable=too-many-statements,too-many-branches
 
+        self.__dp("entered StoryBoard._process_video_stream")
         sdict = stream_dict  # alias to the long long name
 
         if sdict['codec_type'] != "video":
@@ -993,10 +1032,10 @@ class Video(object):
         if s.bit_rate_text:
             s.info_string += ", " + s.bit_rate_text
 
+        self.__dp("left StoryBoard._process_video_stream")
         return s
 
-    @staticmethod
-    def _process_audio_stream(stream_dict):
+    def _process_audio_stream(self, stream_dict):
         """Process audio stream object returned by FFprobe.
 
         Parameters
@@ -1014,6 +1053,7 @@ class Video(object):
 
         # pylint: disable=too-many-statements,too-many-branches
 
+        self.__dp("entered StoryBoard._process_audio_stream")
         sdict = stream_dict  # alias to the long long name
 
         if sdict['codec_type'] != "audio":
@@ -1066,10 +1106,10 @@ class Video(object):
         if s.bit_rate_text:
             s.info_string += ", " + s.bit_rate_text
 
+        self.__dp("left StoryBoard._process_audio_stream")
         return s
 
-    @staticmethod
-    def _process_subtitle_stream(stream_dict):
+    def _process_subtitle_stream(self, stream_dict):
         """Process subtitle stream object returned by FFprobe.
 
         Parameters
@@ -1087,6 +1127,7 @@ class Video(object):
 
         # pylint: disable=too-many-statements,too-many-branches
 
+        self.__dp("entered StoryBoard._process_subtitle_stream")
         sdict = stream_dict  # alias to the long long name
 
         if sdict['codec_type'] != "subtitle":
@@ -1122,13 +1163,23 @@ class Video(object):
         else:
             s.info_string = "Subtitle, %s" % s.codec
 
+        self.__dp("left StoryBoard._process_subtitle_stream")
         return s
+
+    def __dp(self, string, newline=True):
+        """Debug printing."""
+        if hasattr(self, "_Video__debug") and self.__debug:
+            if newline:
+                print(string, file=sys.stderr)
+            else:
+                sys.stderr.write(string)
+            sys.stderr.flush()
 
 
 def main():
     """CLI interface."""
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-statements,too-many-branches
 
     description = """Print video metadata.
 
