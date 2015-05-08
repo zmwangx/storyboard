@@ -1136,9 +1136,10 @@ def main():
     be followed by a blank line to distinguish it from others. Below is
     the list of available options and their brief explanations. Some of
     the options can also be stored in a configuration file,
-    ~/.config/storyboard.conf, under the "metadata-cli" section (the
-    conf file format follows that described in
-    https://docs.python.org/3/library/configparser.html).
+    $XDG_CONFIG_HOME/storyboard/storyboard.conf (or if $XDG_CONFIG_HOME
+    is not defined, ~/.config/storyboard/storyboard.conf), under the
+    "metadata-cli" section (the conf file format follows that described
+    in https://docs.python.org/3/library/configparser.html).
 
     For more detailed explanations, see
     http://storyboard.rtfd.org/en/stable/metadata-cli.html (or replace
@@ -1169,7 +1170,11 @@ def main():
         '--version', action='version', version=version.__version__)
     cli_args = parser.parse_args()
 
-    config_file = os.path.expanduser('~/.config/storyboard.conf')
+    if 'XDG_CONFIG_HOME' in os.environ:
+        config_file = os.path.join(os.environ['XDG_CONFIG_HOME'],
+                                   'storyboard/storyboard.conf')
+    else:
+        config_file = os.path.expanduser('~/.config/storyboard/storyboard.conf')
 
     defaults = {
         'ffprobe_bin': fflocate.guess_bins()[1],

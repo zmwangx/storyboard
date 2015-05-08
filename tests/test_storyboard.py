@@ -25,6 +25,11 @@ class TestStoryBoard(unittest.TestCase):
             self.assertRegex = self.assertRegexpMatches
             self.assertNotRegex = self.assertNotRegexpMatches
 
+        # make sure XDG_CONFIG_HOME doesn't interfere with our
+        # change_home later
+        if 'XDG_CONFIG_HOME' in os.environ:
+            os.environ.pop('XDG_CONFIG_HOME')
+
         # create a mock srt subtitle file
         fd, self.srtfile = tempfile.mkstemp(prefix='storyboard-test-',
                                             suffix='.srt')
@@ -180,8 +185,8 @@ class TestStoryBoard(unittest.TestCase):
 
     def test_main(self):
         with change_home() as home:
-            config_dir = os.path.join(home, '.config')
-            os.mkdir(config_dir)
+            config_dir = os.path.join(home, '.config', 'storyboard')
+            os.makedirs(config_dir)
             config_file = os.path.join(config_dir, 'storyboard.conf')
 
             with capture_stdout():

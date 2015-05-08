@@ -1050,8 +1050,10 @@ def main():
 
     Below is the list of available options and their brief
     explanations. The options can also be stored in a configuration
-    file, ~/.config/storyboard.conf, under the "storyboard-cli" section
-    (the conf file format follows that described in
+    file, $XDG_CONFIG_HOME/storyboard/storyboard.conf (or if
+    $XDG_CONFIG_HOME is not defined,
+    ~/.config/storyboard/storyboard.conf), under the "storyboard-cli"
+    section (the conf file format follows that described in
     https://docs.python.org/3/library/configparser.html).
 
     Note that the storyboard is in fact much more customizable; see the
@@ -1103,7 +1105,11 @@ def main():
         '--version', action='version', version=version.__version__)
     cli_args = parser.parse_args()
 
-    config_file = os.path.expanduser('~/.config/storyboard.conf')
+    if 'XDG_CONFIG_HOME' in os.environ:
+        config_file = os.path.join(os.environ['XDG_CONFIG_HOME'],
+                                   'storyboard/storyboard.conf')
+    else:
+        config_file = os.path.expanduser('~/.config/storyboard/storyboard.conf')
 
     ffmpeg_bin_guessed, ffprobe_bin_guessed = fflocate.guess_bins()
     defaults = {
