@@ -1,6 +1,8 @@
 |Latest Version| |Supported Python versions| |Download format| |License|
-|Development Status|\  |Build Status| |Windows Build Status| |Coverage
-Status| |Code Health|
+|Development Status| |Docs| |Build Status| |Windows Build Status|
+|Coverage Status| |Code Health|
+
+*Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
 ``storyboard`` is a customizable video storyboard generator with
 metadata reporting directly embedded in the generated images, based on
@@ -16,15 +18,9 @@ Structure of this document
 
 -  Sample storyboards
 -  Background
--  Dependencies
--  Installation
+-  Installation and dependencies
 -  Command-line usage
-
-   -  ``metadata``
-   -  ``storyboard``
-
--  Reporting issues
--  Known issues
+-  Issues
 -  License
 -  Changelog
 
@@ -35,12 +31,12 @@ Generated from
 `0.1b1 <https://github.com/zmwangx/storyboard/releases/tag/0.1b1>`__
 with default settings (click for full resolution):
 
-|image9|
+|image10|
 
 (Proprietary video by Apple, available from
 http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v.)
 
-|image10|
+|image11|
 
 (CC0 video by FSF, available from
 https://static.fsf.org/nosvn/FSF30-video/FSF_30_video.ogv.)
@@ -59,116 +55,66 @@ and uninformative, using stupid fonts and lacking crucial information
 that hackers look for (e.g., hash). Therefore, here I present a
 customizable storyboard generator for hackers.
 
+Installation and dependencies
+-----------------------------
+
+*Main article on Read the Docs:*
+http://storyboard.rtfd.org/en/latest/install.html
+
 Dependencies
-------------
+~~~~~~~~~~~~
 
--  `FFmpeg <https://ffmpeg.org/>`__, specifically ``ffmpeg`` and
-   ``ffprobe``. Homebrew users can install FFmpeg with
+-  `FFmpeg <https://ffmpeg.org/>`__. Check the `official downloads
+   page <https://www.ffmpeg.org/download.html>`__ for installation
+   options. On OS X you may install FFmpeg via
+   `Homebrew <http://brew.sh>`__ or
+   `MacPorts <https://www.macports.org/>`__. The former is recommended.
 
-   ::
-
-       brew install ffmpeg
-
-   Be sure to review the list of options in ``brew info ffmpeg`` first.
-   ``storyboard`` should not depend on any of the options to function,
-   but FFmpeg is a great tool in its own right (several orders of
-   magnitude greater than ``storyboard``), so you might want to link
-   against optional libraries to your own benefit.
-
-   Unfortunately, ``avconv`` and ``avprobe`` have incompatible
-   interfaces with their FFmpeg counterparts, so there is no plan to
-   support Libav (see
-   `#16 <https://github.com/zmwangx/storyboard/issues/16>`__ for
-   details). Fortunately, FFmpeg is making its come back to Ubuntu in
-   `15.04 vivid <http://packages.ubuntu.com/vivid/ffmpeg>`__, after
-   several years of unfair treatment.
-
--  `Pillow <https://python-pillow.github.io/>`__. Python wheels of
-   Pillow are provided for OS X and Windows on
-   `PyPI <https://pypi.python.org/pypi/Pillow/>`__, so it is usually
-   enough to simply
-
-   ::
-
-       pip install Pillow
-
-   However, it is recommended that you also satisfy the external
-   dependencies, especially ``libjpeg`` and ``libfreetype``, on OS X and
-   Linux. See `the official installation
+-  `Pillow <https://python-pillow.github.io/>`__. This dependency will
+   be picked up by ``pip`` when you install ``storyboard``, but you also
+   have to satisfy the external dependencies, especially ``libjpeg`` and
+   ``libfreetype``. See `the official installation
    guide <https://pillow.readthedocs.org/installation.html>`__ for
-   details.
+   details. (Satisfying external dependencies is very important on
+   Linux, where no wheel distribution is provided on PyPI.)
 
 Installation
-------------
+~~~~~~~~~~~~
 
 ::
 
     pip install storyboard
 
-Make sure you satisfy the FFmpeg dependency and external library
-dependencies of Pillow, e.g., ``libjpeg`` and ``libfreetype``.
-
-Note that prereleases need to be installed with the ``--pre`` option, so
-be sure to try ``pip install --pre storyboard`` if the above fails.
-
 Command-line usage
 ------------------
 
-The package installs two console scripts, ``metadata`` and
-``storyboard``. Usage of both scripts can be found using the
-``-h,--help`` option. **Note that CLIs are currently extremely
-primitive.** To generate customized storyboards, one needs to write
-one's own wrapper around the API (which is well-documented in the source
-code). I plan to improve the CLI in future releases and expose more
-features.
+*Main article on Read the Docs:*
+http://storyboard.rtfd.org/en/latest/cli.html
 
-``metadata``
-~~~~~~~~~~~~
+This package installs two console scripts, ``metadata`` and
+``storyboard``. You may find documentation of both using the
+``-h,--help`` option. Extensive documentation is also available:
 
-``metadata`` prints video metadata in a human-readable format, e.g. (for
-`this
-video <http://podcasts.apple.com/apple_keynotes_1080p/2015/2015_mar_1080_cc.m4v>`__),
+- ``metadata`` CLI reference:
+  http://storyboard.rtfd.org/en/latest/metadata-cli.html;
+- ``storyboard`` CLI reference
+  http://storyboard.rtfd.org/en/latest/storyboard-cli.html.
 
-::
+By the way, the default invocation is really simple (for both): just
+supply one or more video paths.
 
-    Filename:               2015_mar_1080_cc.m4v
-    File size:              6083965352 (5.67GiB)
-    Container format:       MPEG-4 Part 14 (M4V)
-    Duration:               01:34:45.27
-    Pixel dimensions:       1920x1080
-    Display aspect ratio:   16:9
-    Scan type:              Progressive scan
-    Frame rate:             29.97 fps
-    Streams:
-        #0: Audio (eng), AAC (Low-Complexity), 99 kb/s
-        #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
-        #2: Subtitle (eng), closed caption (EIA-608 / CEA-708)
+Issues
+------
 
-which is a good alternative to ``ffprobe``'s basic functionality.
-Compare this to the mess that ``ffprobe -hide_banner`` prints (see `this
-gist <https://gist.github.com/zmwangx/ee8986c2f0596f1ebbb0>`__).
-
-``storyboard``
-~~~~~~~~~~~~~~
-
-Currently, ``storyboard`` prints the path of the generated image to the
-console, which by default resides in one's ``$TMPDIR``. One can then
-move it to a permanent place, or upload it to a image hosting site.
-
-Reporting issues
-----------------
+Reporting
+~~~~~~~~~
 
 Please report issues or browse a list of known issues at
 https://github.com/zmwangx/storyboard/issues. See "Known issues" for
 instructions on how to report issues related to an unknown codec.
 
 Known issues
-------------
-
--  Windows support is planned and already tested to some extent, but
-   testing is limited since unlike OS X, Windows is not my primary
-   platform. Please report any issue in the issue tracker — that's very
-   much appreciated.
+~~~~~~~~~~~~
 
 -  ``storyboard`` uses ``PIL.ImageFont`` from Pillow to draw text, which
    is rather primitive and only allows one font at a time (no fallback).
@@ -225,6 +171,8 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Development Status| image:: https://pypip.in/status/storyboard/badge.svg
    :target: https://pypi.python.org/pypi/storyboard/
+.. |Docs| image:: https://readthedocs.org/projects/storyboard/badge/?version=latest
+   :target: https://storyboard.readthedocs.org/
 .. |Build Status| image:: https://travis-ci.org/zmwangx/storyboard.svg?branch=master
    :target: https://travis-ci.org/zmwangx/storyboard
 .. |Windows Build Status| image:: https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true
@@ -233,13 +181,24 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://coveralls.io/r/zmwangx/storyboard?branch=master
 .. |Code Health| image:: https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat
    :target: https://landscape.io/github/zmwangx/storyboard/master
-.. |image9| image:: http://i.imgur.com/mZYZ46c.jpg
+.. |image10| image:: http://i.imgur.com/mZYZ46c.jpg
    :target: http://i.imgur.com/CSZ1x5t.jpg
-.. |image10| image:: http://i.imgur.com/3uoMQzY.jpg
+.. |image11| image:: http://i.imgur.com/3uoMQzY.jpg
    :target: http://i.imgur.com/yUE4BhJ.jpg
 
 Changelog
 ---------
+
+0.1b2
+~~~~~
+
+*Date: 2015-05-08*
+
+* CLI overhaul (be sure to check out the `CLI reference
+  <https://storyboard.readthedocs.org/en/latest/cli.html>`_); the CLI
+  is stable now
+* Greatly improved docs (not finished yet, will be completed before
+  the soon-to-be-released 0.1)
 
 0.1b1
 ~~~~~

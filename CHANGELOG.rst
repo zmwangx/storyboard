@@ -1,6 +1,17 @@
 Changelog
 ---------
 
+0.1b2
+~~~~~
+
+*Date: 2015-05-08*
+
+* CLI overhaul (be sure to check out the `CLI reference
+  <https://storyboard.readthedocs.org/en/latest/cli.html>`_); the CLI
+  is stable now
+* Greatly improved docs (not finished yet, will be completed before
+  the soon-to-be-released 0.1)
+
 0.1b1
 ~~~~~
 

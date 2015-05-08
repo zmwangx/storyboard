@@ -83,4 +83,8 @@ environment, one would do
    pip install -r requirements.txt -r tests/requirements.txt -r docs/requirements.txt -e .
 
 Testing and doc building instructions are available in
-``tests/README.md`` and ``docs/README.md``, respectively.
+`tests/README.md
+<https://github.com/zmwangx/storyboard/blob/master/tests/README.md>`_
+and `docs/README.md
+<https://github.com/zmwangx/storyboard/blob/master/docs/README.md>`_,
+respectively.
