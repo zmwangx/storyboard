@@ -520,6 +520,10 @@ class StoryBoard(object):
 
         fflocate.check_bins(bins)
 
+        # seek frame by frame if video duration is specially given
+        # (indicating that normal input seeking may not work)
+        self._seek_frame_by_frame = video_duration is not None
+
         self._bins = bins
         if isinstance(video, metadata.Video):
             self.video = video
@@ -788,6 +792,7 @@ class StoryBoard(object):
                 frame = _extract_frame(self.video.path, timestamp, params={
                     'ffmpeg_bin': self._bins[0],
                     'codec': self._frame_codec,
+                    'frame_by_frame': self._seek_frame_by_frame,
                 })
                 self.frames.append(frame)
             except:
@@ -1087,11 +1092,14 @@ def main():
         between 1 and 100. Only meaningful when the output format is
         JPEG. Default is 85.""")
     parser.add_argument(
-        '--video-duration', metavar='SECONDS',
+        '--video-duration', type=float, metavar='SECONDS',
         help="""Video duration in seconds (float). By default the
         duration is extracted from container metadata, but in case it is
         not available or wrong, use this option to correct it and get a
-        saner storyboard.""")
+        saner storyboard. Note however that this option activates output
+        seeking (i.e., seeking the video frame by frame) in thumbnail
+        generation, so it will be *infinitely* slower than without this
+        option.""")
     parser.add_argument(
         '--exclude-sha1sum', action='store_true',
         help="""Exclude SHA-1 digest of the video(s) from the metadata
@@ -1136,7 +1144,7 @@ def main():
         exit(1)
     suffix = '.jpg' if output_format == 'jpeg' else '.png'
     quality = optreader.opt('quality', opttype=int)
-    video_duration = optreader.opt('video_duration')
+    video_duration = optreader.opt('video_duration', opttype=float)
     include_sha1sum = not cli_args.exclude_sha1sum
     verbose = optreader.opt('verbose')
     if verbose == 'on':

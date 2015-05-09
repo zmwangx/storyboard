@@ -94,6 +94,12 @@ def extract_frame(video_path, timestamp, params=None):
         Image codec used by FFmpeg when outputing the frame. Default is
         ``'png'``. There is no need to touch this option unless your
         FFmpeg cannot encode PNG, which is very unlikely.
+    frame_by_frame : bool, optional
+        Whether to seek frame by frame, i.e., whether to use output
+        seeking (see https://trac.ffmpeg.org/wiki/Seeking). Default is
+        ``False``. Note that seeking frame by frame is *extremely* slow,
+        but accurate. Only use this when the container metadata is wrong
+        or missing, so that input seeking produces wrong image.
 
     """
 
@@ -104,14 +110,26 @@ def extract_frame(video_path, timestamp, params=None):
     else:
         ffmpeg_bin, _ = fflocate.guess_bins()
     codec = _read_param(params, 'codec', 'png')
+    frame_by_frame = (params['frame_by_frame'] if 'frame_by_frame' in params
+                      else False)
 
     if not os.path.exists(video_path):
         raise OSError("video file '%s' does not exist" % video_path)
 
-    ffmpeg_args = [
-        ffmpeg_bin,
-        '-ss', str(timestamp),
-        '-i', video_path,
+    ffmpeg_args = [ffmpeg_bin]
+    if frame_by_frame:
+        # output seeking
+        ffmpeg_args += [
+            '-i', video_path,
+            '-ss', str(timestamp),
+        ]
+    else:
+        # input seeking
+        ffmpeg_args += [
+            '-ss', str(timestamp),
+            '-i', video_path,
+        ]
+    ffmpeg_args += [
         '-f', 'image2',
         '-vcodec', codec,
         '-vframes', '1',
