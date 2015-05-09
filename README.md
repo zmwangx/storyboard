@@ -65,9 +65,9 @@ By the way, the default invocation is really simple (for both): just supply one 
 
 *Main article:* http://storyboard.rtfd.org/en/latest/sample.html
 
-[![](http://i.imgur.com/mZYZ46c.jpg)](http://i.imgur.com/CSZ1x5t.jpg)
+[![](https://i.imgur.com/OIx20KQ.jpg)](https://i.imgur.com/gtBArx7.jpg)
 
-[![](http://i.imgur.com/3uoMQzY.jpg)](http://i.imgur.com/yUE4BhJ.jpg)
+[![](https://i.imgur.com/WB2N0Rh.jpg)](https://i.imgur.com/Ujgsznc.jpg)
 
 ## Issues
 
