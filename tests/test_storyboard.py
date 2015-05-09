@@ -255,7 +255,7 @@ class TestStoryBoard(unittest.TestCase):
                 f.write("[storyboard-cli]\n"
                         "exclude_sha1sum = on\n")
             with capture_stdout():
-		with capture_stderr():
+                with capture_stderr():
                     sys.argv[1:] = ['--verbose', 'on', self.videofile]
                     main()
                     self.assertImageFormat('jpeg')
@@ -266,7 +266,7 @@ class TestStoryBoard(unittest.TestCase):
                 f.write("[storyboard-cli]\n"
                         "exclude_sha1sum = on\n")
             with capture_stdout():
-		with capture_stderr():
+                with capture_stderr():
                     sys.argv[1:] = ['--include-sha1sum', '--verbose', 'on',
                                     self.videofile]
                     main()
