@@ -37,10 +37,12 @@ blank line.
 
 See the section :ref:`options` for the list of command line options
 and their detailed explanations. Some of them can also be stored in a
-configuration file, ``~/.config/storyboard.conf``, under the
-``metadata-cli`` section, in which case the config file option is also
-documented. Note that an option specified on the command line always
-overwrites those in config files.
+configuration file, ``$XDG_CONFIG_HOME/storyboard/storyboard.conf``
+(or ``~/.config/storyboard/storyboard.conf`` if the environment
+variable ``XDG_CONFIG_HOME`` is not defined), under the
+``metadata-cli`` section. If that is the case, then the config file
+option is also documented. Note that an option specified on the
+command line always overrides its config file equivalent.
 
 See `configparser's doc
 <https://docs.python.org/3/library/configparser.html>`_ for the format
@@ -56,7 +58,7 @@ Options
 
 --ffprobe-bin=NAME
             The name or path of the ffprobe binary, which should be on
-            the system or environment's search path. The binay is
+            the system or environment's search path. The binary is
             guessed from OS type if this option is not specified
             (e.g., ``ffprobe`` on OS X and Linux, and ``ffprobe.exe``
             on Windows).
@@ -76,7 +78,7 @@ Options
 
 --exclude-sha1sum
             Exclude SHA-1 digest in the output. This option always
-            overwrites ``--include-sha1sum``. This option is only
+            overrides ``--include-sha1sum``. This option is only
             useful when ``include_sha1sum`` is turned on by default in
             the config file.
 
@@ -101,12 +103,16 @@ Sample configuration file
 -------------------------
 
 The following config file should be put in
-``~/.config/storyboard.conf`` to take effect.
+``$XDG_CONFIG_HOME/storyboard/storyboard.conf`` (or
+``~/.config/storyboard/storyboard.conf`` if the environment variable
+``XDG_CONFIG_HOME`` is not defined) to take effect
 
 .. code-block:: ini
 
    # This is a sample configuration file for the metadata CLI script.
-   # It has to be in ~/.config/storyboard.conf to take effect.
+   # It has to be in $XDG_CONFIG_HOME/storyboard/storyboard.conf (or
+   # ~/.config/storyboard/storyboard.conf if the environment variable
+   # XDG_CONFIG_HOME is not defined) to take effect.
 
    [metadata-cli]
 
