@@ -238,6 +238,41 @@ class TestStoryBoard(unittest.TestCase):
                     self.assertImageFormat('png')
                     self.assertProgressPrinted()
 
+            # exclude_sha1sum via CLI argument
+            with open(config_file, 'w') as f:
+                # empty the config file
+                f.write("")
+            with capture_stdout():
+                with capture_stderr():
+                    sys.argv[1:] = ['--exclude-sha1sum', '--verbose', 'on',
+                                    self.videofile]
+                    main()
+                    self.assertImageFormat('jpeg')
+                    self.assertNotRegex(sys.stderr.getvalue(), 'SHA-1 digest')
+
+            # exclude_sha1sum via config file
+            with open(config_file, 'w') as f:
+                f.write("[storyboard-cli]\n"
+                        "exclude_sha1sum = on\n")
+            with capture_stdout():
+		with capture_stderr():
+                    sys.argv[1:] = ['--verbose', 'on', self.videofile]
+                    main()
+                    self.assertImageFormat('jpeg')
+                    self.assertNotRegex(sys.stderr.getvalue(), 'SHA-1 digest')
+
+            # exclude_sha1sum in config file but --include-sha1sum from CLI
+            with open(config_file, 'w') as f:
+                f.write("[storyboard-cli]\n"
+                        "exclude_sha1sum = on\n")
+            with capture_stdout():
+		with capture_stderr():
+                    sys.argv[1:] = ['--include-sha1sum', '--verbose', 'on',
+                                    self.videofile]
+                    main()
+                    self.assertImageFormat('jpeg')
+                    self.assertRegex(sys.stderr.getvalue(), 'SHA-1 digest')
+
             # bogus config file leads to warning
             with open(config_file, 'w') as f:
                 f.write("[storyboard-cli]\n"

@@ -1209,7 +1209,7 @@ def main():
         help="Include SHA-1 digest of the video(s).")
     parser.add_argument(
         '--exclude-sha1sum', action='store_true',
-        help="""Exclude SHA-1 digest of the video(s). Overwrites
+        help="""Exclude SHA-1 digest of the video(s). Overrides
         '--include-sha1sum'. This option is only useful if
         include_sha1sum is turned on by default in the config file.""")
     parser.add_argument(
@@ -1242,7 +1242,7 @@ def main():
     ffprobe_bin = optreader.opt('ffprobe_bin')
     include_sha1sum = optreader.opt('include_sha1sum', opttype=bool)
     if cli_args.exclude_sha1sum:
-        # force overwrite
+        # force override
         include_sha1sum = False
     verbose = optreader.opt('verbose')
     if verbose == 'on':

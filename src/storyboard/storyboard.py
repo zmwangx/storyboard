@@ -1101,9 +1101,13 @@ def main():
         generation, so it will be *infinitely* slower than without this
         option.""")
     parser.add_argument(
-        '--exclude-sha1sum', action='store_true',
-        help="""Exclude SHA-1 digest of the video(s) from the metadata
-        sheet.""")
+        '--exclude-sha1sum', '-s', action='store_const', const=True,
+        help="Exclude SHA-1 digest of the video(s) from storyboard(s).")
+    parser.add_argument(
+        '--include-sha1sum', action='store_true',
+        help="""Include SHA-1 digest of the video(s). Overrides
+        '--exclude-sha1sum'. This option is only useful if
+        exclude_sha1sum is turned on by default in the config file.""")
     parser.add_argument(
         '--verbose', '-v', choices=['auto', 'on', 'off'],
         nargs='?', const='auto',
@@ -1126,6 +1130,7 @@ def main():
         'output_format': 'jpeg',
         'quality': 85,
         'video_duration': None,
+        'exclude-sha1sum': False,
         'verbose': 'auto',
     }
 
@@ -1145,7 +1150,10 @@ def main():
     suffix = '.jpg' if output_format == 'jpeg' else '.png'
     quality = optreader.opt('quality', opttype=int)
     video_duration = optreader.opt('video_duration', opttype=float)
-    include_sha1sum = not cli_args.exclude_sha1sum
+    include_sha1sum = not optreader.opt('exclude_sha1sum', opttype=bool)
+    if cli_args.include_sha1sum:
+        # force override
+        include_sha1sum = True
     verbose = optreader.opt('verbose')
     if verbose == 'on':
         print_progress = True
