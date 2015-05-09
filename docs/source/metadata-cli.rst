@@ -35,21 +35,22 @@ As can be seen from the invocation, one can specify multiple video
 files, and the outputs for two adjacent files will be separated by a
 blank line.
 
-See the section :ref:`options` for the list of command line options
-and their detailed explanations. Some of them can also be stored in a
-configuration file, ``$XDG_CONFIG_HOME/storyboard/storyboard.conf``
-(or ``~/.config/storyboard/storyboard.conf`` if the environment
-variable ``XDG_CONFIG_HOME`` is not defined), under the
-``metadata-cli`` section. If that is the case, then the config file
-option is also documented. Note that an option specified on the
-command line always overrides its config file equivalent.
+See the section :ref:`metadata-options` for the list of command line
+options and their detailed explanations. Some of them can also be
+stored in a configuration file,
+``$XDG_CONFIG_HOME/storyboard/storyboard.conf`` (or
+``~/.config/storyboard/storyboard.conf`` if the environment variable
+``XDG_CONFIG_HOME`` is not defined), under the ``metadata-cli``
+section. If that is the case, then the config file option is also
+documented. Note that an option specified on the command line always
+overrides its config file equivalent.
 
 See `configparser's doc
 <https://docs.python.org/3/library/configparser.html>`_ for the format
 of a valid configuration file, or learn from the :ref:`sample
-configuration file <sample-config-file>`.
+configuration file <metadata-sample-config-file>`.
 
-.. _options:
+.. _metadata-options:
 
 Options
 -------
@@ -78,9 +79,9 @@ Options
 
 --exclude-sha1sum
             Exclude SHA-1 digest in the output. This option always
-            overrides ``--include-sha1sum``. This option is only
-            useful when ``include_sha1sum`` is turned on by default in
-            the config file.
+            overrides ``--include-sha1sum``. It is only useful when
+            ``include_sha1sum`` is turned on by default in the config
+            file.
 
 -v, --verbose=STATE
             Whether to print progress information to stderr (actual
@@ -95,9 +96,9 @@ Options
 
               verbose = (auto|on|off)
 
---version   Print version number (e.g., `0.1`) and exit.
+--version   Print version number (e.g., ``0.1``) and exit.
 
-.. _sample-config-file:
+.. _metadata-sample-config-file:
 
 Sample configuration file
 -------------------------
