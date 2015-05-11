@@ -1,6 +1,7 @@
-|Latest Version| |Supported Python versions| |Download format| |License|
-|Development Status| |Docs| |Build Status| |Windows Build Status|
-|Coverage Status| |Code Health|
+|Latest Version| |Supported Python versions| |Supported Python
+implementations| |Download format| |License| |Development Status|
+|Docs| |Build Status| |Windows Build Status| |Coverage Status|
+|Code Health|
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
@@ -145,6 +146,8 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Supported Python versions| image:: https://pypip.in/py_versions/storyboard/badge.svg
    :target: https://pypi.python.org/pypi/storyboard/
+.. |Supported Python implementations| image:: https://pypip.in/implementation/storyboard/badge.svg
+   :target: https://pypi.python.org/pypi/storyboard/
 .. |Download format| image:: https://pypip.in/format/storyboard/badge.svg
    :target: https://pypi.python.org/pypi/storyboard/
 .. |License| image:: https://pypip.in/license/storyboard/badge.svg
@@ -168,6 +171,12 @@ license <http://opensource.org/licenses/MIT>`__.
 
 Changelog
 ---------
+
+0.1.02
+~~~~~~
+
+* Added CPython classifier to metadata (previously I added the PyPy
+  classifier but took CPython for granted)
 
 0.1.01
 ~~~~~~

@@ -11,6 +11,9 @@ storyboard
      <img src="https://pypip.in/py_versions/storyboard/badge.svg" alt="Supported Python versions" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
+     <img src="https://pypip.in/implementation/storyboard/badge.svg" alt="Supported Python implementations" />
+   </a>
+   <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
      <img src="https://pypip.in/format/storyboard/badge.svg" alt="Download format" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">

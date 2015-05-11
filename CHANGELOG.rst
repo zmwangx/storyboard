@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+0.1.02
+~~~~~~
+
+* Added CPython classifier to metadata (previously I added the PyPy
+  classifier but took CPython for granted)
+
 0.1.01
 ~~~~~~
 
