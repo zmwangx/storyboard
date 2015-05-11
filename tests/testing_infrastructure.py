@@ -67,6 +67,11 @@ class Tee(io.TextIOBase):
         self._stringio = NormalizedStringIO()
 
     def close(self):
+        # Python 2 and all known versions of PyPy enters close
+        # incorrectly upon deconstruction, even though an implementation
+        # of __del__ is provided below that doesn't touch _textio
+        # itself. Therefore, we can't call close on self._textio to
+        # prevent closing stdout or stderr when a Tee goes out of scope.
         self._stringio.close()
 
     @property
@@ -138,9 +143,12 @@ class Tee(io.TextIOBase):
         self._stringio.write(s)
         return bytes_written
 
-    def writelines(lines):
+    def writelines(self, lines):
         self._textio.writelines(lines)
         self._stringio.writelines(lines)
+
+    def __del__(self):
+        del self._stringio
 
 
 @contextmanager

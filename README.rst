@@ -169,17 +169,6 @@ license <http://opensource.org/licenses/MIT>`__.
 Changelog
 ---------
 
-0.1b2
-~~~~~
-
-*Date: 2015-05-08*
-
-* CLI overhaul (be sure to check out the `CLI reference
-  <https://storyboard.readthedocs.org/en/latest/cli.html>`_); the CLI
-  is stable now
-* Greatly improved docs (not finished yet, will be completed before
-  the soon-to-be-released 0.1)
-
 0.1
 ~~~
 
@@ -192,6 +181,17 @@ Hey, the stable is here!
   (useful when SHA-1 digest is disabled from config file)
 * Fixed frame extraction when video duration is missing or wrong in
   container metadata
+
+0.1b2
+~~~~~
+
+*Date: 2015-05-08*
+
+* CLI overhaul (be sure to check out the `CLI reference
+  <https://storyboard.readthedocs.org/en/latest/cli.html>`_); the CLI
+  is stable now
+* Greatly improved docs (not finished yet, will be completed before
+  the soon-to-be-released 0.1)
 
 0.1b1
 ~~~~~

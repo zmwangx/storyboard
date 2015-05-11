@@ -39,6 +39,7 @@ setup(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Multimedia :: Video',
     ],
     keywords='video storyboard metadata thumbnail ffmpeg',
@@ -47,6 +48,17 @@ setup(
     install_requires=[
         'Pillow>=2.7',
     ],
+    extras_require={
+        'test': [
+            'coveralls',
+            'nose',
+            'requests',
+        ],
+        'doc': [
+            'Pygments==1.6',
+            'Sphinx==1.2.2',
+        ],
+    },
     package_data={
         'storyboard': [
             'SourceCodePro-Regular.otf',
