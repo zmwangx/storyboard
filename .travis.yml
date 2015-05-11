@@ -7,10 +7,6 @@ python:
   - "nightly"
   - "pypy"
   - "pypy3"
-matrix:
-  allow_failures:
-    - python: "pypy"
-    - python: "pypy3"
 before_install:
   # download FFmpeg Linux static build linked from FFmpeg's official download page
   - wget http://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz

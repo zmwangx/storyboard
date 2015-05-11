@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.1.01
+~~~~~~
+
+* Officially added support for PyPy2 and PyPy3 (although PyPy,
+  especially PyPy2, is slower than CPython in this case)
+* A few extremely minor bug fixes and improvements; nothing changed
+  from a user's perspective
+
 0.1
 ~~~
 
