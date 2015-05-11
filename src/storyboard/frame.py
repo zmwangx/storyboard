@@ -148,7 +148,9 @@ def extract_frame(video_path, timestamp, params=None):
     if not frame_bytes:
         # empty output, no frame generated
         msg = ("ffmpeg generated no output "
-               "(timestamp %.2f might be out of range)" % timestamp)
+               "(timestamp %.2f might be out of range)"
+               "ffmpeg error message:\n%s" %
+               (timestamp, ffmpeg_err.strip().decode('utf-8')))
         raise OSError(msg)
 
     try:
