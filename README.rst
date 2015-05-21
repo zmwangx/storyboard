@@ -172,6 +172,11 @@ license <http://opensource.org/licenses/MIT>`__.
 Changelog
 ---------
 
+0.1.03
+~~~~~~
+
+* More lenient Unicode decoder
+
 0.1.02
 ~~~~~~
 
