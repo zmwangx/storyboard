@@ -4,16 +4,22 @@ Changelog
 0.1.03
 ~~~~~~
 
+*Date: 2015-05-20*
+
 * More lenient Unicode decoder
 
 0.1.02
 ~~~~~~
+
+*Date: 2015-05-10*
 
 * Added CPython classifier to metadata (previously I added the PyPy
   classifier but took CPython for granted)
 
 0.1.01
 ~~~~~~
+
+*Date: 2015-05-10*
 
 * Officially added support for PyPy2 and PyPy3 (although PyPy,
   especially PyPy2, is slower than CPython in this case)
