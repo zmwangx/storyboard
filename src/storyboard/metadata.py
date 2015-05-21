@@ -522,15 +522,18 @@ class Video(object):
         proc = subprocess.Popen(ffprobe_args,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ffprobe_out, ffprobe_err = proc.communicate()
+        ffprobe_out = ffprobe_out.decode('utf-8', 'ignore')
+        ffprobe_err = ffprobe_err.decode('utf-8', 'ignore')
+
         self.__dp("ffprobe stdout:")
-        self.__dp(ffprobe_out.decode('utf-8'))
+        self.__dp(ffprobe_out)
         self.__dp("ffprobe stderr:")
-        self.__dp(ffprobe_err.decode('utf-8'))
+        self.__dp(ffprobe_err)
         if proc.returncode != 0:
             msg = ("ffprobe failed on '%s'\nffprobe error message:\n%s"
-                   % (self.path, ffprobe_err.strip().decode('utf-8')))
+                   % (self.path, ffprobe_err.strip()))
             raise OSError(msg)
-        self._ffprobe = json.loads(ffprobe_out.decode('utf-8'))
+        self._ffprobe = json.loads(ffprobe_out)
         self.__dp("left StoryBoard._call_ffprobe")
 
     def _get_title(self):
