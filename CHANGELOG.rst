@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+0.1.04
+~~~~~~
+
+*Date: 2015-06-14*
+
+* Better link to the project: git.io/storyboard
+
 0.1.03
 ~~~~~~
 
