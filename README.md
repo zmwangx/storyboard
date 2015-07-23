@@ -12,6 +12,10 @@
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
+*Caution: Development has been deferred indefinitely as of July
+23, 2015. However, contributions are welcome, and the maintainer will
+review pull requests in a timely manner.*
+
 `storyboard` is an [FFmpeg](https://ffmpeg.org/)-based customizable video storyboard generator with metadata reporting directly embedded in the generated images. Reported metadata fields include, but are not limited to, title, filename, file size, SHA-1 digest, container format, duration, pixel dimension, display aspect ratio (DAR), scan type (progressive, interlaced, or telecined), frame rate, and per-stream metadata (type, codec, profile, dimensions, bitrate, etc.). Scroll down for a few sample storyboards.
 
 Note that this README only provides an overview and summary of the topics listed below. For more details, follow the main article link in each section.

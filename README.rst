@@ -5,6 +5,11 @@ implementations| |Download format| |License| |Development Status|
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
+*Caution: Development has been deferred indefinitely as of July*
+*23, 2015. However, contributions are welcome, and the maintainer will*
+*review pull requests in a timely manner.*
+
+
 ``storyboard`` is an `FFmpeg <https://ffmpeg.org/>`__-based customizable
 video storyboard generator with metadata reporting directly embedded in
 the generated images. Reported metadata fields include, but are not
