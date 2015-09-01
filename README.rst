@@ -1,7 +1,6 @@
 |Latest Version| |Supported Python versions| |Supported Python
 implementations| |Download format| |License| |Development Status|
 |Docs| |Build Status| |Windows Build Status| |Coverage Status|
-|Code Health|
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
@@ -167,8 +166,6 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://ci.appveyor.com/project/zmwangx/storyboard
 .. |Coverage Status| image:: https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master
    :target: https://coveralls.io/r/zmwangx/storyboard?branch=master
-.. |Code Health| image:: https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/zmwangx/storyboard/master
 .. |image10| image:: https://i.imgur.com/OIx20KQ.jpg
    :target: https://i.imgur.com/gtBArx7.jpg
 .. |image11| image:: https://i.imgur.com/WB2N0Rh.jpg

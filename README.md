@@ -8,7 +8,6 @@
 [![Build Status](https://travis-ci.org/zmwangx/storyboard.svg?branch=master)](https://travis-ci.org/zmwangx/storyboard)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true)](https://ci.appveyor.com/project/zmwangx/storyboard)
 [![Coverage Status](https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/r/zmwangx/storyboard?branch=master)
-[![Code Health](https://landscape.io/github/zmwangx/storyboard/master/landscape.svg?style=flat)](https://landscape.io/github/zmwangx/storyboard/master)
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
