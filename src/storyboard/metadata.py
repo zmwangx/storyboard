@@ -553,12 +553,12 @@ class Video(object):
 
         self.__dp("entered StoryBoard._get_title")
         video_container_metadata = self._ffprobe['format']
-        if (('tags' in video_container_metadata and
-             'title' in video_container_metadata['tags'])):
-            title = video_container_metadata['tags']['title']
-        else:
-            self.__dp("left StoryBoard._get_title")
-            return None
+        title = None
+        if 'tags' in video_container_metadata:
+            if 'title' in video_container_metadata['tags']:
+                title = video_container_metadata['tags']['title']
+            elif 'TITLE' in video_container_metadata['tags']:
+                title = video_container_metadata['tags']['TITLE']
         self.__dp("left StoryBoard._get_title")
         return title
 
