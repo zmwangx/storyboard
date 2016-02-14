@@ -1,6 +1,15 @@
 Changelog
 ---------
 
+0.1.05
+~~~~~~
+
+*Date: 2016-02-14*
+
+* Support metadata tag TITLE;
+* Refresh badges;
+* Add notice about ceased development.
+
 0.1.04
 ~~~~~~
 
