@@ -146,17 +146,17 @@ family <https://adobe-fonts.github.io/source-code-pro/>`__. See
 Source code in this package is released under `the MIT
 license <http://opensource.org/licenses/MIT>`__.
 
-.. |Latest Version| image:: https://pypip.in/version/storyboard/badge.svg
+.. |Latest Version| image:: https://img.shields.io/pypi/v/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Supported Python versions| image:: https://pypip.in/py_versions/storyboard/badge.svg
+.. |Supported Python versions| image:: https://img.shields.io/pypi/pyversions/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Supported Python implementations| image:: https://pypip.in/implementation/storyboard/badge.svg
+.. |Supported Python implementations| image:: https://img.shields.io/pypi/implementation/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Download format| image:: https://pypip.in/format/storyboard/badge.svg
+.. |Download format| image:: https://img.shields.io/pypi/format/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
-.. |License| image:: https://pypip.in/license/storyboard/badge.svg
+.. |License| image:: https://img.shields.io/pypi/l/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Development Status| image:: https://pypip.in/status/storyboard/badge.svg
+.. |Development Status| image:: https://img.shields.io/pypi/status/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Docs| image:: https://readthedocs.org/projects/storyboard/badge/?version=latest
    :target: https://storyboard.readthedocs.org/
@@ -164,8 +164,8 @@ license <http://opensource.org/licenses/MIT>`__.
    :target: https://travis-ci.org/zmwangx/storyboard
 .. |Windows Build Status| image:: https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true
    :target: https://ci.appveyor.com/project/zmwangx/storyboard
-.. |Coverage Status| image:: https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master
-   :target: https://coveralls.io/r/zmwangx/storyboard?branch=master
+.. |Coverage Status| image:: https://coveralls.io/repos/github/zmwangx/storyboard/badge.svg?branch=master
+   :target: https://coveralls.io/github/zmwangx/storyboard?branch=master
 .. |image10| image:: https://i.imgur.com/OIx20KQ.jpg
    :target: https://i.imgur.com/gtBArx7.jpg
 .. |image11| image:: https://i.imgur.com/WB2N0Rh.jpg

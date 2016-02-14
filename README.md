@@ -1,13 +1,13 @@
-[![Latest Version](https://pypip.in/version/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Supported Python versions](https://pypip.in/py_versions/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Supported Python implementations](https://pypip.in/implementation/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Download format](https://pypip.in/format/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![License](https://pypip.in/license/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Development Status](https://pypip.in/status/storyboard/badge.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Latest Version](https://img.shields.io/pypi/v/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Supported Python implementations](https://img.shields.io/pypi/implementation/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Download format](https://img.shields.io/pypi/format/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
+[![License](https://img.shields.io/pypi/l/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
+[![Development Status](https://img.shields.io/pypi/status/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Docs](https://readthedocs.org/projects/storyboard/badge/?version=latest)](https://storyboard.readthedocs.org/)
 [![Build Status](https://travis-ci.org/zmwangx/storyboard.svg?branch=master)](https://travis-ci.org/zmwangx/storyboard)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true)](https://ci.appveyor.com/project/zmwangx/storyboard)
-[![Coverage Status](https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/r/zmwangx/storyboard?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/github/zmwangx/storyboard?branch=master)
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
