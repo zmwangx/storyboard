@@ -5,22 +5,22 @@ storyboard
 
    <p>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/version/storyboard/badge.svg" alt="Latest Version" />
+     <img src="https://img.shields.io/pypi/v/storyboard.svg" alt="Latest Version" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/py_versions/storyboard/badge.svg" alt="Supported Python versions" />
+     <img src="https://img.shields.io/pypi/pyversions/storyboard.svg" alt="Supported Python versions" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/implementation/storyboard/badge.svg" alt="Supported Python implementations" />
+     <img src="https://img.shields.io/pypi/implementation/storyboard.svg" alt="Supported Python implementations" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/format/storyboard/badge.svg" alt="Download format" />
+     <img src="https://img.shields.io/pypi/format/storyboard.svg" alt="Download format" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/license/storyboard/badge.svg" alt="License" />
+     <img src="https://img.shields.io/pypi/l/storyboard.svg" alt="License" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://pypip.in/status/storyboard/badge.svg" alt="Development Status" />
+     <img src="https://img.shields.io/pypi/status/storyboard.svg" alt="Development Status" />
    </a>
    <a href="https://storyboard.readthedocs.org/" target="_blank">
      <img src="https://readthedocs.org/projects/storyboard/badge/?version=latest" alt="Docs" />
@@ -31,8 +31,8 @@ storyboard
    <a href="https://ci.appveyor.com/project/zmwangx/storyboard" target="_blank">
      <img src="https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true" alt="Windows Build Status" />
    </a>
-   <a href="https://coveralls.io/r/zmwangx/storyboard?branch=master" target="_blank">
-     <img src="https://coveralls.io/repos/zmwangx/storyboard/badge.svg?branch=master" alt="Coverage Status" />
+   <a href="https://coveralls.io/github/zmwangx/storyboard?branch=master" target="_blank">
+     <img src="https://coveralls.io/repos/github/zmwangx/storyboard/badge.svg?branch=master" alt="Coverage Status" />
    </a>
    </p>
 
