@@ -4,7 +4,7 @@
 [![Download format](https://img.shields.io/pypi/format/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
 [![License](https://img.shields.io/pypi/l/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
 [![Development Status](https://img.shields.io/pypi/status/storyboard.svg)](https://pypi.python.org/pypi/storyboard/)
-[![Docs](https://readthedocs.org/projects/storyboard/badge/?version=latest)](https://storyboard.readthedocs.org/)
+[![Docs](https://readthedocs.org/projects/storyboard/badge/?version=latest)](https://storyboard.readthedocs.io/)
 [![Build Status](https://travis-ci.org/zmwangx/storyboard.svg?branch=master)](https://travis-ci.org/zmwangx/storyboard)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true)](https://ci.appveyor.com/project/zmwangx/storyboard)
 [![Coverage Status](https://coveralls.io/repos/github/zmwangx/storyboard/badge.svg?branch=master)](https://coveralls.io/github/zmwangx/storyboard?branch=master)
@@ -42,7 +42,7 @@ Note that this README only provides an overview and summary of the topics listed
 
 * [FFmpeg](https://ffmpeg.org/). Check the [official downloads page](https://www.ffmpeg.org/download.html) for installation options. On OS X you may install FFmpeg via [Homebrew](http://brew.sh) or [MacPorts](https://www.macports.org/). The former is recommended.
 
-* [Pillow](https://python-pillow.github.io/). This dependency will be picked up by `pip` when you install `storyboard`, but you also have to satisfy the external dependencies, especially `libjpeg` and `libfreetype`. See [the official installation guide](https://pillow.readthedocs.org/installation.html) for details. (Satisfying external dependencies is very important on Linux, where no wheel distribution is provided on PyPI.)
+* [Pillow](https://python-pillow.github.io/). This dependency will be picked up by `pip` when you install `storyboard`, but you also have to satisfy the external dependencies, especially `libjpeg` and `libfreetype`. See [the official installation guide](https://pillow.readthedocs.io/en/latest/installation.html) for details. (Satisfying external dependencies is very important on Linux, where no wheel distribution is provided on PyPI.)
 
 ### Installation
 

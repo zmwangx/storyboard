@@ -22,7 +22,7 @@ storyboard
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
      <img src="https://img.shields.io/pypi/status/storyboard.svg" alt="Development Status" />
    </a>
-   <a href="https://storyboard.readthedocs.org/" target="_blank">
+   <a href="https://storyboard.readthedocs.io/" target="_blank">
      <img src="https://readthedocs.org/projects/storyboard/badge/?version=latest" alt="Docs" />
    </a>
    <a href="https://travis-ci.org/zmwangx/storyboard" target="_blank">

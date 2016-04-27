@@ -67,7 +67,7 @@ Dependencies
    be picked up by ``pip`` when you install ``storyboard``, but you also
    have to satisfy the external dependencies, especially ``libjpeg`` and
    ``libfreetype``. See `the official installation
-   guide <https://pillow.readthedocs.org/installation.html>`__ for
+   guide <https://pillow.readthedocs.io/en/latest/installation.html>`__ for
    details. (Satisfying external dependencies is very important on
    Linux, where no wheel distribution is provided on PyPI.)
 
@@ -159,7 +159,7 @@ license <http://opensource.org/licenses/MIT>`__.
 .. |Development Status| image:: https://img.shields.io/pypi/status/storyboard.svg
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Docs| image:: https://readthedocs.org/projects/storyboard/badge/?version=latest
-   :target: https://storyboard.readthedocs.org/
+   :target: https://storyboard.readthedocs.io/
 .. |Build Status| image:: https://travis-ci.org/zmwangx/storyboard.svg?branch=master
    :target: https://travis-ci.org/zmwangx/storyboard
 .. |Windows Build Status| image:: https://ci.appveyor.com/api/projects/status/github/zmwangx/storyboard?branch=master&svg=true
@@ -234,7 +234,7 @@ Hey, the stable is here!
 *Date: 2015-05-08*
 
 * CLI overhaul (be sure to check out the `CLI reference
-  <https://storyboard.readthedocs.org/en/latest/cli.html>`_); the CLI
+  <https://storyboard.readthedocs.io/en/latest/cli.html>`_); the CLI
   is stable now
 * Greatly improved docs (not finished yet, will be completed before
   the soon-to-be-released 0.1)

@@ -39,7 +39,7 @@ Dependencies
   On other platforms you have to satisfy the external dependencies of
   Pillow, especially ``libjpeg`` and ``libfreetype``. See `the
   official installation guide
-  <https://pillow.readthedocs.org/installation.html>`_ for details.
+  <https://pillow.readthedocs.io/en/latest/installation.html>`_ for details.
 
 Installation
 ------------
