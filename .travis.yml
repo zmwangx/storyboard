@@ -13,14 +13,17 @@ matrix:
     - python: "nightly"
 before_install:
   # download FFmpeg Linux static build linked from FFmpeg's official download page
+  - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
   - wget http://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
-  - tar -xJf ffmpeg-git-64bit-static.tar.xz
-  - mv ffmpeg-git-*/ ffmpeg/
-  - export PATH=$PWD/ffmpeg:$PATH
+  - tar xf ffmpeg-release-64bit-static.tar.xz
+  - tar xf ffmpeg-git-64bit-static.tar.xz
+  - FFMPEG_RELEASE_BIN=$(tar tf ffmpeg-release-64bit-static.tar.xz | head -1)
+  - FFMPEG_GIT_BIN=$(tar tf ffmpeg-git-64bit-static.tar.xz | head -1)
 install:
   - pip install -r requirements.txt -r tests/requirements.txt -r docs/requirements.txt .
 script:
-  - nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
+  - PATH=$FFMPEG_RELEASE_BIN:$PATH nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
+  - PATH=$FFMPEG_GIT_BIN:$PATH nosetests --verbose --exe --with-coverage --cover-erase --cover-package=storyboard --with-doctest
   - cd docs && make html && cd ..
 after_success:
   - coveralls
