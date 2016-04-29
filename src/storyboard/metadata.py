@@ -90,6 +90,7 @@ _SCODEC_MAP = {
     'ass': 'SubStation Alpha',
     'cc_dec': 'closed caption (EIA-608 / CEA-708)',
     'srt': 'SubRip',
+    'subrip': 'SubRip'
 }
 
 
