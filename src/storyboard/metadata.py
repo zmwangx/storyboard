@@ -80,9 +80,11 @@ _ACODEC_MAP = {
     'cook': 'Cook (RealAudio G2)',
     'flac': 'FLAC (Free Lossless Audio Codec)',
     'mp3': 'MP3',
+    'ra_144': 'RealAudio 1.0',
+    'ra_288': 'RealAudio 2.0',
+    'ralf': 'RealAudio Lossless',
     'real_144': 'RealAudio 1.0',
     'real_288': 'RealAudio 2.0',
-    'ralf': 'RealAudio Lossless',
     'vorbis': 'Vorbis',
 }
 
