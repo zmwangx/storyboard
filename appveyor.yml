@@ -1,24 +1,20 @@
-# Adapted from http://git.io/vfLvX
+# Adapted from https://github.com/pypa/python-packaging-user-guide/blob/master/source/code/appveyor.yml
 # More info: Building Binary Wheels for Windows using Appveyor
 #            https://packaging.python.org/en/latest/appveyor.html
 
 environment:
   matrix:
+    # https://www.appveyor.com/docs/build-environment/#python
     - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.11"
-      PYTHON_ARCH: "32"
-
+    - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python33"
-      PYTHON_VERSION: "3.3.6"
-      PYTHON_ARCH: "32"
-
+    - PYTHON: "C:\\Python33-x64"
     - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.3"
-      PYTHON_ARCH: "32"
-
+    - PYTHON: "C:\\Python34-x64"
     - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.1"
-      PYTHON_ARCH: "32"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
 
 init:
   - git config --global core.autocrlf input
