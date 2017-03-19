@@ -5,22 +5,13 @@ storyboard
 
    <p>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/v/storyboard.svg" alt="Latest Version" />
+     <img src="https://img.shields.io/pypi/v/storyboard.svg?maxAge=86400" alt="Latest Version" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/pyversions/storyboard.svg" alt="Supported Python versions" />
+     <img src="https://img.shields.io/badge/python-2.7,%203.2,%203.3,%203.4,%203.5,%203.6-blue.svg?maxAge=86400" alt="Supported Python versions" />
    </a>
    <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/implementation/storyboard.svg" alt="Supported Python implementations" />
-   </a>
-   <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/format/storyboard.svg" alt="Download format" />
-   </a>
-   <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/l/storyboard.svg" alt="License" />
-   </a>
-   <a href="https://pypi.python.org/pypi/storyboard/" target="_blank">
-     <img src="https://img.shields.io/pypi/status/storyboard.svg" alt="Development Status" />
+     <img src="https://img.shields.io/badge/license-MIT-blue.svg?maxAge=2592000" alt="License" />
    </a>
    <a href="https://storyboard.readthedocs.io/" target="_blank">
      <img src="https://readthedocs.org/projects/storyboard/badge/?version=latest" alt="Docs" />

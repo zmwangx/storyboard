@@ -1,6 +1,5 @@
-|Latest Version| |Supported Python versions| |Supported Python
-implementations| |Download format| |License| |Development Status|
-|Docs| |Build Status| |Windows Build Status| |Coverage Status|
+|Latest Version| |Supported Python versions| |License| |Docs|
+|Build Status| |Windows Build Status| |Coverage Status|
 
 *Main documentation on Read the Docs:* http://storyboard.rtfd.org
 
@@ -146,17 +145,11 @@ family <https://adobe-fonts.github.io/source-code-pro/>`__. See
 Source code in this package is released under `the MIT
 license <http://opensource.org/licenses/MIT>`__.
 
-.. |Latest Version| image:: https://img.shields.io/pypi/v/storyboard.svg
+.. |Latest Version| image:: https://img.shields.io/pypi/v/storyboard.svg?maxAge=86400
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Supported Python versions| image:: https://img.shields.io/pypi/pyversions/storyboard.svg
+.. |Supported Python versions| image:: https://img.shields.io/badge/python-2.7,%203.2,%203.3,%203.4,%203.5,%203.6-blue.svg?maxAge=86400
    :target: https://pypi.python.org/pypi/storyboard/
-.. |Supported Python implementations| image:: https://img.shields.io/pypi/implementation/storyboard.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Download format| image:: https://img.shields.io/pypi/format/storyboard.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |License| image:: https://img.shields.io/pypi/l/storyboard.svg
-   :target: https://pypi.python.org/pypi/storyboard/
-.. |Development Status| image:: https://img.shields.io/pypi/status/storyboard.svg
+.. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg?maxAge=2592000
    :target: https://pypi.python.org/pypi/storyboard/
 .. |Docs| image:: https://readthedocs.org/projects/storyboard/badge/?version=latest
    :target: https://storyboard.readthedocs.io/
