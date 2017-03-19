@@ -1,6 +1,14 @@
 Changelog
 ---------
 
+0.1.6
+~~~~~
+
+*Date: 2017-03-19*
+
+* Upcase SHA-1 checksum in metadata;
+* Add more codecs.
+
 0.1.05
 ~~~~~~
 
