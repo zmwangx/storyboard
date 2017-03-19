@@ -710,7 +710,7 @@ class Video(object):
             if print_progress:
                 pbar.finish()
 
-            self.sha1sum = sha1.hexdigest()
+            self.sha1sum = sha1.hexdigest().upper()
             self.__dp("left StoryBoard._get_sha1sum")
             return self.sha1sum
 
