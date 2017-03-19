@@ -395,7 +395,7 @@ class Video(object):
         Title:                  Example video: H.264 + AAC + SRT in Matroska container
         Filename:               sample-h264-aac-srt.mkv
         File size:              4842 (4.73KiB)
-        SHA-1 digest:           95e7d9f9359d8d7ba4ec441bc8cb3830a58ee102
+        SHA-1 digest:           95E7D9F9359D8D7BA4EC441BC8CB3830A58EE102
         Container format:       Matroska
         Duration:               00:00:02.08
         Pixel dimensions:       128x72
