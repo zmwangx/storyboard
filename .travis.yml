@@ -8,6 +8,7 @@ python:
   - "nightly"
   - "pypy"
   - "pypy3"
+cache: pip
 matrix:
   allow_failures:
     - python: "pypy"
