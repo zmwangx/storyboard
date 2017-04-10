@@ -167,6 +167,13 @@ license <http://opensource.org/licenses/MIT>`__.
 Changelog
 ---------
 
+0.1.7
+~~~~~
+
+*Date: 2017-04-09*
+
+* Add total bit rate field to metadata.
+
 0.1.6
 ~~~~~
 
