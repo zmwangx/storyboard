@@ -6,6 +6,7 @@ Duration:               00:00:00.18
 Pixel dimensions:       100x100
 Display aspect ratio:   1:1
 Frame rate:             90000 fps
+Bit rate:               79 kb/s
 Streams:
     #0: Audio, MP3, 64 kb/s
     #1: Video, PNG, 100x100 (DAR 1:1), 90000 fps

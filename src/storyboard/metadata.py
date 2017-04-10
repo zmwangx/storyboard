@@ -116,7 +116,7 @@ class Stream(object):
         (Long) name of codec.
 
     bit_rate : float
-        Bit rate of stream, in kb/s.
+        Bit rate of stream, in bit per second.
 
     bit_rate_text : str
         Bit rate as a human readable string, e.g., ``'360 kb/s'``.
@@ -263,6 +263,12 @@ class Video(object):
     frame_rate_text : str
         Frame rate as a human readable string, e.g., ``'24 fps'``.
 
+    bit_rate : float
+        Bit rate of video, in bit per second.
+
+    bit_rate_text : str
+        Bit rate as a human readable string, e.g., ``'2000 kb/s'``.
+
     dar : float
         Display aspect ratio.
 
@@ -325,6 +331,7 @@ class Video(object):
         else:
             self.duration = video_duration
             self.duration_text = util.humantime(video_duration)
+        self.bit_rate, self.bit_rate_text = self._get_bit_rate()
         self.sha1sum = None  # SHA-1 digest is generated upon request
 
         # the remaining attributes will be dynamically set when parsing
@@ -402,6 +409,7 @@ class Video(object):
         Display aspect ratio:   16:9
         Scan type:              Progressive scan
         Frame rate:             25 fps
+        Bit rate:               19 kb/s
         Streams:
             #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps
             #1: Audio (und), AAC (Low-Complexity)
@@ -448,6 +456,9 @@ class Video(object):
         # frame rate
         if self.frame_rate:
             lines.append("Frame rate:             %s" % self.frame_rate_text)
+        # bit rate
+        if self.bit_rate:
+            lines.append("Bit rate:               %s" % self.bit_rate_text)
         # streams
         lines.append("Streams:")
         for stream in self.streams:
@@ -664,6 +675,30 @@ class Video(object):
         else:
             self.__dp("left StoryBoard._get_duration")
             return (None, None)
+
+    def _get_bit_rate(self):
+        """Get bit rate of the video.
+
+        Returns
+        -------
+        bit_rate : float
+            Bit rate of the video, in bit per second. ``None`` if not
+            available.
+        bit_rate_text : str
+            Bit rate as a human readable string, e.g., ``2000
+            kb/s``. ``None`` if not available.
+
+        """
+
+        self.__dp("entered StoryBoard._get_bit_rate")
+        if 'bit_rate' in self._ffprobe['format']:
+            bit_rate = float(self._ffprobe['format']['bit_rate'])
+        elif self.size and self.duration:
+            bit_rate = self.size * 8 / self.duration
+        else:
+            bit_rate = None
+        bit_rate_text = ('%d kb/s' % int(round(bit_rate / 1000))) if bit_rate else None
+        return (bit_rate, bit_rate_text)
 
     _SHA_CHUNK_SIZE = 65536
     """Chunk size used when computing the SHA-1 digest."""

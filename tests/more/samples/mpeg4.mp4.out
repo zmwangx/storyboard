@@ -7,6 +7,7 @@ Pixel dimensions:       128x72
 Display aspect ratio:   16:9
 Scan type:              Progressive scan
 Frame rate:             25 fps
+Bit rate:               12 kb/s
 Streams:
     #0: Video, MPEG-4 Part 2 (Simple Profile), 128x72 (DAR 16:9), 25 fps, 8 kb/s
 

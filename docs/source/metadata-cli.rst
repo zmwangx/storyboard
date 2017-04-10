@@ -15,6 +15,7 @@ per-stream) using FFprobe, and prints them in a human readable manner
   Display aspect ratio:   16:9
   Scan type:              Progressive scan
   Frame rate:             29.97 fps
+  Bit rate:               8561 kb/s
   Streams:
       #0: Audio (eng), AAC (Low-Complexity), 99 kb/s
       #1: Video, H.264 (Main Profile level 4.1), 1920x1080 (DAR 16:9), 29.97 fps, 8453 kb/s
