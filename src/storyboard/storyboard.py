@@ -1068,8 +1068,8 @@ def main():
     wrapper script around the storyboard.storyboard if you'd like to.
 
     For more detailed explanations, see
-    http://storyboard.rtfd.org/en/stable/storyboard-cli.html (or replace
-    "stable" with the version you are using).
+    https://storyboard.readthedocs.io/en/stable/storyboard-cli.html (or
+    replace "stable" with the version you are using).
     """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(

@@ -1234,8 +1234,8 @@ def main():
     in https://docs.python.org/3/library/configparser.html).
 
     For more detailed explanations, see
-    http://storyboard.rtfd.org/en/stable/metadata-cli.html (or replace
-    "stable" with the version you are using).
+    https://storyboard.readthedocs.io/en/stable/metadata-cli.html (or
+    replace "stable" with the version you are using).
     """
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(

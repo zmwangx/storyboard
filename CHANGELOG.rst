@@ -64,7 +64,7 @@ Changelog
 
 Hey, the stable is here!
 
-* Completed documentation: http://storyboard.rtfd.org
+* Completed documentation: https://storyboard.readthedocs.io
 * Added ``--include-sha1sum`` option to console script ``storyboard``
   (useful when SHA-1 digest is disabled from config file)
 * Fixed frame extraction when video duration is missing or wrong in
