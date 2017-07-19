@@ -411,7 +411,7 @@ def tile_images(images, tile, params=None):
         resize = False
 
     # start assembling images
-    canvas = Image.new('RGBA', (canvas_width, canvas_height), canvas_color)
+    canvas = Image.new('RGB', (canvas_width, canvas_height), canvas_color)
     y = ver_margin
     for row in range(0, rows):
         x = hor_margin
