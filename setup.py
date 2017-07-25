@@ -55,7 +55,6 @@ setup(
         'test': [
             'coveralls',
             'nose',
-            'requests',
         ],
         'doc': [
             'Pygments==1.6',

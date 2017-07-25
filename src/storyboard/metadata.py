@@ -390,14 +390,14 @@ class Video(object):
         --------
         >>> import os
         >>> import tempfile
-        >>> import requests
+        >>> try:
+        ...     from urllib.request import urlretrieve
+        ... except ImportError:
+        ...     from urllib import urlretrieve
         >>> video_uri = 'https://dl.bintray.com/zmwangx/pypi/sample-h264-aac-srt.mkv'
         >>> tempdir = tempfile.mkdtemp()
         >>> video_file = os.path.join(tempdir, 'sample-h264-aac-srt.mkv')
-        >>> r = requests.get(video_uri, stream=True)
-        >>> with open(video_file, 'wb') as fd:
-        ...     for chunk in r.iter_content(65536):
-        ...         bytes_written = fd.write(chunk)
+        >>> _ = urlretrieve(video_uri, filename=video_file)
         >>> print(Video(video_file).format_metadata({'include_sha1sum': True}))
         Title:                  Example video: H.264 + AAC + SRT in Matroska container
         Filename:               sample-h264-aac-srt.mkv
