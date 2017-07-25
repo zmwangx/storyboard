@@ -167,6 +167,13 @@ license <http://opensource.org/licenses/MIT>`__.
 Changelog
 ---------
 
+0.1.8
+~~~~~
+
+*Date: 2017-07-25*
+
+* Support Pillow 4.2.0+.
+
 0.1.7
 ~~~~~
 
