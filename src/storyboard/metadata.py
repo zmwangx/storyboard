@@ -425,7 +425,7 @@ class Video(object):
         Bit rate:               19 kb/s
         Streams:
             #0: Video, H.264 (High Profile level 1.0), 128x72 (DAR 16:9), 25 fps
-            #1: Audio (und), AAC (Low-Complexity)
+            #1: Audio (und), AAC (Low-Complexity), 44100 Hz, mono
             #2: Subtitle, SubRip
         >>> os.remove(video_file)
         >>> os.rmdir(tempdir)

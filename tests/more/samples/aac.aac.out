@@ -5,5 +5,5 @@ Container format:       Raw ADTS AAC
 Duration:               00:00:00.16
 Bit rate:               96 kb/s
 Streams:
-    #0: Audio, AAC (Low-Complexity), 96 kb/s
+    #0: Audio, AAC (Low-Complexity), 44100 Hz, mono, 96 kb/s
 

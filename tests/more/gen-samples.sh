@@ -75,11 +75,12 @@ cat >srt.srt <<EOF
 SubRip is the way to go
 EOF
 ffmpeg -i h264.mp4 -i srt.srt -map 0 -map 1 -metadata:s:2 language=en -c copy h264.srt.mkv
-rm srt.srt
 
 # H.264 + ASS in Matroska container
 ffmpeg -i srt.srt -c:s ass ass.ass
 ffmpeg -i h264.mp4 -i ass.ass -map 0 -map 1 -metadata:s:2 language=en -c copy h264.ass.mkv
+
+rm srt.srt
 rm ass.ass
 
 # Interlaced H.264 in MP4 container
@@ -117,6 +118,21 @@ ffmpeg -i mp3.mp3 -i jpeg.jpeg -map 0 -map 1 mp3.jpeg.mp3
 
 # MP3 + PNG in MP3 container
 ffmpeg -i mp3.mp3 -i png.png -map 0 -map 1 mp3.png.mp3
+
+# Mono PCM in WAV container
+ffmpeg -f lavfi -i aevalsrc=0:d=0.1 mono.wav
+
+# Stereo PCM in WAV container
+ffmpeg -i mono.wav -filter_complex '[0:a][0:a]amerge=inputs=2' stereo.wav
+
+# Stereo MP3 in MP3 container
+ffmpeg -i stereo.wav -c:a mp3 stereo.mp3
+
+# 5.1 PCM in WAV container
+ffmpeg -i mono.wav -filter_complex '[0:a][0:a][0:a][0:a][0:a][0:a]amerge=inputs=6,channelmap=0|1|2|3|4|5:5.1' -y 5.1.wav
+
+# 5.1 (side) PCM in WAV container
+ffmpeg -i mono.wav -filter_complex '[0:a][0:a][0:a][0:a][0:a][0:a]amerge=inputs=6,channelmap=0|1|2|3|4|5:5.1(side)' -y 5.1-side.wav
 
 # H.264 + AAC in MP4 container
 ffmpeg -i h264.mp4 -i aac.aac -c copy -bsf:a aac_adtstoasc -map 0 -map 1 h264.aac.mp4

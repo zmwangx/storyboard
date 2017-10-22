@@ -5,5 +5,5 @@ Container format:       MP3
 Duration:               00:00:00.16
 Bit rate:               76 kb/s
 Streams:
-    #0: Audio, MP3, 64 kb/s
+    #0: Audio, MP3, 44100 Hz, mono, 64 kb/s
 

@@ -5,5 +5,5 @@ Container format:       Native FLAC
 Duration:               00:00:00.12
 Bit rate:               573 kb/s
 Streams:
-    #0: Audio, FLAC (Free Lossless Audio Codec)
+    #0: Audio, FLAC (Free Lossless Audio Codec), 44100 Hz, mono
 
