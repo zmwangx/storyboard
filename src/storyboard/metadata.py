@@ -146,6 +146,15 @@ class Stream(object):
         Display aspect ratio as a human readable string, e.g.,
         ``'16:9'``.
 
+    sample_rate : float
+        Sample rate of audio stream, in Hz.
+
+    sample_rate_text : str
+        Sample rate as a human readable string, e.g., ``'44100 Hz'``.
+
+    channel_layout : str
+        Channel layout of audio stream, e.g. ``'stereo'``.
+
     info_string : str
         Assembled string of stream metadata, intended for printing.
 
@@ -172,6 +181,10 @@ class Stream(object):
         self.frame_rate_text = None
         self.dar = None  # display aspect ratio
         self.dar_text = None
+        # audio stream specific attributes
+        self.sample_rate = None
+        self.sample_rate_text = None
+        self.channel_layout = None
         # assembled
         self.info_string = None
 
@@ -1124,6 +1137,24 @@ class Video(object):
         else:
             s.codec = sdict['codec_long_name']
 
+        # sample rate
+        if 'sample_rate' in sdict:
+            s.sample_rate = float(sdict['sample_rate'])
+            s.sample_rate_text = '%d Hz' % int(s.sample_rate)
+        else:
+            s.sample_rate = None
+            s.sample_rate_text = None
+
+        # channel layout
+        if 'channel_layout' in sdict:
+            s.channel_layout = sdict['channel_layout']
+        elif 'channels' in sdict:
+            channels = sdict['channels']
+            s.channel_layout = ('mono' if channels == 1 else
+                                ('%d channels' % channels))
+        else:
+            s.channel_layout = None
+
         # bit rate
         if 'bit_rate' in sdict:
             s.bit_rate = float(sdict['bit_rate'])
@@ -1144,6 +1175,10 @@ class Video(object):
             s.info_string = "Audio (%s), %s" % (s.language_code, s.codec)
         else:
             s.info_string = "Audio, %s" % s.codec
+        if s.sample_rate_text:
+            s.info_string += ", " + s.sample_rate_text
+        if s.channel_layout:
+            s.info_string += ", " + s.channel_layout
         if s.bit_rate_text:
             s.info_string += ", " + s.bit_rate_text
 
