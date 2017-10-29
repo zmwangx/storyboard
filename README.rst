@@ -167,6 +167,13 @@ license <http://opensource.org/licenses/MIT>`__.
 Changelog
 ---------
 
+0.1.9
+~~~~~
+
+*Date: 2017-10-29*
+
+* Add audio sample rate and channel layout to metadata.
+
 0.1.8
 ~~~~~
 
